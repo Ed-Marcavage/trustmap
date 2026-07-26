@@ -520,4 +520,20 @@ test('sequence: lifelines and activation bars remain intentional pass-through ge
   assert.doesNotMatch(stderr, /Clean Flow Gate/);
 });
 
+test('sequence: segment titles render as foreground badges above their borders', () => {
+  const d = load('sequence');
+  const { code, stderr, outPath } = render('sequence', d);
+  assert.equal(code, 0, stderr);
+  const html = fs.readFileSync(outPath, 'utf8');
+  const firstSegment = d.segments[0];
+  const segmentLabelsAt = html.indexOf('<!-- Segment Labels -->');
+  const activationsAt = html.indexOf('<!-- Activations -->');
+  const messagesAt = html.indexOf('<!-- Messages -->');
+
+  assert.ok(segmentLabelsAt > activationsAt, 'segment labels should stay above lifelines, messages, and activations');
+  assert.ok(messagesAt > activationsAt, 'message arrows and labels should stay above activation bars');
+  assert.match(html, new RegExp(`data-graph-role="segment-label"[^>]*data-segment-id="0"`));
+  assert.match(html, new RegExp(`<text x="62" y="${firstSegment.from - 9}"[^>]*>${firstSegment.label}</text>`));
+});
+
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));

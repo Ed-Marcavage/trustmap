@@ -4571,13 +4571,10 @@
 
         <!-- Time Segments -->
         <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="0" x="48" y="150" width="724" height="138" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="62" y="168" class="t-dim" font-size="9" font-weight="600">Accept</text>
 
         <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="1" x="48" y="306" width="724" height="232" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="62" y="324" class="t-dim" font-size="9" font-weight="600">Background work</text>
 
         <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="2" x="48" y="554" width="724" height="246" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="62" y="572" class="t-dim" font-size="9" font-weight="600">Notify + reconcile</text>
 
         <!-- Lifelines -->
         <path d="M 62 142 L 62 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
@@ -4587,6 +4584,22 @@
         <path d="M 494 142 L 494 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
         <path d="M 602 142 L 602 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
         <path d="M 710 142 L 710 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+
+        <!-- Activations -->
+        <rect x="165" y="174" width="10" height="98" rx="3" class="c-mask"/>
+        <rect x="165" y="174" width="10" height="98" rx="3" class="c-backend" stroke-width="1"/>
+        <rect x="273" y="216" width="10" height="118" rx="3" class="c-mask"/>
+        <rect x="273" y="216" width="10" height="118" rx="3" class="c-messagebus" stroke-width="1"/>
+        <rect x="381" y="320" width="10" height="254" rx="3" class="c-mask"/>
+        <rect x="381" y="320" width="10" height="254" rx="3" class="c-backend" stroke-width="1"/>
+        <rect x="489" y="362" width="10" height="54" rx="3" class="c-mask"/>
+        <rect x="489" y="362" width="10" height="54" rx="3" class="c-cloud" stroke-width="1"/>
+        <rect x="597" y="488" width="10" height="254" rx="3" class="c-mask"/>
+        <rect x="597" y="488" width="10" height="254" rx="3" class="c-database" stroke-width="1"/>
+        <rect x="705" y="560" width="10" height="56" rx="3" class="c-mask"/>
+        <rect x="705" y="560" width="10" height="56" rx="3" class="c-messagebus" stroke-width="1"/>
+        <rect x="165" y="644" width="10" height="140" rx="3" class="c-mask"/>
+        <rect x="165" y="644" width="10" height="140" rx="3" class="c-backend" stroke-width="1"/>
 
         <!-- Messages -->
         <g data-edge-from="client" data-edge-to="api" data-edge-label="POST /jobs" data-edge-key="0">
@@ -4701,21 +4714,19 @@
         </g>
         </g>
 
-        <!-- Activations -->
-        <rect x="165" y="174" width="10" height="98" rx="3" class="c-mask"/>
-        <rect x="165" y="174" width="10" height="98" rx="3" class="c-backend" stroke-width="1"/>
-        <rect x="273" y="216" width="10" height="118" rx="3" class="c-mask"/>
-        <rect x="273" y="216" width="10" height="118" rx="3" class="c-messagebus" stroke-width="1"/>
-        <rect x="381" y="320" width="10" height="254" rx="3" class="c-mask"/>
-        <rect x="381" y="320" width="10" height="254" rx="3" class="c-backend" stroke-width="1"/>
-        <rect x="489" y="362" width="10" height="54" rx="3" class="c-mask"/>
-        <rect x="489" y="362" width="10" height="54" rx="3" class="c-cloud" stroke-width="1"/>
-        <rect x="597" y="488" width="10" height="254" rx="3" class="c-mask"/>
-        <rect x="597" y="488" width="10" height="254" rx="3" class="c-database" stroke-width="1"/>
-        <rect x="705" y="560" width="10" height="56" rx="3" class="c-mask"/>
-        <rect x="705" y="560" width="10" height="56" rx="3" class="c-messagebus" stroke-width="1"/>
-        <rect x="165" y="644" width="10" height="140" rx="3" class="c-mask"/>
-        <rect x="165" y="644" width="10" height="140" rx="3" class="c-backend" stroke-width="1"/>
+        <!-- Segment Labels -->
+        <g data-graph-role="segment-label" data-segment-id="0">
+          <rect x="56" y="128" width="45.2" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="141" class="t-dim" font-size="9" font-weight="600">Accept</text>
+        </g>
+        <g data-graph-role="segment-label" data-segment-id="1">
+          <rect x="56" y="284" width="92" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="297" class="t-dim" font-size="9" font-weight="600">Background work</text>
+        </g>
+        <g data-graph-role="segment-label" data-segment-id="2">
+          <rect x="56" y="532" width="107.60000000000001" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="545" class="t-dim" font-size="9" font-weight="600">Notify + reconcile</text>
+        </g>
 
         <!-- Participants -->
         <g id="node-client" data-node-id="client" data-node-label="Client" tabindex="0" role="button" aria-label="Focus Client, mobile app, Sequence participant" aria-pressed="false" data-node-kind="external" data-node-sublabel="mobile app" data-node-context="Sequence participant">

@@ -258,8 +258,15 @@ function renderLifeline(participant) {
 }
 
 function renderSegment(segment, index) {
-  return `        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="${index}" x="48" y="${segment.from}" width="${viewBox[0] - 96}" height="${segment.to - segment.from}" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="62" y="${segment.from + 18}" class="t-dim" font-size="9" font-weight="600">${esc(segment.label)}</text>`;
+  return `        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="${index}" x="48" y="${segment.from}" width="${viewBox[0] - 96}" height="${segment.to - segment.from}" rx="10" class="c-lane" stroke-width="1"/>`;
+}
+
+function renderSegmentLabel(segment, index) {
+  const labelW = Math.max(42, textUnits(segment.label) * 5.2 + 14);
+  return `        <g data-graph-role="segment-label" data-segment-id="${index}">
+          <rect x="56" y="${segment.from - 22}" width="${labelW}" height="18" rx="3" class="c-mask"/>
+          <text x="62" y="${segment.from - 9}" class="t-dim" font-size="9" font-weight="600">${esc(segment.label)}</text>
+        </g>`;
 }
 
 function renderActivation(activation) {
@@ -334,11 +341,14 @@ ${asArray(sequence.segments).map(renderSegment).join('\n\n')}
         <!-- Lifelines -->
 ${participantList.map(renderLifeline).join('\n')}
 
+        <!-- Activations -->
+${asArray(sequence.activations).map(renderActivation).join('\n')}
+
         <!-- Messages -->
 ${asArray(sequence.messages).map(renderMessage).join('\n\n')}
 
-        <!-- Activations -->
-${asArray(sequence.activations).map(renderActivation).join('\n')}
+        <!-- Segment Labels -->
+${asArray(sequence.segments).map(renderSegmentLabel).join('\n')}
 
         <!-- Participants -->
 ${participantList.map(renderParticipant).join('\n\n')}
