@@ -20,7 +20,8 @@ const PROMPT_CONTRACT_PHRASES = [
   'Do not edit any other file.',
   'The candidate file, not the prose response, is the attempt 1 artifact.',
   'Do not copy a checked-in example.',
-  'Target the `showcase` quality profile; the external harness will validate the frozen candidate.',
+  'Use the bundled Archify CLI to validate and repair the candidate when shell access is available.',
+  'The external harness will independently validate the frozen candidate.',
   'Do not claim that validation passed.',
 ];
 const OPERATIONAL_FAILURES = new Set(['timeout', 'no_candidate', 'provider_error']);
@@ -60,14 +61,22 @@ function normalizeTechnicalLabel(value) {
     .trim();
 }
 
+function technicalLabelMatches(actual, expected) {
+  const normalizedActual = normalizeTechnicalLabel(actual);
+  const normalizedExpected = normalizeTechnicalLabel(expected);
+  if (!normalizedActual || !normalizedExpected) return false;
+  const paddedActual = ` ${normalizedActual} `;
+  const paddedExpected = ` ${normalizedExpected} `;
+  return paddedActual.includes(` ${normalizedExpected} `)
+    || paddedExpected.includes(` ${normalizedActual} `);
+}
+
 function relationshipMatches(candidate, requirement) {
   return candidate.from === requirement.from
     && candidate.to === requirement.to
     && (requirement.label === undefined || candidate.label === requirement.label)
     && (requirement.labels === undefined
-      || requirement.labels.some(
-        (label) => normalizeTechnicalLabel(candidate.label) === normalizeTechnicalLabel(label),
-      ))
+      || requirement.labels.some((label) => technicalLabelMatches(candidate.label, label)))
     && (requirement.variant === undefined || candidate.variant === requirement.variant);
 }
 
@@ -86,7 +95,7 @@ function bindRequiredNode(required, nodesById, nodes) {
   if (acceptedLabels.length === 0) return { node: null, ambiguous: [] };
 
   const matches = nodes.filter(
-    (node) => acceptedLabels.includes(normalizeTechnicalLabel(node.label)),
+    (node) => acceptedLabels.some((label) => technicalLabelMatches(node.label, label)),
   );
   if (matches.length === 1) return { node: matches[0], ambiguous: [] };
   if (matches.length > 1) return { node: null, ambiguous: matches.map((node) => node.id) };

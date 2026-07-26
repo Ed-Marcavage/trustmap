@@ -382,7 +382,9 @@ test('benchmark records a timeout without a candidate as a complete first-pass f
 
 test('benchmark semantic requirements bind by accepted technical labels instead of forcing model-authored internal IDs', () => {
   const source = JSON.parse(fs.readFileSync(path.join(skillRoot, 'examples/web-app.architecture.json'), 'utf8'));
+  source.components.find((component) => component.id === 'users').label = 'Browser Users';
   const rename = new Map([
+    ['users', 'browser-users-v1'],
     ['api', 'service-api-v1'],
     ['cache', 'redis-cache-v1'],
   ]);
@@ -391,6 +393,9 @@ test('benchmark semantic requirements bind by accepted technical labels instead 
     connection.from = rename.get(connection.from) || connection.from;
     connection.to = rename.get(connection.to) || connection.to;
   }
+  source.connections.find(
+    (connection) => connection.from === 'service-api-v1' && connection.to === 'redis-cache-v1',
+  ).label = 'cache read-through GET / SET';
   for (const view of source.meta.views || []) {
     view.focus = view.focus.map((id) => rename.get(id) || id);
   }
@@ -405,6 +410,7 @@ test('benchmark semantic requirements bind by accepted technical labels instead 
     quality_profile: 'showcase',
     requirements: {
       nodes: [
+        { key: 'users', labels: ['Users'], type: 'external' },
         { key: 'api', labels: ['API', 'API Server'], type: 'backend' },
         { key: 'cache', labels: ['Redis', 'Redis Cache'], type: 'database' },
       ],
@@ -432,6 +438,7 @@ test('benchmark semantic requirements bind by accepted technical labels instead 
   const receipt = JSON.parse(result.stdout);
   assert.equal(receipt.gates.semantic.ok, true);
   assert.deepEqual(receipt.gates.semantic.bindings, {
+    users: 'browser-users-v1',
     api: 'service-api-v1',
     cache: 'redis-cache-v1',
   });
@@ -467,7 +474,7 @@ test('checked-in benchmark suite covers all five diagram types without presentin
   }
 });
 
-test('checked-in prompts assign deterministic validation only to the external harness', () => {
+test('checked-in prompts permit bundled CLI repair while retaining external validation authority', () => {
   const suiteRoot = path.join(repoRoot, 'benchmarks/ordinary-model-floor');
   const manifest = JSON.parse(fs.readFileSync(path.join(suiteRoot, 'manifest.json'), 'utf8'));
 
@@ -475,10 +482,14 @@ test('checked-in prompts assign deterministic validation only to the external ha
     const prompt = fs.readFileSync(path.join(suiteRoot, entry.prompt), 'utf8');
     assert.match(
       prompt,
-      /Target the `showcase` quality profile; the external harness will validate the frozen candidate\./,
+      /Use the bundled Archify CLI to validate and repair the candidate when shell access is available\./,
       entry.prompt,
     );
-    assert.doesNotMatch(prompt, /and validate it with the `showcase` quality profile/, entry.prompt);
+    assert.match(
+      prompt,
+      /The external harness will independently validate the frozen candidate\./,
+      entry.prompt,
+    );
   }
 });
 
@@ -622,6 +633,8 @@ test('benchmark documentation locks the fair-run and truthful-evidence contract'
     'same repository commit',
     'packaged skill root',
     'model-visible working tree',
+    'bundled Archify CLI',
+    'independently revalidates',
     'attempt 1',
     'no post-hoc edits',
     'Reference fixtures are not benchmark evidence',
