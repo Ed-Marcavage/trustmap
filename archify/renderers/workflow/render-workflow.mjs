@@ -97,6 +97,26 @@ function measureNode(node) {
   };
 }
 
+const nodeTextFit = {
+  widthFactor: 0.6,
+  horizontalPadding: 8,
+  labelPreferred: 11,
+  labelMinimum: 9,
+  sublabelPreferred: 8,
+  sublabelMinimum: 6,
+};
+
+function fittedNodeFontSize(text, width, preferred, minimum) {
+  const units = Math.max(1, textUnits(text));
+  const available = Math.max(1, width - nodeTextFit.horizontalPadding);
+  const fitted = Math.min(preferred, available / (units * nodeTextFit.widthFactor));
+  return Math.max(minimum, Math.floor(fitted * 10) / 10);
+}
+
+function minimumNodeTextWidth(text, minimum) {
+  return textUnits(text) * minimum * nodeTextFit.widthFactor;
+}
+
 const nodes = new Map(asArray(workflow.nodes).map((node) => [node.id, measureNode(node)]));
 
 function workflowCompositionFrames() {
@@ -206,6 +226,13 @@ function validateWorkflow() {
     const estLabelW = textUnits(node.label) * 6.8;
     if (estLabelW > node.width + 6) {
       problems.push(`Label "${node.label}" (~${Math.round(estLabelW)}px) is wider than node "${node.id}" (${node.width}px) — shorten the label, move detail to sublabel, or increase node.width.`);
+    }
+    if (node.sublabel) {
+      const minimumSublabelW = minimumNodeTextWidth(node.sublabel, nodeTextFit.sublabelMinimum);
+      const availableSublabelW = node.width - nodeTextFit.horizontalPadding;
+      if (minimumSublabelW > availableSublabelW) {
+        problems.push(`Sublabel "${node.sublabel}" needs ~${Math.ceil(minimumSublabelW)}px at the ${nodeTextFit.sublabelMinimum}px legible minimum, but node "${node.id}" provides ${availableSublabelW}px — shorten the sublabel or increase node.width.`);
+      }
     }
 
     const top = laneTop(node.lane);
@@ -499,8 +526,12 @@ function renderNode(node) {
   const fill = componentFill[node.type] || 'c-external';
   const accent = componentText[node.type] || 't-muted';
   const hasSub = node.sublabel != null && node.sublabel !== '';
+  const labelFontSize = fittedNodeFontSize(node.label, node.width, nodeTextFit.labelPreferred, nodeTextFit.labelMinimum);
+  const sublabelFontSize = hasSub
+    ? fittedNodeFontSize(node.sublabel, node.width, nodeTextFit.sublabelPreferred, nodeTextFit.sublabelMinimum)
+    : nodeTextFit.sublabelPreferred;
   const sub = hasSub
-    ? `\n          <text data-detail="context" x="${node.cx}" y="${node.y + 38}" class="t-muted" font-size="8" text-anchor="middle">${esc(node.sublabel)}</text>`
+    ? `\n          <text data-detail="context" x="${node.cx}" y="${node.y + 38}" class="t-muted" font-size="${sublabelFontSize}" text-anchor="middle">${esc(node.sublabel)}</text>`
     : '';
   const tag = node.tag
     ? `\n        <text data-detail="fine" x="${node.cx}" y="${node.y + node.height - 12}" class="${accent}" font-size="7" text-anchor="middle">${esc(node.tag)}</text>`
@@ -511,7 +542,7 @@ function renderNode(node) {
           <rect x="${node.x}" y="${node.y}" width="${node.width}" height="${node.height}" rx="6" class="c-mask"/>
           <rect x="${node.x}" y="${node.y}" width="${node.width}" height="${node.height}" rx="6" class="${fill}"${animateAttr(workflow.meta, 'node', nodeStep(node))} stroke-width="1.5"/>
           ${renderSemanticSigil(node.type, { x: node.x + 6, y: node.y + 6 })}
-          <text${hasSub ? ' data-detail-anchor' : ''} x="${node.cx}" y="${node.y + 21}" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">${esc(node.label)}</text>${sub}${tag}
+          <text${hasSub ? ' data-detail-anchor' : ''} x="${node.cx}" y="${node.y + 21}" class="t-primary" font-size="${labelFontSize}" font-weight="600" text-anchor="middle">${esc(node.label)}</text>${sub}${tag}
         </g>`;
 }
 

@@ -64,6 +64,8 @@ const CASES = [
   ['workflow: unknown lane', 'workflow', (d) => { d.nodes[0].lane = 'ghost'; }, ['unknown lane "ghost"']],
   ['workflow: node label wider than box', 'workflow',
     (d) => { d.nodes[0].label = 'An Extremely Long Node Label That Overflows'; }, ['wider than node', 'shorten the label']],
+  ['workflow: node sublabel wider than its legible minimum', 'workflow',
+    (d) => { d.nodes[0].sublabel = 'This supporting sentence is much too long for one workflow node'; }, ['Sublabel', 'legible', 'increase node.width']],
   ['workflow: viewBox width below schema min', 'workflow',
     (d) => { d.meta.viewBox = [699, 900]; }, ['700']],
   ['workflow: nodes too close in a lane', 'workflow',
@@ -169,6 +171,15 @@ test('workflow: same-lane offset auto edge stays orthogonal', () => {
   const html = fs.readFileSync(outPath, 'utf8');
   assert.doesNotMatch(html, /M 236 105 L 284 133/);
   assert.match(html, /M 236 105 L 260 105 L 260 133 L 284 133/);
+});
+
+test('workflow: bounded font fitting keeps an ordinary long sublabel inside its node', () => {
+  const d = load('workflow');
+  d.nodes[0].sublabel = 'shell / browser / MCP';
+  const { code, stderr, outPath } = render('workflow', d);
+  assert.equal(code, 0, stderr);
+  const html = fs.readFileSync(outPath, 'utf8');
+  assert.match(html, /font-size="6\.6"[^>]*>shell \/ browser \/ MCP<\/text>/);
 });
 
 test('workflow: edge crossing a non-endpoint node is rejected', () => {
