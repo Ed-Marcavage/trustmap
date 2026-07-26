@@ -20,6 +20,7 @@ const PROMPT_CONTRACT_PHRASES = [
   'Do not edit any other file.',
   'The candidate file, not the prose response, is the attempt 1 artifact.',
   'Do not copy a checked-in example.',
+  'Do not claim that validation passed; the external harness will validate the frozen file.',
 ];
 
 class BenchmarkError extends Error {

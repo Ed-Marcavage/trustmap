@@ -24,7 +24,7 @@ node benchmarks/ordinary-model-floor/benchmark.mjs check --manifest benchmarks/o
 
 ## Fair-run protocol
 
-Every compared configuration must use the same prompt, the same repository commit, the same Archify skill and schema, the same time limit, and a clean candidate output path. Record the exact agent and model names. One complete agent invocation is attempt 1: the agent may use Archify's own diagnostics inside that invocation, but the resulting `benchmark-candidate.json` is frozen when the invocation ends. Preserve that unedited candidate and permit no post-hoc edits, including human edits, before verification.
+Every compared configuration must use the same prompt, the same repository commit, the same Archify skill and schema, the same time limit, identical tool access, and a clean candidate output path. Record the exact agent and model names. One complete agent invocation is attempt 1; the resulting `benchmark-candidate.json` is frozen when the invocation ends. If the prompt assigns validation to the external harness, the agent must not self-certify the result. Preserve that unedited candidate and permit no post-hoc edits, including human edits, before verification.
 
 Do not let a later correction replace attempt 1. Correction attempts may be retained for diagnosis, but the first-pass report accepts only attempt 1 receipts. Run every case in the manifest for every configuration; an incomplete or duplicated matrix is not evidence-eligible.
 

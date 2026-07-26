@@ -4,4 +4,4 @@ Use the Archify skill in this repository to create an architecture diagram for a
 
 Author a fresh typed JSON diagram specification and validate it with the `showcase` quality profile. Choose your own stable internal IDs and layout. Preserve the system roles and labelled technical relationships.
 
-Write the final candidate to exactly `benchmark-candidate.json` in the repository root. Do not edit any other file. Run the real Archify CLI against that file with the `showcase` quality profile; you may diagnose and correct your own candidate during this single agent invocation. The candidate file, not the prose response, is the attempt 1 artifact. Do not copy a checked-in example.
+Write the final candidate to exactly `benchmark-candidate.json` in the repository root. Do not edit any other file. The candidate file, not the prose response, is the attempt 1 artifact. Do not copy a checked-in example. Do not claim that validation passed; the external harness will validate the frozen file.
