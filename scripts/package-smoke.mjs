@@ -58,6 +58,21 @@ try {
     throw new Error('packaged skill must not declare runtime or development dependencies');
   }
 
+  const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
+  const skillReferences = [...skill.matchAll(
+    /`((?:assets|bin|examples|recipes|renderers|schemas|scripts)\/[^`\s]+)`/g,
+  )]
+    .map((match) => match[1])
+    .filter((reference) => !/[<>{}*\[\]]/.test(reference));
+  if (skillReferences.length === 0) {
+    throw new Error('packaged SKILL.md did not expose any literal package paths');
+  }
+  for (const reference of new Set(skillReferences)) {
+    if (!fs.existsSync(path.join(skillRoot, reference))) {
+      throw new Error(`packaged SKILL.md references missing path ${reference}`);
+    }
+  }
+
   run(['--help']);
   run(['doctor']);
   run(['demo', path.join(scratch, 'demo')]);

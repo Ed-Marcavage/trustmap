@@ -94,9 +94,22 @@ function bindRequiredNode(required, nodesById, nodes) {
     .filter(Boolean);
   if (acceptedLabels.length === 0) return { node: null, ambiguous: [] };
 
-  const matches = nodes.filter(
+  let matches = nodes.filter(
     (node) => acceptedLabels.some((label) => technicalLabelMatches(node.label, label)),
   );
+  if (matches.length > 1) {
+    for (const [acceptedField, actualField] of [['sublabels', 'sublabel'], ['tags', 'tag']]) {
+      const accepted = (required[acceptedField] || [])
+        .concat(required[actualField] === undefined ? [] : [required[actualField]])
+        .map(normalizeTechnicalLabel)
+        .filter(Boolean);
+      if (accepted.length === 0) continue;
+      const narrowed = matches.filter(
+        (node) => accepted.some((value) => technicalLabelMatches(node[actualField], value)),
+      );
+      if (narrowed.length > 0) matches = narrowed;
+    }
+  }
   if (matches.length === 1) return { node: matches[0], ambiguous: [] };
   if (matches.length > 1) return { node: null, ambiguous: matches.map((node) => node.id) };
   return { node: null, ambiguous: [] };

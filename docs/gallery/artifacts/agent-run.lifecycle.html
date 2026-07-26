@@ -4584,8 +4584,9 @@
         <path data-edge-from="executing" data-edge-to="approval" data-edge-key="0" data-edge-id="approval-needed" data-composition-points="402,188;402,278" d="M 402 188 L 402 278" class="a-security" data-animate="edge" style="--step:0" stroke-width="1.1" marker-end="url(#arrowhead-security)"/>
         <path data-edge-from="reviewing" data-edge-to="blocked" data-edge-key="1" data-edge-id="review-blocked" data-composition-points="556,188;556,233;556,233;556,278" d="M 556 188 L 556 233 L 556 233 L 556 278" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.1" marker-end="url(#arrowhead)"/>
         <path data-edge-from="executing" data-edge-to="failed" data-edge-key="2" data-edge-id="execution-failed" data-composition-points="343,157;320,157;320,385;339,385" d="M 343 157 L 330 157 Q 320 157 320 167 L 320 375.5 Q 320 385 329.5 385 L 339 385" class="a-security" data-animate="edge" style="--step:2" stroke-width="1.1" marker-end="url(#arrowhead-security)"/>
-        <path data-edge-from="blocked" data-edge-to="expired" data-edge-key="3" data-edge-id="block-expired" data-composition-points="556,336;556,450" d="M 556 336 L 556 450" class="a-security" data-animate="edge" style="--step:3" stroke-width="1.1" marker-end="url(#arrowhead-security)"/>
-        <path data-edge-from="approval" data-edge-to="cancelled" data-edge-key="4" data-edge-id="approval-cancelled" data-composition-points="402,336;480,336;480,432;402,432;402,450" d="M 402 336 L 470 336 Q 480 336 480 346 L 480 422 Q 480 432 470 432 L 411 432 Q 402 432 402 441 L 402 450" class="a-security" data-animate="edge" style="--step:4" stroke-width="1.1" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="failed" data-edge-to="executing" data-edge-key="3" data-edge-id="failed-retry" data-composition-points="339,385;20,385;20,80;402,80;402,126" d="M 339 385 L 30 385 Q 20 385 20 375 L 20 90 Q 20 80 30 80 L 392 80 Q 402 80 402 90 L 402 126" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="2" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="blocked" data-edge-to="expired" data-edge-key="4" data-edge-id="block-expired" data-composition-points="556,336;556,450" d="M 556 336 L 556 450" class="a-security" data-animate="edge" style="--step:4" stroke-width="1.1" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="approval" data-edge-to="cancelled" data-edge-key="5" data-edge-id="approval-cancelled" data-composition-points="402,336;480,336;480,432;402,432;402,450" d="M 402 336 L 470 336 Q 480 336 480 346 L 480 422 Q 480 432 470 432 L 411 432 Q 402 432 402 441 L 402 450" class="a-security" data-animate="edge" style="--step:5" stroke-width="1.1" marker-end="url(#arrowhead-security)"/>
 
         <!-- States -->
         <g id="node-queued" data-node-id="queued" data-node-label="Queued" tabindex="0" role="button" aria-label="Focus Queued, request accepted, Lifecycle phases" aria-pressed="false" data-node-kind="start" data-node-sublabel="request accepted" data-node-tag="entry" data-node-context="Lifecycle phases">
@@ -4696,7 +4697,7 @@
         <g id="node-cancelled" data-node-id="cancelled" data-node-label="Cancelled" tabindex="0" role="button" aria-label="Focus Cancelled, user stopped, Terminal exits" aria-pressed="false" data-node-kind="failure" data-node-sublabel="user stopped" data-node-tag="terminal" data-node-context="Terminal exits">
           <title>Cancelled · user stopped · Terminal exits · terminal</title>
           <rect x="343" y="450" width="118" height="58" rx="7" class="c-mask"/>
-          <rect x="343" y="450" width="118" height="58" rx="7" class="c-security" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <rect x="343" y="450" width="118" height="58" rx="7" class="c-security" data-animate="node" style="--step:6" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="failure" class="semantic-sigil s-security" transform="translate(444 456) scale(0.6875)">
             <circle cx="8" cy="8" r="5.3"/>
             <path d="m5.7 5.7 4.6 4.6m0-4.6-4.6 4.6"/>
@@ -4709,7 +4710,7 @@
         <g id="node-expired" data-node-id="expired" data-node-label="Expired" tabindex="0" role="button" aria-label="Focus Expired, timeout, Terminal exits" aria-pressed="false" data-node-kind="failure" data-node-sublabel="timeout" data-node-tag="terminal" data-node-context="Terminal exits">
           <title>Expired · timeout · Terminal exits · terminal</title>
           <rect x="497" y="450" width="118" height="58" rx="7" class="c-mask"/>
-          <rect x="497" y="450" width="118" height="58" rx="7" class="c-security" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <rect x="497" y="450" width="118" height="58" rx="7" class="c-security" data-animate="node" style="--step:5" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="failure" class="semantic-sigil s-security" transform="translate(598 456) scale(0.6875)">
             <circle cx="8" cy="8" r="5.3"/>
             <path d="m5.7 5.7 4.6 4.6m0-4.6-4.6 4.6"/>
@@ -4720,6 +4721,7 @@
         </g>
 
         <!-- Transition labels -->
+
 
 
 
@@ -4949,7 +4951,7 @@
         <ul>
           <li>&bull; Approval pauses execution without ending the run</li>
           <li>&bull; Blocked waits for missing user input</li>
-          <li>&bull; Wait states can resume back into planning or execution</li>
+          <li>&bull; Wait states remain non-terminal until cancellation or expiry</li>
         </ul>
       </div>
 

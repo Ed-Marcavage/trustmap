@@ -97,3 +97,17 @@ All 15 attempt-1 candidates use repository commit `66414c7` and the same package
 skill SHA-256. The calibrated verifier reports 10/15 first-pass usable, with five
 deterministic visual-quality failures and no semantic or operational failures.
 This is a fixed diagnostic sample, not a model leaderboard or a latency claim.
+
+The matched post-fix run is retained in
+[`results/2026-07-26-pi-three-models-postfix.json`](results/2026-07-26-pi-three-models-postfix.json).
+It uses generation commit `2dce766`, preserves all 15 frozen attempt-1
+candidates and transcripts, and records browser review only for candidates that
+pass deterministic showcase validation. The current verifier additionally
+requires a lifecycle's recoverable failure to author a real retry transition.
+Under that same current verifier, both the original matrix and the post-fix
+matrix score 8/15: the single sample does **not** demonstrate an overall uplift.
+The post-fix distribution is MiniMax 4/5, DeepSeek 2/5, and Qwen 2/5. A bounded
+automatic architecture-route fix does turn the frozen Qwen architecture
+candidate from a 3.5px micro-stub failure into a browser-reviewed pass, but the
+remaining failures cluster in complex data-flow and lifecycle routing. Runtime
+duration is recorded operational context only and is not a usability gate.

@@ -5,16 +5,16 @@
   "quality_profile": "showcase",
   "requirements": {
     "nodes": [
-      { "key": "planner", "labels": ["Agent Planner", "Planner"], "type": "backend" },
-      { "key": "router", "labels": ["Tool Router", "Router"], "types": ["backend", "security"] },
-      { "key": "approval", "labels": ["Approval Gate", "Human Approval", "Consent Gate"], "type": "security" },
-      { "key": "tool", "labels": ["Tool Call", "Tool Execution", "Tool Execute", "Tool Executor", "Tool Runner"], "type": "messagebus" },
+      { "key": "planner", "labels": ["Agent Planner", "Planner", "Intent Planner"], "type": "backend" },
+      { "key": "router", "labels": ["Tool Router", "Router", "Route Decision"], "types": ["backend", "security"] },
+      { "key": "approval", "labels": ["Approval Gate", "Human Approval", "Consent Gate", "Approval"], "type": "security" },
+      { "key": "tool", "labels": ["Tool Call", "Tool Execution", "Tool Execute", "Tool Executor", "Tool Runner", "Tool Dispatch"], "type": "messagebus" },
       { "key": "blocked", "labels": ["Blocked", "Denied", "Held"], "type": "security" },
       { "key": "external", "labels": ["External API", "Provider API", "Remote API"], "type": "cloud" }
     ],
     "relationships": [
       { "from": "planner", "to": "router" },
-      { "from": "router", "to": "approval", "labels": ["needs approval?", "approval required?", "approve?", "consent?"] },
+      { "from": "router", "to": "approval", "labels": ["needs approval?", "approval required?", "requires approval?", "approve?", "consent?"] },
       { "from": "approval", "to": "tool" },
       { "from": "approval", "to": "blocked", "labels": ["denied", "rejected"] },
       { "from": "tool", "to": "external" }

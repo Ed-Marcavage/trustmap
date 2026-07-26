@@ -1,11 +1,12 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const skill = readFileSync(path.join(here, '..', 'SKILL.md'), 'utf8');
+const skillRoot = path.join(here, '..');
+const skill = readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
 const frontmatter = skill.match(/^---\n([\s\S]*?)\n---/);
 
 test('skill description is portable across 1024-character runtimes and remains searchable', () => {
@@ -20,4 +21,15 @@ test('skill description is portable across 1024-character runtimes and remains s
   }
   assert.match(description, /standalone HTML/i);
   assert.match(description, /Use when/i);
+});
+
+test('literal packaged-skill path references resolve inside the installed skill root', () => {
+  const references = [...skill.matchAll(/`((?:assets|bin|examples|recipes|renderers|schemas|scripts)\/[^`\s]+)`/g)]
+    .map((match) => match[1])
+    .filter((reference) => !/[<>{}*\[\]]/.test(reference));
+
+  assert.ok(references.length > 0, 'expected literal packaged-skill references');
+  for (const reference of new Set(references)) {
+    assert.equal(existsSync(path.join(skillRoot, reference)), true, `SKILL.md references missing packaged path ${reference}`);
+  }
 });

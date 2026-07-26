@@ -498,12 +498,13 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
         ['tool', 'tool-runner'], ['blocked', 'request-blocked'], ['external', 'service-provider'],
       ]),
       mutate(candidate) {
-        Object.assign(candidate.nodes.find((node) => node.id === 'risk-router'), { label: 'Router', type: 'security' });
-        candidate.nodes.find((node) => node.id === 'consent-check').label = 'Consent Gate';
-        candidate.nodes.find((node) => node.id === 'tool-runner').label = 'Tool Execute';
+        candidate.nodes.find((node) => node.id === 'task-planner').label = 'Intent Planner';
+        Object.assign(candidate.nodes.find((node) => node.id === 'risk-router'), { label: 'Route Decision', type: 'security' });
+        candidate.nodes.find((node) => node.id === 'consent-check').label = 'Approval';
+        candidate.nodes.find((node) => node.id === 'tool-runner').label = 'Tool Dispatch';
         candidate.nodes.find((node) => node.id === 'request-blocked').label = 'Held';
         candidate.nodes.find((node) => node.id === 'service-provider').label = 'Remote API';
-        candidate.edges.find((edge) => edge.from === 'risk-router' && edge.to === 'consent-check').label = 'approve?';
+        candidate.edges.find((edge) => edge.from === 'risk-router' && edge.to === 'consent-check').label = 'requires approval?';
       },
     },
     {
@@ -517,11 +518,11 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
       mutate(candidate) {
         Object.assign(candidate.participants.find((node) => node.id === 'browser-tab'), { label: 'Browser', type: 'external' });
         candidate.participants.find((node) => node.id === 'dashboard-api').label = 'Dashboard API';
-        candidate.participants.find((node) => node.id === 'token-guard').label = 'JWT Validator';
-        candidate.messages.find((message) => message.id === 'verify-jwt').label = 'validate JWT';
+        candidate.participants.find((node) => node.id === 'token-guard').label = 'JWT Guard';
+        candidate.messages.find((message) => message.id === 'verify-jwt').label = 'verify Bearer JWT';
         candidate.messages.find((message) => message.id === 'cache-read').label = 'GET dashboard key';
         candidate.messages.find((message) => message.id === 'profile-query').label = 'SELECT profile + metrics';
-        candidate.messages.find((message) => message.id === 'cache-write').label = 'SET assembled result';
+        candidate.messages.find((message) => message.id === 'cache-write').label = 'SETEX profile 300';
       },
     },
     {
@@ -537,11 +538,11 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
         candidate.nodes.find((node) => node.id === 'consent-policy').label = 'Consent Policy';
         candidate.nodes.find((node) => node.id === 'identity-vault').label = 'Identity Vault';
         candidate.nodes.find((node) => node.id === 'facts-warehouse').label = 'Analytics Warehouse';
-        candidate.nodes.find((node) => node.id === 'metric-dashboards').label = 'Metric Dashboards';
+        candidate.nodes.find((node) => node.id === 'metric-dashboards').label = 'Analytics UI';
         candidate.flows.find((flow) => flow.id === 'consent-enrichment').label = 'identity context';
-        candidate.flows.find((flow) => flow.id === 'accepted-events').label = 'cleared events';
+        candidate.flows.find((flow) => flow.id === 'accepted-events').label = 'telemetry';
         candidate.flows.find((flow) => flow.id === 'identity-map').label = 'encrypted identity';
-        candidate.flows.find((flow) => flow.id === 'metrics-query').label = 'metric aggregates';
+        candidate.flows.find((flow) => flow.id === 'metrics-query').label = 'metrics query';
       },
     },
     {
@@ -554,8 +555,17 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
         ['expired', 'run-expired'],
       ]),
       mutate(candidate) {
-        candidate.states.find((node) => node.id === 'approval-wait').label = 'Approval hold';
+        candidate.states.find((node) => node.id === 'approval-wait').label = 'Approval Pending';
         candidate.states.find((node) => node.id === 'input-wait').label = 'Pending Input';
+        candidate.states.push({
+          id: 'fatal-failure',
+          type: 'failure',
+          label: 'Failed',
+          sublabel: 'budget exhausted',
+          lane: 'terminal',
+          col: 2,
+          tag: 'terminal',
+        });
       },
     },
   ];
@@ -878,6 +888,53 @@ test('dated three-model evidence retains every frozen attempt-1 candidate and tr
     assert.ok(entry.candidate.diagram_type, entry.caseId);
   }
   assert.equal(identities.size, 15);
+});
+
+test('post-fix evidence keeps the complete matrix and reports the no-uplift comparison truthfully', () => {
+  const evidence = JSON.parse(fs.readFileSync(path.join(
+    repoRoot,
+    'benchmarks/ordinary-model-floor/results/2026-07-26-pi-three-models-postfix.json',
+  ), 'utf8'));
+
+  assert.equal(evidence.generation.repositoryCommit, '2dce766ab19ff5871020828eb85d770745f1069d');
+  assert.equal(evidence.generation.packageSha256, 'cc34ab9484ca84e43fce9fce3de612b11c525c6dd5c797646645c6f35954b24e');
+  assert.equal(evidence.report.evidenceEligible, true);
+  assert.deepEqual(evidence.report.overall, {
+    runs: 15,
+    firstPassUsable: 8,
+    firstPassUsableRate: 8 / 15,
+    failureClusters: { semantic: 2, validation: 6, visualReview: 7, operational: 0 },
+  });
+  assert.equal(evidence.comparison.baselineReverified.firstPassUsable, 8);
+  assert.equal(evidence.comparison.postFix.firstPassUsable, 8);
+  assert.match(evidence.comparison.outcome, /no measured overall uplift/i);
+
+  const identities = new Set();
+  for (const entry of evidence.runs) {
+    identities.add(`${entry.agent}\0${entry.model}\0${entry.caseId}`);
+    assert.equal(entry.run.attempt, 1, entry.caseId);
+    assert.equal(entry.receipt.caseId, entry.caseId, entry.caseId);
+    assert.equal(entry.candidate.schema_version, 1, entry.caseId);
+    assert.ok(entry.transcript.length > 0, entry.caseId);
+  }
+  assert.equal(identities.size, 15);
+
+  const qwenArchitecture = evidence.runs.find(
+    (entry) => entry.model === 'codewiz-anthropic/qwen3.7-plus'
+      && entry.caseId === 'web-runtime-architecture',
+  );
+  assert.equal(qwenArchitecture.receipt.firstPassUsable, true);
+  assert.equal(qwenArchitecture.run.visual_review.reviewer, 'codex-browser-visual-audit-2026-07-26-route-fix');
+
+  const minimaxLifecycle = evidence.runs.find(
+    (entry) => entry.model === 'codewiz-anthropic/minimax-m3'
+      && entry.caseId === 'agent-run-lifecycle',
+  );
+  assert.equal(minimaxLifecycle.receipt.gates.semantic.ok, false);
+  assert.equal(minimaxLifecycle.receipt.gates.visualReview.status, 'failed');
+  assert.ok(minimaxLifecycle.receipt.gates.visualReview.defects.includes(
+    'recoverable-failure-has-no-retry-transition-to-execution',
+  ));
 });
 
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));

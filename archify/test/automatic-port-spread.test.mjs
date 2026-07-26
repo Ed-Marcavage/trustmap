@@ -78,6 +78,30 @@ test('architecture: automatic port assignment is stable when relationship input 
   }
 });
 
+test('architecture: automatic port spread avoids micro-stubs when a target stays centered above the source', () => {
+  const html = render('architecture', {
+    schema_version: 1,
+    diagram_type: 'architecture',
+    meta: { title: 'Near-aligned fan-out' },
+    components: [
+      { id: 'api', type: 'backend', label: 'API', pos: [675, 300], size: [120, 60] },
+      { id: 'auth', type: 'security', label: 'Auth', pos: [570, 120], size: [100, 60] },
+      { id: 'cache', type: 'database', label: 'Cache', pos: [685, 120], size: [100, 60] },
+    ],
+    connections: [
+      { id: 'verify', from: 'api', to: 'auth', fromSide: 'top', toSide: 'bottom' },
+      { id: 'read', from: 'api', to: 'cache', fromSide: 'top', toSide: 'bottom' },
+    ],
+  });
+
+  assert.deepEqual(connectionPoints(html, 'read'), [
+    [742, 300],
+    [758, 300],
+    [758, 180],
+    [735, 180],
+  ]);
+});
+
 test('architecture: single and explicitly positioned relationships keep legacy anchors', () => {
   const doc = fanOutArchitecture([
     { id: 'single', from: 'hub', to: 'middle' },

@@ -346,7 +346,41 @@ function routeVia(conn, from, to, start, end) {
     case 'auto':
     default: {
       // Direct line unless the anchors are clearly orthogonal-friendly.
-      if (Math.abs(start[0] - end[0]) < 4 || Math.abs(start[1] - end[1]) < 4) return [];
+      const deltaX = Math.abs(start[0] - end[0]);
+      const deltaY = Math.abs(start[1] - end[1]);
+      if (deltaX < 4 || deltaY < 4) return [];
+
+      // Automatic port spreading can leave otherwise aligned endpoints only a
+      // few pixels apart. A midpoint route would split that tiny difference
+      // into two unreadable endpoint stubs, so take a bounded outside channel
+      // when both anchors sit on parallel component sides.
+      const minimumStub = 8;
+      const fromVerticalSide = start[1] === from.y || start[1] === from.y + from.height;
+      const toVerticalSide = end[1] === to.y || end[1] === to.y + to.height;
+      if (fromVerticalSide && toVerticalSide && deltaX < minimumStub * 2) {
+        const outsideChannels = [
+          Math.max(start[0], end[0]) + minimumStub * 2,
+          Math.min(start[0], end[0]) - minimumStub * 2,
+        ];
+        for (const channelX of outsideChannels) {
+          const candidate = [[channelX, start[1]], [channelX, end[1]]];
+          if (routeClearsComponents(conn, [start, ...candidate, end])) return candidate;
+        }
+      }
+
+      const fromHorizontalSide = start[0] === from.x || start[0] === from.x + from.width;
+      const toHorizontalSide = end[0] === to.x || end[0] === to.x + to.width;
+      if (fromHorizontalSide && toHorizontalSide && deltaY < minimumStub * 2) {
+        const outsideChannels = [
+          Math.max(start[1], end[1]) + minimumStub * 2,
+          Math.min(start[1], end[1]) - minimumStub * 2,
+        ];
+        for (const channelY of outsideChannels) {
+          const candidate = [[start[0], channelY], [end[0], channelY]];
+          if (routeClearsComponents(conn, [start, ...candidate, end])) return candidate;
+        }
+      }
+
       const midX = (start[0] + end[0]) / 2;
       const horizontalFirst = [[midX, start[1]], [midX, end[1]]];
       if (routeClearsComponents(conn, [start, ...horizontalFirst, end])) return horizontalFirst;
