@@ -34,6 +34,11 @@ test('showcase intake requires reproducible proof, redaction, and explicit publi
   assert.match(template, /personal or customer data/i);
   assert.match(template, /repository, documentation, gallery, and project website/i);
   assert.match(template, /required:\s*true/g);
+
+  const submissionUrl = 'https://github.com/tt-a1i/archify/issues/new?template=showcase.yml';
+  for (const readme of ['README.md', 'README_EN.md', 'README_ZH.md']) {
+    assert.match(read(readme), new RegExp(submissionUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${readme}: direct showcase link`);
+  }
 });
 
 test('bug intake captures a minimal deterministic reproduction before visual diagnosis', () => {

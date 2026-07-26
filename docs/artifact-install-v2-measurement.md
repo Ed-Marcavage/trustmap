@@ -1,6 +1,6 @@
 # Artifact → Install v2 measurement contract
 
-Artifact → Install v2 is a bounded change to the existing journey. A generated artifact links to `start.html?type=<type>&source=artifact`; the Start page selects the matching typed recipe and can copy the selected agent's install command plus the bounded prompt in one action.
+Artifact → Install v2 is a bounded change to the existing journey. A generated artifact links to `start.html?type=<type>&source=artifact`, while each Proof Lab card links to `start.html?type=<type>&source=gallery`. The Start page selects the matching typed recipe and can copy the selected agent's install command plus the bounded prompt in one action.
 
 The page records only coarse interaction steps:
 
@@ -24,6 +24,7 @@ Events are capped at the latest 24 entries in `sessionStorage` under `archify.st
 Within a controlled browser test or an explicitly instrumented host, compute:
 
 - Artifact arrival share: `source=artifact` `start_view` / all `start_view`
+- Gallery arrival share: `source=gallery` `start_view` / all `start_view`
 - Combined starter copy rate: `starter_copy / start_view`
 - Any install copy rate: (`starter_copy` + `global_install_copy` + `project_install_copy`) / `start_view`
 - Prompt-only copy rate: `prompt_copy / start_view`
@@ -42,7 +43,7 @@ The Ordinary-Model Floor benchmark measures candidate quality independently. A f
 Before publishing a conversion claim:
 
 1. Pin the repository commit and the exact v2 UI.
-2. Validate the event contract in a real browser for artifact, direct, and rejected unknown-source URLs.
+2. Validate the event contract in a real browser for artifact, gallery, direct, and rejected unknown-source URLs.
 3. If an approved aggregate sink is later added, run a predeclared observation window and publish both session counts and rates; do not compare against a historical period that lacked equivalent instrumentation.
 4. Keep deterministic page tests, package tests, and visual review as release gates regardless of copy rate.
 

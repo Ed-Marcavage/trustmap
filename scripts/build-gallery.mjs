@@ -230,6 +230,7 @@ function renderCard(entry, index) {
                 <a class="card-link primary" href="${esc(focusedArtifact)}" target="_blank" rel="noopener" data-en="${esc(exploreEn)}" data-zh="${esc(exploreZh)}">${esc(exploreEn)}</a>
                 <a class="card-link" href="${esc(artifact)}" target="_blank" rel="noopener" data-en="Full artifact" data-zh="完整成品">Full artifact</a>
                 <a class="card-link" href="${esc(source)}" target="_blank" rel="noopener">JSON IR</a>
+                <a class="card-link create-link" href="start.html?type=${esc(entry.type)}&amp;source=gallery" data-en="Create this type" data-zh="按此类型开始">Create this type</a>
               </div>
             </div>
           </article>`;

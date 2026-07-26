@@ -274,4 +274,4 @@ Archify is a fork and rewrite of [Cocoon-AI/architecture-diagram-generator](http
 
 ## Contributing
 
-Issues, pull requests, and real-world diagrams are welcome. Start with the [contribution guide](CONTRIBUTING.md), use the reproducible bug form for failures, or submit a validated diagram through the community showcase form.
+Issues, pull requests, and real-world diagrams are welcome. Start with the [contribution guide](CONTRIBUTING.md), use the reproducible bug form for failures, or submit a validated diagram through the [community showcase form](https://github.com/tt-a1i/archify/issues/new?template=showcase.yml).

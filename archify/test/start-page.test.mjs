@@ -118,6 +118,7 @@ test('artifact-to-install measurement plan separates observable funnel steps fro
     'First-diagram success is not observable from this static page',
     'No network request',
     'source=artifact',
+    'source=gallery',
   ]) {
     assert.match(plan, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), required);
   }
