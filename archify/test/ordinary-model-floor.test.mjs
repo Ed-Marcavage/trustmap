@@ -467,6 +467,21 @@ test('checked-in benchmark suite covers all five diagram types without presentin
   }
 });
 
+test('checked-in prompts assign deterministic validation only to the external harness', () => {
+  const suiteRoot = path.join(repoRoot, 'benchmarks/ordinary-model-floor');
+  const manifest = JSON.parse(fs.readFileSync(path.join(suiteRoot, 'manifest.json'), 'utf8'));
+
+  for (const entry of manifest.cases) {
+    const prompt = fs.readFileSync(path.join(suiteRoot, entry.prompt), 'utf8');
+    assert.match(
+      prompt,
+      /Target the `showcase` quality profile; the external harness will validate the frozen candidate\./,
+      entry.prompt,
+    );
+    assert.doesNotMatch(prompt, /and validate it with the `showcase` quality profile/, entry.prompt);
+  }
+});
+
 test('suite integrity rejects a long prompt that omits the attempt-1 file contract', () => {
   const sourceSuite = path.join(repoRoot, 'benchmarks/ordinary-model-floor');
   const incompletePrompt = path.join(tmp, 'incomplete-benchmark-prompt.md');

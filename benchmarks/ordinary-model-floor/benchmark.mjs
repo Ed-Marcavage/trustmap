@@ -20,7 +20,8 @@ const PROMPT_CONTRACT_PHRASES = [
   'Do not edit any other file.',
   'The candidate file, not the prose response, is the attempt 1 artifact.',
   'Do not copy a checked-in example.',
-  'Do not claim that validation passed; the external harness will validate the frozen file.',
+  'Target the `showcase` quality profile; the external harness will validate the frozen candidate.',
+  'Do not claim that validation passed.',
 ];
 const OPERATIONAL_FAILURES = new Set(['timeout', 'no_candidate', 'provider_error']);
 
