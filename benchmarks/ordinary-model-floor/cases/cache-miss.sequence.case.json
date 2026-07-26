@@ -7,7 +7,7 @@
     "nodes": [
       { "key": "web", "labels": ["Web App", "Browser"], "types": ["frontend", "external"] },
       { "key": "api", "labels": ["API", "API Server"], "type": "backend" },
-      { "key": "auth", "labels": ["Auth", "Authentication", "Identity", "JWT Guard", "Token Guard"], "type": "security" },
+      { "key": "auth", "labels": ["Auth", "Authentication", "Identity", "Authorizer", "JWT Authorizer", "JWT Guard", "Token Guard"], "type": "security" },
       { "key": "redis", "labels": ["Redis", "Cache"], "type": "database" },
       { "key": "db", "labels": ["Postgres", "PostgreSQL", "Database"], "type": "database" }
     ],

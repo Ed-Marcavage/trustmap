@@ -547,4 +547,32 @@ test('sequence: segment titles render as foreground badges above their borders',
   assert.match(html, new RegExp(`<text x="62" y="${firstSegment.from - 9}"[^>]*>${firstSegment.label}</text>`));
 });
 
+test('sequence: segment title badge clears a nearby first message label', () => {
+  const d = load('sequence');
+  const firstSegment = d.segments[0];
+  const firstMessage = d.messages[0];
+  firstSegment.from = 180;
+  firstMessage.y = firstSegment.from + 5;
+
+  const { code, stderr, outPath } = render('sequence', d);
+  assert.equal(code, 0, stderr);
+  const html = fs.readFileSync(outPath, 'utf8');
+  const segment = html.match(
+    /<g data-graph-role="segment-label" data-segment-id="0">\s*<rect x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"/,
+  );
+  const message = html.match(new RegExp(
+    `<g [^>]*data-edge-id="${firstMessage.id}"[\\s\\S]*?<rect x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"`,
+  ));
+  assert.ok(segment, 'expected the first segment badge rectangle');
+  assert.ok(message, 'expected the first message label rectangle');
+
+  const [segmentX, segmentY, segmentW, segmentH] = segment.slice(1).map(Number);
+  const [messageX, messageY, messageW, messageH] = message.slice(1).map(Number);
+  const overlaps = segmentX < messageX + messageW
+    && segmentX + segmentW > messageX
+    && segmentY < messageY + messageH
+    && segmentY + segmentH > messageY;
+  assert.equal(overlaps, false, 'segment title badge must not cover the first message label');
+});
+
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));

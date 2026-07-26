@@ -50,6 +50,42 @@ const participants = new Map(asArray(sequence.participants).map((participant, in
   }
 ]));
 
+function messageGeometry(message) {
+  const from = participants.get(message.from);
+  const to = participants.get(message.to);
+  if (!from || !to || typeof message.y !== 'number') return null;
+  const direction = to.cx > from.cx ? 1 : -1;
+  const start = from.cx + direction * 7;
+  const end = to.cx - direction * 7;
+  return { start, end, center: (start + end) / 2 };
+}
+
+function messageLabelBox(message, relationIndex = null) {
+  const geometry = messageGeometry(message);
+  if (!geometry) return null;
+  const width = Math.max(34, textUnits(message.label) * 5.2 + 12);
+  return {
+    relation: message,
+    relationIndex,
+    label: message.label,
+    x: geometry.center - width / 2,
+    y: message.y - 20,
+    width,
+    height: layout.labelH,
+  };
+}
+
+function messageRouteBox(message) {
+  const geometry = messageGeometry(message);
+  if (!geometry) return null;
+  return {
+    x: Math.min(geometry.start, geometry.end),
+    y: message.y - 2,
+    width: Math.abs(geometry.end - geometry.start),
+    height: 4,
+  };
+}
+
 const compositionFrames = asArray(sequence.segments).map((segment, index) => ({
   id: index,
   label: segment.label,
@@ -184,13 +220,7 @@ function validateSequence() {
   // Label masks can extend well past the arrow span, so check the actual
   // label rectangles too — tangent arrows with long labels still collide.
   const labelRects = asArray(sequence.messages)
-    .map((m, messageIndex) => {
-      if (!participants.has(m.from) || !participants.has(m.to) || typeof m.y !== 'number') return null;
-      const x1 = participants.get(m.from).cx;
-      const x2 = participants.get(m.to).cx;
-      const width = Math.max(34, textUnits(m.label) * 5.2 + 12);
-      return { relation: m, relationIndex: messageIndex, label: m.label, x: (x1 + x2) / 2 - width / 2, y: m.y - 20, width, height: layout.labelH };
-    })
+    .map((m, messageIndex) => messageLabelBox(m, messageIndex))
     .filter(Boolean);
   for (let i = 0; i < labelRects.length; i += 1) {
     for (let j = i + 1; j < labelRects.length; j += 1) {
@@ -263,9 +293,17 @@ function renderSegment(segment, index) {
 
 function renderSegmentLabel(segment, index) {
   const labelW = Math.max(42, textUnits(segment.label) * 5.2 + 14);
+  const occupied = asArray(sequence.messages)
+    .flatMap((message) => [messageLabelBox(message), messageRouteBox(message)])
+    .filter(Boolean);
+  const label = { x: 56, y: segment.from - 22, width: labelW, height: 18 };
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    if (!occupied.some((rect) => rectsOverlap(label, rect, 2))) break;
+    label.y -= 22;
+  }
   return `        <g data-graph-role="segment-label" data-segment-id="${index}">
-          <rect x="56" y="${segment.from - 22}" width="${labelW}" height="18" rx="3" class="c-mask"/>
-          <text x="62" y="${segment.from - 9}" class="t-dim" font-size="9" font-weight="600">${esc(segment.label)}</text>
+          <rect x="${label.x}" y="${label.y}" width="${label.width}" height="${label.height}" rx="3" class="c-mask"/>
+          <text x="${label.x + 6}" y="${label.y + 13}" class="t-dim" font-size="9" font-weight="600">${esc(segment.label)}</text>
         </g>`;
 }
 
@@ -279,9 +317,10 @@ function renderActivation(activation) {
 }
 
 function messageLabel(message, x1, x2) {
-  const center = (x1 + x2) / 2;
+  const box = messageLabelBox(message);
+  const center = box ? box.x + box.width / 2 : (x1 + x2) / 2;
   const y = message.y - 10;
-  const labelW = Math.max(34, textUnits(message.label) * 5.2 + 12);
+  const labelW = box?.width || Math.max(34, textUnits(message.label) * 5.2 + 12);
   const accent = message.variant === 'security'
     ? 't-security'
     : message.variant === 'dashed'
@@ -296,11 +335,7 @@ function messageLabel(message, x1, x2) {
 }
 
 function renderMessage(message, index) {
-  const from = participants.get(message.from);
-  const to = participants.get(message.to);
-  const direction = to.cx > from.cx ? 1 : -1;
-  const start = from.cx + direction * 7;
-  const end = to.cx - direction * 7;
+  const { start, end } = messageGeometry(message);
   const [cls, marker] = arrowClass[message.variant || 'default'] || arrowClass.default;
   const strokeWidth = message.variant === 'emphasis' ? 1.8 : 1.4;
   const dash = message.variant === 'return' ? ' stroke-dasharray="3,5"' : '';

@@ -502,7 +502,7 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
       mutate(candidate) {
         Object.assign(candidate.participants.find((node) => node.id === 'browser-tab'), { label: 'Browser', type: 'external' });
         candidate.participants.find((node) => node.id === 'dashboard-api').label = 'Dashboard API';
-        candidate.participants.find((node) => node.id === 'token-guard').label = 'JWT Guard';
+        candidate.participants.find((node) => node.id === 'token-guard').label = 'Authorizer';
         candidate.messages.find((message) => message.id === 'verify-jwt').label = 'validate JWT';
         candidate.messages.find((message) => message.id === 'cache-read').label = 'GET dashboard key';
         candidate.messages.find((message) => message.id === 'profile-query').label = 'SELECT profile + metrics';
