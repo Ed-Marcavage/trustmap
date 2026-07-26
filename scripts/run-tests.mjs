@@ -16,7 +16,7 @@ const testFiles = fs.readdirSync(testRoot)
 const [major, minor] = process.versions.node.split('.').map(Number);
 const supportsConcurrencyFlag = major > 18 || (major === 18 && minor >= 19);
 const args = ['--test'];
-if (supportsConcurrencyFlag) args.push('--test-concurrency=4');
+if (supportsConcurrencyFlag) args.push('--test-concurrency=2');
 args.push(...testFiles);
 
 const result = spawnSync(process.execPath, args, {

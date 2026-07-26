@@ -111,3 +111,15 @@ automatic architecture-route fix does turn the frozen Qwen architecture
 candidate from a 3.5px micro-stub failure into a browser-reviewed pass, but the
 remaining failures cluster in complex data-flow and lifecycle routing. Runtime
 duration is recorded operational context only and is not a usability gate.
+
+The quality-first lifecycle run is retained in
+[`results/2026-07-26-pi-three-models-quality-first.json`](results/2026-07-26-pi-three-models-quality-first.json).
+It uses generation commit `7eef4db`, the identical packaged skill for all 15
+attempt-1 candidates, and no latency cutoff. Exact equivalent vocabulary was
+calibrated only after every candidate was frozen; node type, relationship
+direction, required topology, deterministic validation, and browser review
+remain mandatory. Reverification keeps the overall result at 8/15
+(MiniMax 3/5, Qwen 3/5, DeepSeek 2/5), so it still does **not** demonstrate an
+overall uplift. The targeted lifecycle case improves from 0/3 to 1/3 and the
+architecture case from 2/3 to 3/3, while workflow and data-flow regress in this
+sample. Generation latency remains context rather than a quality failure.

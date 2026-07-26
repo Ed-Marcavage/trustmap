@@ -6,11 +6,11 @@
   "requirements": {
     "nodes": [
       { "key": "planner", "labels": ["Agent Planner", "Planner", "Intent Planner"], "type": "backend" },
-      { "key": "router", "labels": ["Tool Router", "Router", "Route Decision"], "types": ["backend", "security"] },
+      { "key": "router", "labels": ["Tool Router", "Router", "Route Decision", "Dispatcher"], "types": ["backend", "security"] },
       { "key": "approval", "labels": ["Approval Gate", "Human Approval", "Consent Gate", "Approval"], "type": "security" },
-      { "key": "tool", "labels": ["Tool Call", "Tool Execution", "Tool Execute", "Tool Executor", "Tool Runner", "Tool Dispatch"], "type": "messagebus" },
+      { "key": "tool", "labels": ["Tool Call", "Tool Execution", "Tool Execute", "Tool Executor", "Tool Runner", "Tool Dispatch", "Tool Invoke", "Tool Invocation"], "type": "messagebus" },
       { "key": "blocked", "labels": ["Blocked", "Denied", "Held"], "type": "security" },
-      { "key": "external", "labels": ["External API", "Provider API", "Remote API"], "type": "cloud" }
+      { "key": "external", "labels": ["External API", "Provider API", "Remote API", "Remote Service", "External Provider"], "type": "cloud" }
     ],
     "relationships": [
       { "from": "planner", "to": "router" },

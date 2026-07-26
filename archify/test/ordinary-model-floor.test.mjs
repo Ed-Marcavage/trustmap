@@ -944,4 +944,59 @@ test('post-fix evidence keeps the complete matrix and reports the no-uplift comp
   ));
 });
 
+test('quality-first evidence preserves the complete matrix and the measured lifecycle gain without overstating uplift', () => {
+  const evidence = JSON.parse(fs.readFileSync(path.join(
+    repoRoot,
+    'benchmarks/ordinary-model-floor/results/2026-07-26-pi-three-models-quality-first.json',
+  ), 'utf8'));
+
+  assert.equal(evidence.generation.repositoryCommit, '7eef4db36a97d04da74a9cb1d1bc3f735058c074');
+  assert.equal(evidence.generation.packageSha256, '92135b360ee1502080dac8f2eea6258bb8fa0aa7f9a59cba119b02233f797593');
+  assert.equal(evidence.generation.timeLimitSeconds, null);
+  assert.match(evidence.generation.latencyPolicy, /not a quality failure/i);
+  assert.equal(evidence.report.evidenceEligible, true);
+  assert.deepEqual(evidence.report.overall, {
+    runs: 15,
+    firstPassUsable: 8,
+    firstPassUsableRate: 8 / 15,
+    failureClusters: { semantic: 2, validation: 5, visualReview: 7, operational: 0 },
+  });
+  assert.equal(evidence.comparison.baselineReverified.firstPassUsable, 8);
+  assert.equal(evidence.comparison.postFixReverified.firstPassUsable, 8);
+  assert.equal(evidence.comparison.qualityFirst.firstPassUsable, 8);
+  assert.equal(evidence.comparison.qualityFirst.firstPassUsableByCase['agent-run-lifecycle'], 1);
+  assert.equal(evidence.comparison.qualityFirst.firstPassUsableByCase['web-runtime-architecture'], 3);
+  assert.match(evidence.comparison.outcome, /no measured overall uplift/i);
+
+  const identities = new Set();
+  for (const entry of evidence.runs) {
+    identities.add(`${entry.agent}\0${entry.model}\0${entry.caseId}`);
+    assert.equal(entry.run.attempt, 1, entry.caseId);
+    assert.equal(entry.receipt.caseId, entry.caseId, entry.caseId);
+    assert.equal(entry.candidate.schema_version, 1, entry.caseId);
+    assert.ok(entry.transcript.length > 0, entry.caseId);
+  }
+  assert.equal(identities.size, 15);
+
+  const minimaxLifecycle = evidence.runs.find(
+    (entry) => entry.model === 'codewiz-anthropic/minimax-m3'
+      && entry.caseId === 'agent-run-lifecycle',
+  );
+  assert.equal(minimaxLifecycle.receipt.firstPassUsable, true);
+  assert.equal(minimaxLifecycle.receipt.gates.validation.checksPassed, 9);
+  assert.equal(
+    minimaxLifecycle.run.visual_review.reviewer,
+    'codex-browser-visual-audit-2026-07-26-quality-first',
+  );
+
+  const deepseekWorkflow = evidence.runs.find(
+    (entry) => entry.model === 'seal/deepseek-v4-flash'
+      && entry.caseId === 'agent-tool-call-workflow',
+  );
+  assert.equal(deepseekWorkflow.receipt.firstPassUsable, false);
+  assert.ok(deepseekWorkflow.receipt.gates.visualReview.defects.includes(
+    'card-claims-retry-loop-without-authored-return-edge',
+  ));
+});
+
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));

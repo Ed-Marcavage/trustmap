@@ -6,7 +6,7 @@
   "requirements": {
     "nodes": [
       { "key": "queued", "labels": ["Queued", "Accepted"], "type": "start" },
-      { "key": "executing", "labels": ["Executing", "Running"], "type": "active" },
+      { "key": "executing", "labels": ["Executing", "Running", "Execution"], "type": "active" },
       { "key": "reviewing", "labels": ["Reviewing", "Quality Review"], "type": "decision" },
       { "key": "approval", "labels": ["Needs Approval", "Waiting for Approval", "Awaiting Approval", "Approval hold", "Pending Approval", "Approval Pending"], "type": "waiting" },
       { "key": "blocked", "labels": ["Blocked", "Waiting for Input", "Awaiting Input", "Blocked for Input", "Pending Input"], "type": "waiting" },
