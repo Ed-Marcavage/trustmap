@@ -18,7 +18,7 @@ For an ordinary renderer-backed request with shell access, use this bounded path
 
 1. Choose `architecture`, `workflow`, `sequence`, `dataflow`, or `lifecycle` from the user's question.
 2. Read only one matching schema in `schemas/` and one matching JSON example in `examples/`. Use their field shapes, but author fresh domain facts, IDs, and layout.
-3. Write the candidate before inspecting renderer internals. Prefer one clear main path, short side branches, sparse relationship labels, and at most 12 primary nodes.
+3. Artifact first: after those reads finish, the next tool action must write the candidate. Write the candidate before inspecting renderer internals. Do not plan exact coordinates in prose, compare several layouts, inspect another example, or run CLI help first. Start with one clear main path, short side branches, 180–220 px horizontal spacing, 140–180 px branch spacing, sparse relationship labels, and at most 12 primary nodes; omit optional cards, views, and tags until validation passes. Fresh authorship means new stable IDs, domain wording, and layout. When the requested roles naturally match an example, preserve the accurate topology instead of inventing a less accurate difference merely to look novel.
 4. Run `node bin/archify.mjs validate <type> <candidate.json> --quality showcase --json` (or `standard` when the user explicitly wants a dense engineering map).
 5. If validation fails, change only the diagnosed subject using its `supportedFixes`, then rerun. Stop after two focused correction rounds and report any unresolved diagnostic truthfully.
 

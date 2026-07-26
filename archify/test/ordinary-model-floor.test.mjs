@@ -663,6 +663,9 @@ test('packaged skill puts a bounded ordinary-model authoring path before the fea
   for (const required of [
     'one matching schema',
     'one matching JSON example',
+    'the next tool action must write the candidate',
+    'Do not plan exact coordinates in prose',
+    'Fresh authorship means new stable IDs, domain wording, and layout',
     'Write the candidate before inspecting renderer internals',
     'Do not read `renderers/shared/geometry.mjs`',
     'validate <type>',
