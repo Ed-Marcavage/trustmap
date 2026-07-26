@@ -144,6 +144,14 @@ function evaluateSemantic(benchmarkCase, candidate) {
         });
       }
     }
+    if (Array.isArray(required.types) && !required.types.includes(actual.type)) {
+      mismatchedNodes.push({
+        id: identity,
+        field: 'type',
+        expected: required.types,
+        actual: actual.type ?? null,
+      });
+    }
   }
   const missingRelationships = (requirements.relationships || []).filter((relationship) => {
     const resolved = {

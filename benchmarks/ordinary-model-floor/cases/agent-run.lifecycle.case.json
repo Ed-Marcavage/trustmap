@@ -8,8 +8,8 @@
       { "key": "queued", "labels": ["Queued", "Accepted"], "type": "start" },
       { "key": "executing", "labels": ["Executing", "Running"], "type": "active" },
       { "key": "reviewing", "labels": ["Reviewing", "Quality Review"], "type": "decision" },
-      { "key": "approval", "labels": ["Needs Approval", "Waiting for Approval"], "type": "waiting" },
-      { "key": "blocked", "labels": ["Blocked", "Waiting for Input"], "type": "waiting" },
+      { "key": "approval", "labels": ["Needs Approval", "Waiting for Approval", "Awaiting Approval"], "type": "waiting" },
+      { "key": "blocked", "labels": ["Blocked", "Waiting for Input", "Awaiting Input", "Blocked for Input"], "type": "waiting" },
       { "key": "cancelled", "labels": ["Cancelled", "Canceled"], "type": "failure" },
       { "key": "expired", "labels": ["Expired", "Timed Out"], "type": "failure" }
     ],

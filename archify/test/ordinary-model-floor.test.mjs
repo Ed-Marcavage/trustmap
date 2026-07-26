@@ -25,6 +25,33 @@ function run(args) {
   });
 }
 
+function renameCandidateIds(candidate, mapping) {
+  for (const collection of ['components', 'nodes', 'participants', 'states']) {
+    for (const node of candidate[collection] || []) {
+      node.id = mapping.get(node.id) || node.id;
+    }
+  }
+  for (const collection of ['connections', 'edges', 'messages', 'flows', 'transitions']) {
+    for (const relationship of candidate[collection] || []) {
+      relationship.from = mapping.get(relationship.from) || relationship.from;
+      relationship.to = mapping.get(relationship.to) || relationship.to;
+    }
+  }
+  for (const activation of candidate.activations || []) {
+    activation.participant = mapping.get(activation.participant) || activation.participant;
+  }
+  if (Array.isArray(candidate.mainPath)) {
+    candidate.mainPath = candidate.mainPath.map((id) => mapping.get(id) || id);
+  }
+  for (const boundary of candidate.boundaries || []) {
+    boundary.wraps = boundary.wraps.map((id) => mapping.get(id) || id);
+  }
+  for (const view of candidate.meta?.views || []) {
+    view.focus = view.focus.map((id) => mapping.get(id) || id);
+  }
+  return candidate;
+}
+
 test('benchmark verifies one first-pass architecture candidate through semantic, renderer, and visual-review gates', () => {
   const caseFile = writeJson('web-runtime.case.json', {
     schema_version: 1,
@@ -443,6 +470,134 @@ test('benchmark semantic requirements bind by accepted technical labels instead 
     cache: 'redis-cache-v1',
   });
   assert.equal(receipt.firstPassUsable, true);
+});
+
+test('checked-in cases accept equivalent ordinary-model vocabulary without weakening required topology', () => {
+  const suiteRoot = path.join(repoRoot, 'benchmarks/ordinary-model-floor');
+  const fixtures = [
+    {
+      type: 'workflow',
+      example: 'agent-tool-call.workflow.json',
+      caseFile: 'agent-tool-call.workflow.case.json',
+      mapping: new Map([
+        ['planner', 'task-planner'], ['router', 'risk-router'], ['approval', 'consent-check'],
+        ['tool', 'tool-runner'], ['blocked', 'request-blocked'], ['external', 'service-provider'],
+      ]),
+      mutate(candidate) {
+        Object.assign(candidate.nodes.find((node) => node.id === 'risk-router'), { label: 'Router', type: 'security' });
+        candidate.nodes.find((node) => node.id === 'consent-check').label = 'Human Approval';
+        candidate.nodes.find((node) => node.id === 'tool-runner').label = 'Tool Executor';
+        candidate.nodes.find((node) => node.id === 'request-blocked').label = 'Denied';
+        candidate.nodes.find((node) => node.id === 'service-provider').label = 'Provider API';
+      },
+    },
+    {
+      type: 'sequence',
+      example: 'cache-miss-request.sequence.json',
+      caseFile: 'cache-miss.sequence.case.json',
+      mapping: new Map([
+        ['web', 'browser-tab'], ['api', 'dashboard-api'], ['auth', 'token-guard'],
+        ['redis', 'response-cache'], ['db', 'account-store'],
+      ]),
+      mutate(candidate) {
+        Object.assign(candidate.participants.find((node) => node.id === 'browser-tab'), { label: 'Browser', type: 'external' });
+        candidate.participants.find((node) => node.id === 'dashboard-api').label = 'Dashboard API';
+        candidate.participants.find((node) => node.id === 'token-guard').label = 'JWT Guard';
+        candidate.messages.find((message) => message.id === 'verify-jwt').label = 'validate JWT';
+        candidate.messages.find((message) => message.id === 'cache-read').label = 'GET dashboard key';
+        candidate.messages.find((message) => message.id === 'profile-query').label = 'SELECT profile + metrics';
+        candidate.messages.find((message) => message.id === 'cache-write').label = 'SET assembled result';
+      },
+    },
+    {
+      type: 'dataflow',
+      example: 'product-analytics.dataflow.json',
+      caseFile: 'product-analytics.dataflow.case.json',
+      mapping: new Map([
+        ['edge', 'ingest-gateway'], ['consent', 'consent-filter'], ['stream', 'event-stream'],
+        ['pii', 'identity-vault'], ['warehouse', 'facts-warehouse'], ['dashboard', 'metric-dashboards'],
+      ]),
+      mutate(candidate) {
+        candidate.nodes.find((node) => node.id === 'ingest-gateway').label = 'Ingestion Gateway';
+        candidate.nodes.find((node) => node.id === 'consent-filter').label = 'Consent Filter';
+        candidate.nodes.find((node) => node.id === 'identity-vault').label = 'Identity Vault';
+        candidate.nodes.find((node) => node.id === 'facts-warehouse').label = 'Facts Warehouse';
+        candidate.nodes.find((node) => node.id === 'metric-dashboards').label = 'Metric Dashboards';
+        candidate.flows.find((flow) => flow.id === 'consent-enrichment').label = 'identity claims';
+        candidate.flows.find((flow) => flow.id === 'identity-map').label = 'consented identity';
+        candidate.flows.find((flow) => flow.id === 'metrics-query').label = 'KPI reads';
+      },
+    },
+    {
+      type: 'lifecycle',
+      example: 'agent-run.lifecycle.json',
+      caseFile: 'agent-run.lifecycle.case.json',
+      mapping: new Map([
+        ['queued', 'run-queued'], ['executing', 'run-executing'], ['reviewing', 'run-reviewing'],
+        ['approval', 'approval-wait'], ['blocked', 'input-wait'], ['cancelled', 'user-cancelled'],
+        ['expired', 'run-expired'],
+      ]),
+      mutate(candidate) {
+        candidate.states.find((node) => node.id === 'approval-wait').label = 'Awaiting Approval';
+        candidate.states.find((node) => node.id === 'input-wait').label = 'Awaiting Input';
+      },
+    },
+  ];
+
+  for (const fixture of fixtures) {
+    const source = JSON.parse(fs.readFileSync(path.join(skillRoot, 'examples', fixture.example), 'utf8'));
+    const candidate = renameCandidateIds(source, fixture.mapping);
+    fixture.mutate(candidate);
+    const candidateFile = writeJson(`calibrated-${fixture.type}.json`, candidate);
+    const benchmarkCase = JSON.parse(fs.readFileSync(
+      path.join(suiteRoot, 'cases', fixture.caseFile),
+      'utf8',
+    ));
+    const runFile = writeJson(`calibrated-${fixture.type}.run.json`, {
+      schema_version: 1,
+      case_id: benchmarkCase.id,
+      agent: 'ordinary-agent',
+      model: 'ordinary-model',
+      attempt: 1,
+      visual_review: { status: 'passed', reviewer: 'fixture-reviewer', defects: [] },
+    });
+
+    const result = run([
+      'verify', '--case', path.join(suiteRoot, 'cases', fixture.caseFile),
+      '--candidate', candidateFile, '--run', runFile,
+    ]);
+
+    assert.equal(result.status, 0, `${fixture.type}: ${result.stderr || result.stdout}`);
+    assert.equal(JSON.parse(result.stdout).gates.semantic.ok, true, fixture.type);
+
+    if (fixture.type === 'workflow') {
+      const wrongRoleCandidate = structuredClone(candidate);
+      wrongRoleCandidate.nodes.find((node) => node.id === 'risk-router').type = 'external';
+      const wrongRoleFile = writeJson('calibrated-workflow-wrong-role.json', wrongRoleCandidate);
+      const wrongRole = run([
+        'verify', '--case', path.join(suiteRoot, 'cases', fixture.caseFile),
+        '--candidate', wrongRoleFile, '--run', runFile,
+      ]);
+      assert.equal(wrongRole.status, 1, wrongRole.stderr || wrongRole.stdout);
+      assert.deepEqual(JSON.parse(wrongRole.stdout).gates.semantic.mismatchedNodes, [{
+        id: 'router',
+        field: 'type',
+        expected: ['backend', 'security'],
+        actual: 'external',
+      }]);
+
+      candidate.edges = candidate.edges.filter(
+        (edge) => !(edge.from === 'consent-check' && edge.to === 'tool-runner'),
+      );
+      const brokenCandidate = writeJson('calibrated-workflow-missing-route.json', candidate);
+      const broken = run([
+        'verify', '--case', path.join(suiteRoot, 'cases', fixture.caseFile),
+        '--candidate', brokenCandidate, '--run', runFile,
+      ]);
+      assert.equal(broken.status, 1, broken.stderr || broken.stdout);
+      assert.equal(JSON.parse(broken.stdout).gates.semantic.missingRelationships.length, 1);
+    }
+  }
 });
 
 test('checked-in benchmark suite covers all five diagram types without presenting reference fixtures as model evidence', () => {

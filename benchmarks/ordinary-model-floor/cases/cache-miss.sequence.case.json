@@ -5,18 +5,18 @@
   "quality_profile": "showcase",
   "requirements": {
     "nodes": [
-      { "key": "web", "labels": ["Web App", "Browser"], "type": "frontend" },
+      { "key": "web", "labels": ["Web App", "Browser"], "types": ["frontend", "external"] },
       { "key": "api", "labels": ["API", "API Server"], "type": "backend" },
-      { "key": "auth", "labels": ["Auth", "Authentication"], "type": "security" },
+      { "key": "auth", "labels": ["Auth", "Authentication", "Identity", "JWT Guard", "Token Guard"], "type": "security" },
       { "key": "redis", "labels": ["Redis", "Cache"], "type": "database" },
       { "key": "db", "labels": ["Postgres", "PostgreSQL", "Database"], "type": "database" }
     ],
     "relationships": [
-      { "from": "api", "to": "auth", "labels": ["verify JWT", "validate token"] },
-      { "from": "api", "to": "redis", "labels": ["read cache", "cache get"] },
+      { "from": "api", "to": "auth", "labels": ["verify JWT", "validate JWT", "validate token", "verify token"] },
+      { "from": "api", "to": "redis", "labels": ["read cache", "cache get", "GET"] },
       { "from": "redis", "to": "api", "labels": ["miss", "cache miss"] },
-      { "from": "api", "to": "db", "labels": ["query profile + metrics", "query database"] },
-      { "from": "api", "to": "redis", "labels": ["set cache", "cache set"] }
+      { "from": "api", "to": "db", "labels": ["query profile + metrics", "query database", "SELECT"] },
+      { "from": "api", "to": "redis", "labels": ["set cache", "cache set", "write cache", "SET"] }
     ]
   }
 }

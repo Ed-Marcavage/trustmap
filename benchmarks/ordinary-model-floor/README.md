@@ -12,7 +12,7 @@ A renderer-valid but semantically wrong diagram is a failure. A visually pleasin
 
 ## Suite
 
-`manifest.json` contains five bounded tasks: architecture, workflow, sequence, data flow, and lifecycle. Each case declares semantic keys, accepted technical labels, required roles, and required relationships. The model remains free to choose internal IDs and layout.
+`manifest.json` contains five bounded tasks: architecture, workflow, sequence, data flow, and lifecycle. Each case declares semantic keys, accepted technical labels, accepted visual-role types where more than one rendering is legitimate, and required relationships. The model remains free to choose internal IDs and layout. Vocabulary aliases never replace topology: every required node must bind once and every required relationship must still exist in the declared direction.
 
 The checked-in reference fixtures only prove that the suite and verifier are wired correctly. **Reference fixtures are not benchmark evidence** and must not be published as model results.
 

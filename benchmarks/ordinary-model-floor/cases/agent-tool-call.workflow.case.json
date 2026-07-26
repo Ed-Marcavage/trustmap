@@ -6,9 +6,9 @@
   "requirements": {
     "nodes": [
       { "key": "planner", "labels": ["Agent Planner", "Planner"], "type": "backend" },
-      { "key": "router", "labels": ["Tool Router", "Router"], "type": "backend" },
+      { "key": "router", "labels": ["Tool Router", "Router"], "types": ["backend", "security"] },
       { "key": "approval", "labels": ["Approval Gate", "Human Approval"], "type": "security" },
-      { "key": "tool", "labels": ["Tool Call", "Tool Execution"], "type": "messagebus" },
+      { "key": "tool", "labels": ["Tool Call", "Tool Execution", "Tool Executor", "Tool Runner"], "type": "messagebus" },
       { "key": "blocked", "labels": ["Blocked", "Denied"], "type": "security" },
       { "key": "external", "labels": ["External API", "Provider API"], "type": "cloud" }
     ],
