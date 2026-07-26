@@ -26,6 +26,8 @@ node benchmarks/ordinary-model-floor/benchmark.mjs check --manifest benchmarks/o
 
 Every compared configuration must use the same prompt, the same repository commit, the same Archify skill and schema, the same time limit, identical tool access, and a clean candidate output path. Record the exact agent and model names. One complete agent invocation is attempt 1; the resulting `benchmark-candidate.json` is frozen when the invocation ends. If the prompt assigns validation to the external harness, the agent must not self-certify the result. Preserve that unedited candidate and permit no post-hoc edits, including human edits, before verification.
 
+Run candidate generation from the extracted **packaged skill root** produced by that commit, not from the development repository root. Keep the benchmark harness, cases, prompts, and reference fixtures outside the model-visible working tree; deliver the selected prompt through the external runner. This tests the surface users actually install and prevents benchmark internals from changing exploration cost or leaking evaluation evidence.
+
 Do not let a later correction replace attempt 1. Correction attempts may be retained for diagnosis, but the first-pass report accepts only attempt 1 receipts. Run every case in the manifest for every configuration; an incomplete or duplicated matrix is not evidence-eligible.
 
 The harness deliberately does not launch model providers. The external runner owns authentication, model selection, timeouts, prompt delivery, and raw transcript retention. This keeps provider code and secrets out of Archify while making the artifact checks deterministic.

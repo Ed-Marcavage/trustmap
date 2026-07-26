@@ -620,6 +620,8 @@ test('benchmark documentation locks the fair-run and truthful-evidence contract'
     'firstPassUsable',
     'same prompt',
     'same repository commit',
+    'packaged skill root',
+    'model-visible working tree',
     'attempt 1',
     'no post-hoc edits',
     'Reference fixtures are not benchmark evidence',
