@@ -476,6 +476,20 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
   const suiteRoot = path.join(repoRoot, 'benchmarks/ordinary-model-floor');
   const fixtures = [
     {
+      type: 'architecture',
+      example: 'web-app.architecture.json',
+      caseFile: 'web-runtime.architecture.case.json',
+      mapping: new Map([
+        ['users', 'browser-clients'], ['cdn', 'cdn-edge'], ['api', 'app-api'],
+        ['cache', 'redis-store'], ['db', 'postgres-primary'],
+      ]),
+      mutate(candidate) {
+        candidate.components.find((node) => node.id === 'browser-clients').label = 'Browser Clients';
+        candidate.components.find((node) => node.id === 'cdn-edge').label = 'CDN Edge';
+        candidate.components.find((node) => node.id === 'app-api').label = 'App API';
+      },
+    },
+    {
       type: 'workflow',
       example: 'agent-tool-call.workflow.json',
       caseFile: 'agent-tool-call.workflow.case.json',
@@ -488,7 +502,7 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
         candidate.nodes.find((node) => node.id === 'consent-check').label = 'Human Approval';
         candidate.nodes.find((node) => node.id === 'tool-runner').label = 'Tool Executor';
         candidate.nodes.find((node) => node.id === 'request-blocked').label = 'Denied';
-        candidate.nodes.find((node) => node.id === 'service-provider').label = 'Provider API';
+        candidate.nodes.find((node) => node.id === 'service-provider').label = 'Remote API';
       },
     },
     {
@@ -514,18 +528,19 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
       example: 'product-analytics.dataflow.json',
       caseFile: 'product-analytics.dataflow.case.json',
       mapping: new Map([
-        ['edge', 'ingest-gateway'], ['consent', 'consent-filter'], ['stream', 'event-stream'],
+        ['edge', 'edge-collector'], ['consent', 'consent-policy'], ['stream', 'event-stream'],
         ['pii', 'identity-vault'], ['warehouse', 'facts-warehouse'], ['dashboard', 'metric-dashboards'],
       ]),
       mutate(candidate) {
-        candidate.nodes.find((node) => node.id === 'ingest-gateway').label = 'Ingestion Gateway';
-        candidate.nodes.find((node) => node.id === 'consent-filter').label = 'Consent Filter';
+        candidate.nodes.find((node) => node.id === 'edge-collector').label = 'Edge Collector';
+        candidate.nodes.find((node) => node.id === 'consent-policy').label = 'Consent Policy';
         candidate.nodes.find((node) => node.id === 'identity-vault').label = 'Identity Vault';
-        candidate.nodes.find((node) => node.id === 'facts-warehouse').label = 'Facts Warehouse';
+        candidate.nodes.find((node) => node.id === 'facts-warehouse').label = 'Analytics Warehouse';
         candidate.nodes.find((node) => node.id === 'metric-dashboards').label = 'Metric Dashboards';
         candidate.flows.find((flow) => flow.id === 'consent-enrichment').label = 'identity claims';
-        candidate.flows.find((flow) => flow.id === 'identity-map').label = 'consented identity';
-        candidate.flows.find((flow) => flow.id === 'metrics-query').label = 'KPI reads';
+        candidate.flows.find((flow) => flow.id === 'accepted-events').label = 'cleared events';
+        candidate.flows.find((flow) => flow.id === 'identity-map').label = 'encrypted identity';
+        candidate.flows.find((flow) => flow.id === 'metrics-query').label = 'metric queries';
       },
     },
     {

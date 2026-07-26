@@ -76,6 +76,8 @@ const CASES = [
     (d) => { d.mainPath = ['user', 'planner']; }, ['mainPath step "user" -> "planner" has no matching edge']],
   ['workflow: mainPath moves backward', 'workflow',
     (d) => { d.mainPath = ['external', 'trace']; }, ['moves backward from col']],
+  ['workflow: phase ranges overlap', 'workflow',
+    (d) => { d.phases[2].fromCol = d.phases[1].toCol; }, ['overlaps phase', 'start at col 4 or later']],
 
   // ---- sequence layout rules ----
   ['sequence: message references unknown participant', 'sequence',
@@ -90,6 +92,10 @@ const CASES = [
     (d) => { delete d.flows[0].label; }, ['label']],
   ['dataflow: flow references unknown node', 'dataflow',
     (d) => { d.flows[0].to = 'ghost'; }, ['unknown target "ghost"']],
+  ['dataflow: explicit via keeps every route segment orthogonal', 'dataflow',
+    (d) => {
+      d.flows[0].via = [[195, 140], [195, 260]];
+    }, ['diagonal segment', 'align via[0]']],
 
   // ---- lifecycle layout rules ----
   ['lifecycle: missing reserved main lane', 'lifecycle',

@@ -5,19 +5,19 @@
   "quality_profile": "showcase",
   "requirements": {
     "nodes": [
-      { "key": "edge", "labels": ["Edge API", "Ingestion API", "Ingestion Gateway", "Ingest Gateway"], "type": "cloud" },
-      { "key": "consent", "labels": ["Consent Gate", "Consent Check", "Consent Filter"], "type": "security" },
+      { "key": "edge", "labels": ["Edge API", "Ingestion API", "Ingestion Gateway", "Ingest Gateway", "Edge Collector"], "type": "cloud" },
+      { "key": "consent", "labels": ["Consent Gate", "Consent Check", "Consent Filter", "Consent Policy"], "type": "security" },
       { "key": "stream", "labels": ["Event Stream", "Event Bus"], "type": "messagebus" },
       { "key": "pii", "labels": ["PII Vault", "Identity Vault"], "type": "security" },
-      { "key": "warehouse", "labels": ["Warehouse", "Data Warehouse"], "type": "database" },
+      { "key": "warehouse", "labels": ["Warehouse", "Data Warehouse", "Analytics Warehouse"], "type": "database" },
       { "key": "dashboard", "labels": ["Dashboards", "Analytics Dashboard"], "type": "backend" }
     ],
     "relationships": [
       { "from": "edge", "to": "consent", "labels": ["identity + consent", "consent check", "identity claims"] },
-      { "from": "edge", "to": "stream", "labels": ["accepted events", "validated events"] },
-      { "from": "consent", "to": "pii", "labels": ["identity map", "approved identity", "consented identity"] },
+      { "from": "edge", "to": "stream", "labels": ["accepted events", "validated events", "cleared events"] },
+      { "from": "consent", "to": "pii", "labels": ["identity map", "approved identity", "consented identity", "encrypted identity"] },
       { "from": "stream", "to": "warehouse", "labels": ["normalized facts", "normalized events"] },
-      { "from": "warehouse", "to": "dashboard", "labels": ["metrics SQL", "analytics query", "KPI reads"] }
+      { "from": "warehouse", "to": "dashboard", "labels": ["metrics SQL", "analytics query", "KPI reads", "metric queries"] }
     ]
   }
 }

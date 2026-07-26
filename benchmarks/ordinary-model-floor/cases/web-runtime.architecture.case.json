@@ -7,7 +7,7 @@
     "nodes": [
       { "key": "users", "labels": ["Users", "Browser Clients"], "type": "external" },
       { "key": "cdn", "labels": ["CloudFront", "CDN", "Content Delivery Network"], "type": "cloud" },
-      { "key": "api", "labels": ["API Server", "Application API"], "type": "backend" },
+      { "key": "api", "labels": ["API Server", "Application API", "App API"], "type": "backend" },
       { "key": "cache", "labels": ["Redis", "Redis Cache"], "type": "database" },
       { "key": "db", "labels": ["PostgreSQL", "Postgres", "Primary Database"], "type": "database" }
     ],

@@ -46,6 +46,19 @@ test('render output check: rejects two-point diagonal arrows', () => {
   assert.match(check.details[0], /path 1/);
 });
 
+test('render output check: rejects a diagonal segment inside a polyline', () => {
+  const { code, result } = checkHtml('polyline-diagonal', `
+    <path d="M 20 20 L 60 35 L 120 35" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+    <!-- Legend -->
+    <text x="40" y="120" class="t-primary" font-size="10">Legend</text>
+  `);
+  assert.notEqual(code, 0);
+  const check = result.checks.find((item) => item.name === 'orthogonal_arrows');
+  assert.equal(check.ok, false);
+  assert.match(check.details[0], /path 1/);
+  assert.match(check.details[0], /segment 1/);
+});
+
 test('render output check: rejects arrows crossing legend text', () => {
   const { code, result } = checkHtml('legend-crossing', `
     <path d="M 20 112 L 180 112" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>

@@ -246,6 +246,7 @@ function validateWorkflow() {
     }
   }
 
+  const phaseRanges = [];
   for (const phase of asArray(workflow.phases)) {
     if (!Number.isInteger(phase.fromCol) || !Number.isInteger(phase.toCol)) {
       problems.push(`Phase "${phase.id}" must use integer fromCol/toCol values.`);
@@ -253,11 +254,22 @@ function validateWorkflow() {
     }
     if (phase.fromCol < 0 || phase.toCol >= layout.colXs.length || phase.fromCol > phase.toCol) {
       problems.push(`Phase "${phase.id}" uses invalid columns ${phase.fromCol}..${phase.toCol}; use an ordered range within 0..${layout.colXs.length - 1}.`);
+    } else {
+      phaseRanges.push(phase);
     }
     const estLabelW = textUnits(phase.label) * 5.6;
     const width = spanForCols(phase.fromCol, phase.toCol).width;
     if (estLabelW > width + 8) {
       problems.push(`Phase label "${phase.label}" (~${Math.round(estLabelW)}px) is wider than its ${Math.round(width)}px span — shorten the label or widen the phase range.`);
+    }
+  }
+  phaseRanges.sort((a, b) => a.fromCol - b.fromCol || a.toCol - b.toCol);
+  for (let i = 0; i < phaseRanges.length; i += 1) {
+    for (let j = i + 1; j < phaseRanges.length; j += 1) {
+      const earlier = phaseRanges[i];
+      const later = phaseRanges[j];
+      if (later.fromCol > earlier.toCol) break;
+      problems.push(`Phase "${later.id}" (${later.fromCol}..${later.toCol}) overlaps phase "${earlier.id}" (${earlier.fromCol}..${earlier.toCol}) — start at col ${earlier.toCol + 1} or later, or end the earlier phase at col ${later.fromCol - 1}.`);
     }
   }
 

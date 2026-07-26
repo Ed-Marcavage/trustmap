@@ -10,7 +10,7 @@
       { "key": "approval", "labels": ["Approval Gate", "Human Approval"], "type": "security" },
       { "key": "tool", "labels": ["Tool Call", "Tool Execution", "Tool Executor", "Tool Runner"], "type": "messagebus" },
       { "key": "blocked", "labels": ["Blocked", "Denied"], "type": "security" },
-      { "key": "external", "labels": ["External API", "Provider API"], "type": "cloud" }
+      { "key": "external", "labels": ["External API", "Provider API", "Remote API"], "type": "cloud" }
     ],
     "relationships": [
       { "from": "planner", "to": "router" },
