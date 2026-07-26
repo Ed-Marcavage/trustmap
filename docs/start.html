@@ -254,7 +254,7 @@
           <div class="command-bar"><span data-en="This repository only" data-zh="仅安装到当前仓库">This repository only</span><button class="copy-button" type="button" data-copy-source="project-command" data-en="Copy" data-zh="复制">Copy</button></div>
           <pre id="project-command">npx -y skills add tt-a1i/archify --skill archify --agent codex --copy --yes</pre>
         </div>
-        <p class="secondary-note" data-en="The Start link carries only your agent, language, and diagram type. It never contains a repository path, title, node, relationship, or source JSON." data-zh="Start 链接只携带 Agent、语言和图表类型，不包含仓库路径、标题、节点、关系或源 JSON。">The Start link carries only your agent, language, and diagram type. It never contains a repository path, title, node, relationship, or source JSON.</p>
+        <p class="secondary-note" data-en="The Start link carries only your agent, language, diagram type, and a coarse source label. Journey events stay in this browser session and are never sent by Archify. No repository path, title, node, relationship, or source JSON is recorded." data-zh="Start 链接只携带 Agent、语言、图表类型和粗粒度来源标签。转化步骤只保存在当前浏览器会话中，Archify 不会发送这些数据，也不会记录仓库路径、标题、节点、关系或源 JSON。">The Start link carries only your agent, language, diagram type, and a coarse source label. Journey events stay in this browser session and are never sent by Archify. No repository path, title, node, relationship, or source JSON is recorded.</p>
       </article>
 
       <article class="panel" aria-live="polite">
@@ -264,7 +264,8 @@
         <ul class="include-list" id="include-list" aria-label="Required evidence"></ul>
         <p class="prompt-box" id="recipe-prompt"></p>
         <div class="actions">
-          <button class="action action-primary" id="copy-prompt" type="button" data-en="Copy exact prompt" data-zh="复制准确提示词">Copy exact prompt</button>
+          <button class="action action-primary" id="copy-starter" type="button" data-en="Copy install + prompt" data-zh="复制安装命令 + 提示词">Copy install + prompt</button>
+          <button class="action" id="copy-prompt" type="button" data-en="Prompt only" data-zh="仅复制提示词">Prompt only</button>
           <a class="action" id="proof-link" href="gallery.html" data-en="Open verified proof ↗" data-zh="打开验证成品 ↗">Open verified proof ↗</a>
           <a class="action" href="guide.html" data-en="Need another recipe?" data-zh="需要其他配方？">Need another recipe?</a>
         </div>
@@ -287,12 +288,16 @@
       var DATA = JSON.parse(document.getElementById('start-data').textContent);
       var KNOWN_TYPES = new Set(['architecture', 'workflow', 'sequence', 'dataflow', 'lifecycle']);
       var KNOWN_AGENTS = new Set(['cursor', 'codex', 'claude-code', 'opencode']);
+      var KNOWN_SOURCES = new Set(['artifact', 'gallery', 'readme', 'direct']);
+      var EVENT_KEY = 'archify.start.events.v1';
       var params = new URLSearchParams(window.location.search);
       var requestedType = params.get('type');
       var requestedAgent = params.get('agent');
       var requestedLanguage = params.get('lang');
+      var requestedSource = params.get('source');
       var type = KNOWN_TYPES.has(requestedType) ? requestedType : 'architecture';
       var agent = KNOWN_AGENTS.has(requestedAgent) ? requestedAgent : 'codex';
+      var source = KNOWN_SOURCES.has(requestedSource) ? requestedSource : 'direct';
       var language = requestedLanguage === 'zh' || requestedLanguage === 'en'
         ? requestedLanguage
         : ((navigator.languages && navigator.languages[0]) || navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
@@ -327,8 +332,36 @@
         next.set('type', type);
         next.set('agent', agent);
         next.set('lang', language);
+        next.set('source', source);
         history.replaceState(null, '', window.location.pathname + '?' + next.toString());
       }
+
+      function recordStep(step) {
+        var detail = {
+          schemaVersion: 1,
+          step: step,
+          source: source,
+          type: type,
+          agent: agent,
+          language: language
+        };
+        try {
+          var events = JSON.parse(sessionStorage.getItem(EVENT_KEY) || '[]');
+          if (!Array.isArray(events)) events = [];
+          events.push(detail);
+          sessionStorage.setItem(EVENT_KEY, JSON.stringify(events.slice(-24)));
+        } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('archify:start-funnel', { detail: detail })); } catch (_) {}
+      }
+
+      window.ArchifyStartMetrics = {
+        snapshot: function () {
+          try {
+            var events = JSON.parse(sessionStorage.getItem(EVENT_KEY) || '[]');
+            return Array.isArray(events) ? events.slice() : [];
+          } catch (_) { return []; }
+        }
+      };
 
       function render() {
         var recipe = DATA[type];
@@ -377,10 +410,21 @@
         if (!ok) throw new Error('copy failed');
       }
 
-      async function copyText(text) {
+      function starterText() {
+        var agentName = document.querySelector('[data-agent="' + agent + '"]').textContent;
+        if (language === 'zh') {
+          return '为 ' + agentName + ' 安装 Archify：\n' + installCommand.textContent.trim()
+            + '\n\n然后在目标仓库中让 ' + agentName + ' 执行：\n' + DATA[type][language].prompt;
+        }
+        return 'Install Archify for ' + agentName + ':\n' + installCommand.textContent.trim()
+          + '\n\nThen, in your target repository, ask ' + agentName + ':\n' + DATA[type][language].prompt;
+      }
+
+      async function copyText(text, step) {
         try {
           if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
           else fallbackCopy(text);
+          if (step) recordStep(step);
           copyStatus.textContent = language === 'zh' ? '已复制到剪贴板。' : 'Copied to clipboard.';
         } catch (_) {
           copyStatus.textContent = language === 'zh' ? '复制失败，请手动选择文本。' : 'Copy failed. Select the text manually.';
@@ -427,18 +471,24 @@
 
       document.querySelectorAll('[data-copy-source]').forEach(function (button) {
         button.addEventListener('click', function () {
-          copyText(document.getElementById(button.dataset.copySource).textContent.trim());
+          var step = button.dataset.copySource === 'install-command' ? 'global_install_copy' : 'project_install_copy';
+          copyText(document.getElementById(button.dataset.copySource).textContent.trim(), step);
         });
       });
       document.getElementById('copy-prompt').addEventListener('click', function () {
-        copyText(DATA[type][language].prompt);
+        copyText(DATA[type][language].prompt, 'prompt_copy');
       });
+      document.getElementById('copy-starter').addEventListener('click', function () {
+        copyText(starterText(), 'starter_copy');
+      });
+      proofLink.addEventListener('click', function () { recordStep('proof_open'); });
       languageButton.addEventListener('click', function () {
         language = language === 'zh' ? 'en' : 'zh';
         render();
       });
 
       render();
+      recordStep('start_view');
     })();
   </script>
 </body>

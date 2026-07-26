@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "agent-run-lifecycle",
+  "diagram_type": "lifecycle",
+  "quality_profile": "showcase",
+  "requirements": {
+    "nodes": [
+      { "key": "queued", "labels": ["Queued", "Accepted"], "type": "start" },
+      { "key": "executing", "labels": ["Executing", "Running"], "type": "active" },
+      { "key": "reviewing", "labels": ["Reviewing", "Quality Review"], "type": "decision" },
+      { "key": "approval", "labels": ["Needs Approval", "Waiting for Approval"], "type": "waiting" },
+      { "key": "blocked", "labels": ["Blocked", "Waiting for Input"], "type": "waiting" },
+      { "key": "cancelled", "labels": ["Cancelled", "Canceled"], "type": "failure" },
+      { "key": "expired", "labels": ["Expired", "Timed Out"], "type": "failure" }
+    ],
+    "relationships": [
+      { "from": "executing", "to": "approval", "variant": "security" },
+      { "from": "reviewing", "to": "blocked" },
+      { "from": "blocked", "to": "expired", "variant": "security" },
+      { "from": "approval", "to": "cancelled", "variant": "security" }
+    ]
+  }
+}

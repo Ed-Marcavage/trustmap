@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "product-analytics-dataflow",
+  "diagram_type": "dataflow",
+  "quality_profile": "showcase",
+  "requirements": {
+    "nodes": [
+      { "key": "edge", "labels": ["Edge API", "Ingestion API"], "type": "cloud" },
+      { "key": "consent", "labels": ["Consent Gate", "Consent Check"], "type": "security" },
+      { "key": "stream", "labels": ["Event Stream", "Event Bus"], "type": "messagebus" },
+      { "key": "pii", "labels": ["PII Vault", "Identity Vault"], "type": "security" },
+      { "key": "warehouse", "labels": ["Warehouse", "Data Warehouse"], "type": "database" },
+      { "key": "dashboard", "labels": ["Dashboards", "Analytics Dashboard"], "type": "backend" }
+    ],
+    "relationships": [
+      { "from": "edge", "to": "consent", "labels": ["identity + consent", "consent check"] },
+      { "from": "edge", "to": "stream", "labels": ["accepted events", "validated events"] },
+      { "from": "consent", "to": "pii", "labels": ["identity map", "approved identity"] },
+      { "from": "stream", "to": "warehouse", "labels": ["normalized facts", "normalized events"] },
+      { "from": "warehouse", "to": "dashboard", "labels": ["metrics SQL", "analytics query"] }
+    ]
+  }
+}

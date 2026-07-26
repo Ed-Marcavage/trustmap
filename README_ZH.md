@@ -273,4 +273,4 @@ Archify 基于 [Cocoon-AI/architecture-diagram-generator](https://github.com/Coc
 
 ## 参与贡献
 
-欢迎提交 Issue、Pull Request 和分享生成的图。报告产物问题时，请附上 Prompt、图表类型和 Archify 版本。修改内置示例或独立 Viewer 后，请运行 `node scripts/build-gallery.mjs` 同步自动生成作品集。
+欢迎提交 Issue、Pull Request 和真实场景图。请先阅读[贡献指南](CONTRIBUTING.md)；遇到问题时使用可复现 Bug 表单，也可以通过社区 Showcase 表单提交已验证成品。

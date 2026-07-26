@@ -1,0 +1,5 @@
+# Product analytics data flow
+
+Use the Archify skill in this repository to create a data-flow diagram for product analytics. Web and mobile clients send events to an edge ingestion API. Consent is checked before identity data enters a protected PII vault. Accepted events enter a stream, become normalized warehouse facts, and feed dashboards. Aggregated warehouse data also feeds a feature store and model.
+
+Author a fresh typed JSON diagram specification and validate it with the `showcase` quality profile. Choose your own stable internal IDs and layout. Make the privacy boundary and restricted identity path visually distinct from the ordinary analytics path; do not copy a checked-in example.

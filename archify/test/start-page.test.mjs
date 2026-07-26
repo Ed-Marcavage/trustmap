@@ -39,6 +39,9 @@ test('start page: offers five bounded bilingual starts without ingesting source 
   assert.match(html, /data-zh="一段有边界的提示词。"/);
   assert.match(html, /No repository content or diagram data is sent to this page\./);
   assert.match(html, /这个页面不会接收仓库内容或图表数据/);
+  assert.match(html, /id="copy-starter"/);
+  assert.match(html, /data-en="Copy install \+ prompt"/);
+  assert.match(html, /data-zh="复制安装命令 \+ 提示词"/);
 
   const dataMatch = html.match(/<script id="start-data" type="application\/json">([\s\S]*?)<\/script>/);
   assert.ok(dataMatch);
@@ -51,9 +54,15 @@ test('start page: offers five bounded bilingual starts without ingesting source 
   assert.doesNotThrow(() => new vm.Script(scriptMatch[1]));
   assert.match(scriptMatch[1], /KNOWN_TYPES\.has\(requestedType\)/);
   assert.match(scriptMatch[1], /KNOWN_AGENTS\.has\(requestedAgent\)/);
+  assert.match(scriptMatch[1], /KNOWN_SOURCES\.has\(requestedSource\)/);
   assert.match(scriptMatch[1], /next\.set\('agent', agent\)/);
+  assert.match(scriptMatch[1], /next\.set\('source', source\)/);
   assert.match(scriptMatch[1], /--agent ' \+ agent \+ ' --global --copy --yes/);
   assert.match(scriptMatch[1], /--agent ' \+ agent \+ ' --copy --yes/);
+  assert.match(scriptMatch[1], /function starterText\(\)/);
+  assert.match(scriptMatch[1], /archify:start-funnel/);
+  assert.match(scriptMatch[1], /archify\.start\.events\.v1/);
+  assert.doesNotMatch(scriptMatch[1], /fetch\(|sendBeacon\(|XMLHttpRequest/);
   assert.match(scriptMatch[1], /textContent/);
   assert.match(scriptMatch[1], /replaceChildren/);
   assert.doesNotMatch(scriptMatch[1], /innerHTML/);
@@ -77,7 +86,7 @@ test('generated artifacts: viewer-only Create yours link carries the exact diagr
         out,
       ]);
       const html = fs.readFileSync(out, 'utf8');
-      const expected = `https://tt-a1i.github.io/archify/start.html?type=${type}`;
+      const expected = `https://tt-a1i.github.io/archify/start.html?type=${type}&amp;source=artifact`;
       assert.match(html, new RegExp(`class="artifact-start-link"[^>]+href="${expected.replace(/[.?]/g, '\\$&')}"`), type);
       assert.match(html, /class="artifact-start-link"[^>]+rel="noopener noreferrer"/, `${type}: referrer boundary`);
       assert.equal((html.match(new RegExp(expected.replace(/[.?]/g, '\\$&'), 'g')) || []).length, 1, type);
@@ -89,5 +98,27 @@ test('generated artifacts: viewer-only Create yours link carries the exact diagr
     }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('artifact-to-install measurement plan separates observable funnel steps from first-diagram success', () => {
+  const plan = fs.readFileSync(
+    path.join(repoRoot, 'docs/artifact-install-v2-measurement.md'),
+    'utf8',
+  );
+
+  for (const required of [
+    'start_view',
+    'starter_copy',
+    'global_install_copy',
+    'project_install_copy',
+    'prompt_copy',
+    'proof_open',
+    'starter_copy / start_view',
+    'First-diagram success is not observable from this static page',
+    'No network request',
+    'source=artifact',
+  ]) {
+    assert.match(plan, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), required);
   }
 });

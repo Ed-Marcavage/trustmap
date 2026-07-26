@@ -274,4 +274,4 @@ Archify is a fork and rewrite of [Cocoon-AI/architecture-diagram-generator](http
 
 ## Contributing
 
-Issues, pull requests, and shared diagrams are welcome. For generated-output problems, include the prompt, diagram type, and Archify version. Run `node scripts/build-gallery.mjs` after changing bundled examples or the standalone viewer.
+Issues, pull requests, and real-world diagrams are welcome. Start with the [contribution guide](CONTRIBUTING.md), use the reproducible bug form for failures, or submit a validated diagram through the community showcase form.
