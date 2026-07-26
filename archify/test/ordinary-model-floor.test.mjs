@@ -415,6 +415,30 @@ test('checked-in benchmark suite covers all five diagram types without presentin
   }
 });
 
+test('suite integrity rejects a long prompt that omits the attempt-1 file contract', () => {
+  const sourceSuite = path.join(repoRoot, 'benchmarks/ordinary-model-floor');
+  const incompletePrompt = path.join(tmp, 'incomplete-benchmark-prompt.md');
+  fs.writeFileSync(
+    incompletePrompt,
+    `# Plausible but incomplete prompt\n\n${'Describe the requested system accurately. '.repeat(12)}`,
+  );
+  const manifest = JSON.parse(fs.readFileSync(path.join(sourceSuite, 'manifest.json'), 'utf8'));
+  manifest.cases = manifest.cases.map((entry, index) => ({
+    ...entry,
+    case: path.resolve(sourceSuite, entry.case),
+    prompt: index === 0 ? incompletePrompt : path.resolve(sourceSuite, entry.prompt),
+    reference_fixture: path.resolve(sourceSuite, entry.reference_fixture),
+  }));
+  const manifestFile = writeJson('prompt-contract.manifest.json', manifest);
+
+  const result = run(['check', '--manifest', manifestFile]);
+
+  assert.equal(result.status, 1, result.stderr || result.stdout);
+  assert.equal(result.stderr, '');
+  const receipt = JSON.parse(result.stdout);
+  assert.equal(receipt.cases.find((item) => item.caseId === 'web-runtime-architecture').promptOk, false);
+});
+
 test('benchmark fails closed with machine-readable errors for malformed JSON and mismatched run identity', () => {
   const caseFile = writeJson('identity.case.json', {
     schema_version: 1,

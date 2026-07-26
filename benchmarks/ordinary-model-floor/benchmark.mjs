@@ -15,6 +15,12 @@ const COLLECTIONS = {
   dataflow: { nodes: 'nodes', relationships: 'flows' },
   lifecycle: { nodes: 'states', relationships: 'transitions' },
 };
+const PROMPT_CONTRACT_PHRASES = [
+  'Write the final candidate to exactly `benchmark-candidate.json` in the repository root.',
+  'Do not edit any other file.',
+  'The candidate file, not the prose response, is the attempt 1 artifact.',
+  'Do not copy a checked-in example.',
+];
 
 class BenchmarkError extends Error {
   constructor(code, message) {
@@ -256,7 +262,8 @@ function check(args) {
     return {
       caseId: benchmarkCase.id,
       diagramType: benchmarkCase.diagram_type,
-      promptOk: prompt.length >= 200,
+      promptOk: prompt.length >= 200
+        && PROMPT_CONTRACT_PHRASES.every((phrase) => prompt.includes(phrase)),
       semanticOk: semantic.ok,
       validationOk: validation.ok,
     };
