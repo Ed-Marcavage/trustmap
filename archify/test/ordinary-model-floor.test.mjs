@@ -499,10 +499,11 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
       ]),
       mutate(candidate) {
         Object.assign(candidate.nodes.find((node) => node.id === 'risk-router'), { label: 'Router', type: 'security' });
-        candidate.nodes.find((node) => node.id === 'consent-check').label = 'Human Approval';
+        candidate.nodes.find((node) => node.id === 'consent-check').label = 'Consent Gate';
         candidate.nodes.find((node) => node.id === 'tool-runner').label = 'Tool Executor';
-        candidate.nodes.find((node) => node.id === 'request-blocked').label = 'Denied';
+        candidate.nodes.find((node) => node.id === 'request-blocked').label = 'Held';
         candidate.nodes.find((node) => node.id === 'service-provider').label = 'Remote API';
+        candidate.edges.find((edge) => edge.from === 'risk-router' && edge.to === 'consent-check').label = 'consent?';
       },
     },
     {
