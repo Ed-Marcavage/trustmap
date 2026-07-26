@@ -19,7 +19,7 @@
     "build:start": "node ../scripts/build-start.mjs ../docs/start.html",
     "build:readme-showcase": "node ../scripts/build-readme-showcase.mjs",
     "test:webm": "node test/webm-artifact.smoke.mjs",
-    "test": "npm run check:validators && node test/golden.mjs && node --test test/*.test.mjs",
+    "test": "npm run check:validators && node test/golden.mjs && node ../scripts/run-tests.mjs",
     "render:examples": "node scripts/render-examples.mjs ../examples"
   },
   "devDependencies": {
