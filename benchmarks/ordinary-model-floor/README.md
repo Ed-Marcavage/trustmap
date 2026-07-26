@@ -88,3 +88,12 @@ node benchmarks/ordinary-model-floor/benchmark.mjs report --results /path/to/res
 The report separates operational, semantic, deterministic-validation, and visual-review failure clusters. `evidenceEligible` is true only when every agent/model configuration has exactly one valid attempt 1 receipt for every manifest case. The report does not prove that an external transcript is authentic; retain the raw prompts, candidate files, repository commit, and reviewer evidence alongside any published claim.
 
 No model result or leaderboard is checked in until the corresponding runs and visual reviews have actually happened.
+
+## Dated evidence
+
+The first complete three-model run is retained in
+[`results/2026-07-26-pi-three-models.json`](results/2026-07-26-pi-three-models.json).
+All 15 attempt-1 candidates use repository commit `66414c7` and the same packaged
+skill SHA-256. The calibrated verifier reports 10/15 first-pass usable, with five
+deterministic visual-quality failures and no semantic or operational failures.
+This is a fixed diagnostic sample, not a model leaderboard or a latency claim.

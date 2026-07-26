@@ -500,10 +500,10 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
       mutate(candidate) {
         Object.assign(candidate.nodes.find((node) => node.id === 'risk-router'), { label: 'Router', type: 'security' });
         candidate.nodes.find((node) => node.id === 'consent-check').label = 'Consent Gate';
-        candidate.nodes.find((node) => node.id === 'tool-runner').label = 'Tool Executor';
+        candidate.nodes.find((node) => node.id === 'tool-runner').label = 'Tool Execute';
         candidate.nodes.find((node) => node.id === 'request-blocked').label = 'Held';
         candidate.nodes.find((node) => node.id === 'service-provider').label = 'Remote API';
-        candidate.edges.find((edge) => edge.from === 'risk-router' && edge.to === 'consent-check').label = 'consent?';
+        candidate.edges.find((edge) => edge.from === 'risk-router' && edge.to === 'consent-check').label = 'approve?';
       },
     },
     {
@@ -517,7 +517,7 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
       mutate(candidate) {
         Object.assign(candidate.participants.find((node) => node.id === 'browser-tab'), { label: 'Browser', type: 'external' });
         candidate.participants.find((node) => node.id === 'dashboard-api').label = 'Dashboard API';
-        candidate.participants.find((node) => node.id === 'token-guard').label = 'Authorizer';
+        candidate.participants.find((node) => node.id === 'token-guard').label = 'JWT Validator';
         candidate.messages.find((message) => message.id === 'verify-jwt').label = 'validate JWT';
         candidate.messages.find((message) => message.id === 'cache-read').label = 'GET dashboard key';
         candidate.messages.find((message) => message.id === 'profile-query').label = 'SELECT profile + metrics';
@@ -533,15 +533,15 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
         ['pii', 'identity-vault'], ['warehouse', 'facts-warehouse'], ['dashboard', 'metric-dashboards'],
       ]),
       mutate(candidate) {
-        candidate.nodes.find((node) => node.id === 'edge-collector').label = 'Edge Collector';
+        candidate.nodes.find((node) => node.id === 'edge-collector').label = 'Edge Ingestion';
         candidate.nodes.find((node) => node.id === 'consent-policy').label = 'Consent Policy';
         candidate.nodes.find((node) => node.id === 'identity-vault').label = 'Identity Vault';
         candidate.nodes.find((node) => node.id === 'facts-warehouse').label = 'Analytics Warehouse';
         candidate.nodes.find((node) => node.id === 'metric-dashboards').label = 'Metric Dashboards';
-        candidate.flows.find((flow) => flow.id === 'consent-enrichment').label = 'identity claims';
+        candidate.flows.find((flow) => flow.id === 'consent-enrichment').label = 'identity context';
         candidate.flows.find((flow) => flow.id === 'accepted-events').label = 'cleared events';
         candidate.flows.find((flow) => flow.id === 'identity-map').label = 'encrypted identity';
-        candidate.flows.find((flow) => flow.id === 'metrics-query').label = 'metric queries';
+        candidate.flows.find((flow) => flow.id === 'metrics-query').label = 'metric aggregates';
       },
     },
     {
@@ -554,8 +554,8 @@ test('checked-in cases accept equivalent ordinary-model vocabulary without weake
         ['expired', 'run-expired'],
       ]),
       mutate(candidate) {
-        candidate.states.find((node) => node.id === 'approval-wait').label = 'Awaiting Approval';
-        candidate.states.find((node) => node.id === 'input-wait').label = 'Awaiting Input';
+        candidate.states.find((node) => node.id === 'approval-wait').label = 'Approval hold';
+        candidate.states.find((node) => node.id === 'input-wait').label = 'Pending Input';
       },
     },
   ];
@@ -838,12 +838,46 @@ test('packaged skill puts a bounded ordinary-model authoring path before the fea
     'Do not plan exact coordinates in prose',
     'Fresh authorship means new stable IDs, domain wording, and layout',
     'Write the candidate before inspecting renderer internals',
+    'Start with automatic routes and labels',
+    'Do not add `via`, `channelX`, `channelY`, or `labelAt` before a diagnostic',
+    'after the final candidate edit',
     'Do not read `renderers/shared/geometry.mjs`',
     'validate <type>',
     'supportedFixes',
   ]) {
     assert.match(skill.slice(fastPath, featureCatalogue), new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
+});
+
+test('dated three-model evidence retains every frozen attempt-1 candidate and truthful gate result', () => {
+  const evidence = JSON.parse(fs.readFileSync(path.join(
+    repoRoot,
+    'benchmarks/ordinary-model-floor/results/2026-07-26-pi-three-models.json',
+  ), 'utf8'));
+
+  assert.equal(evidence.generation.repositoryCommit, '66414c7d2366d16a70c9e7282836e416b7917d51');
+  assert.equal(evidence.generation.packageSha256, '1f32354a466ec10c21f56346634ce66e170b6e0d23306cc2e9a9cbb68283f05a');
+  assert.equal(evidence.generation.attempt, 1);
+  assert.equal(evidence.report.evidenceEligible, true);
+  assert.deepEqual(evidence.report.overall, {
+    runs: 15,
+    firstPassUsable: 10,
+    firstPassUsableRate: 2 / 3,
+    failureClusters: { semantic: 0, validation: 5, visualReview: 5, operational: 0 },
+  });
+  assert.equal(evidence.runs.length, 15);
+
+  const identities = new Set();
+  for (const entry of evidence.runs) {
+    identities.add(`${entry.agent}\0${entry.model}\0${entry.caseId}`);
+    assert.equal(entry.run.attempt, 1, entry.caseId);
+    assert.equal(entry.run.case_id, entry.caseId, entry.caseId);
+    assert.equal(entry.receipt.caseId, entry.caseId, entry.caseId);
+    assert.equal(entry.receipt.gates.semantic.ok, true, entry.caseId);
+    assert.equal(entry.candidate.schema_version, 1, entry.caseId);
+    assert.ok(entry.candidate.diagram_type, entry.caseId);
+  }
+  assert.equal(identities.size, 15);
 });
 
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));
