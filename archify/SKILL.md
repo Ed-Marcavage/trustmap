@@ -12,6 +12,18 @@ metadata:
 
 Create professional technical diagrams as self-contained HTML files with inline SVG, a theme toggle, and a built-in image/SVG export menu.
 
+## Fast authoring path
+
+For an ordinary renderer-backed request with shell access, use this bounded path before reading the feature catalogue below:
+
+1. Choose `architecture`, `workflow`, `sequence`, `dataflow`, or `lifecycle` from the user's question.
+2. Read only one matching schema in `schemas/` and one matching JSON example in `examples/`. Use their field shapes, but author fresh domain facts, IDs, and layout.
+3. Write the candidate before inspecting renderer internals. Prefer one clear main path, short side branches, sparse relationship labels, and at most 12 primary nodes.
+4. Run `node bin/archify.mjs validate <type> <candidate.json> --quality showcase --json` (or `standard` when the user explicitly wants a dense engineering map).
+5. If validation fails, change only the diagnosed subject using its `supportedFixes`, then rerun. Stop after two focused correction rounds and report any unresolved diagnostic truthfully.
+
+Do not read `renderers/shared/geometry.mjs`, renderer source, validator source, tests, or benchmark files before the first candidate. Inspect implementation only when validation returns an unsupported internal diagnostic or two focused repairs fail. Read the feature-specific sections below only when the user requests those capabilities; ordinary generation does not require understanding the viewer runtime.
+
 Every renderer-backed diagram ships with a factual Diagram Guide for discovering its current actions and shortcuts, deterministic semantic node hooks, a counted two-kind Semantic Lens with selective inline legend entrances, a fine-pointer/keyboard Intent Trace before committed focus, a two-endpoint Route Probe over authored directed relationships, a searchable Node Finder, keyboard-accessible one-hop focus with a renderer-owned Semantic Passport and copyable deep link, a live Semantic Radar overview, an optional Named Chapter Rail with static Chapter Delta Preview, a native Story Beat Navigator with Story Follow Camera, Story Director Strip, and Story Horizon, and stable Shareable Story Moment links, a reader-controlled Live/Still Motion Governor for trace artifacts, a viewer-only Share Chapter Cue for one-shot embeds, Presentation Stage, dependency-free pan/zoom, a **dark/light theme toggle** (persists in `localStorage`, respects `prefers-color-scheme`), an **export menu** (create, copy, or download a 1200×630 Share Card; copy full-diagram PNG to clipboard; download PNG/JPEG/WebP rasterized natively at up to 4× resolution; download a **dual-theme SVG**; record a trace-enabled diagram to WebM), and a **CSS-variable color system** that keeps both themes consistent. Temporary Diagram Guide, Semantic Lens, legend preview, Intent Trace, Route Probe, finder, focus, radar, Chapter Delta Preview, Story Trail overlays, Story Director Strip, Story Horizon, beat state, guided-view, playback, presentation, motion-owner, and viewport state never changes the canonical full-diagram export.
 
 Offer the optional 1200×630 Share Card PNG when the user asks for a README, release, social, or launch preview. It uses the current theme and visual preset, contains the entire canonical diagram without cropping, and never claims validation; the checked HTML remains the source of any delivery receipt. When the browser supports image clipboard writes, Copy Share Card must reuse that same one-pass canonical PNG; unsupported readers retain the download action.

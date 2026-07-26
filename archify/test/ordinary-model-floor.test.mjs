@@ -653,4 +653,23 @@ test('benchmark documentation locks the fair-run and truthful-evidence contract'
   }
 });
 
+test('packaged skill puts a bounded ordinary-model authoring path before the feature catalogue', () => {
+  const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
+  const fastPath = skill.indexOf('## Fast authoring path');
+  const featureCatalogue = skill.indexOf('Direct Relationship Pin');
+
+  assert.ok(fastPath > 0, 'fast authoring path must exist');
+  assert.ok(fastPath < featureCatalogue, 'fast authoring path must precede the feature catalogue');
+  for (const required of [
+    'one matching schema',
+    'one matching JSON example',
+    'Write the candidate before inspecting renderer internals',
+    'Do not read `renderers/shared/geometry.mjs`',
+    'validate <type>',
+    'supportedFixes',
+  ]) {
+    assert.match(skill.slice(fastPath, featureCatalogue), new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+});
+
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));
