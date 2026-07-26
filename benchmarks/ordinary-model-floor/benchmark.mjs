@@ -22,6 +22,7 @@ const PROMPT_CONTRACT_PHRASES = [
   'Do not copy a checked-in example.',
   'Do not claim that validation passed; the external harness will validate the frozen file.',
 ];
+const OPERATIONAL_FAILURES = new Set(['timeout', 'no_candidate', 'provider_error']);
 
 class BenchmarkError extends Error {
   constructor(code, message) {
@@ -227,6 +228,7 @@ function verify(args) {
     schemaVersion: 1,
     benchmark: 'ordinary-model-floor',
     caseId: benchmarkCase.id,
+    operational: { status: 'candidate_produced' },
     run: {
       agent: run.agent,
       model: run.model,
@@ -243,6 +245,61 @@ function verify(args) {
   };
   process.stdout.write(`${JSON.stringify(receipt, null, 2)}\n`);
   process.exitCode = firstPassUsable ? 0 : 1;
+}
+
+function recordFailure(args) {
+  const caseFile = option(args, '--case');
+  const runFile = option(args, '--run');
+  const reason = option(args, '--failure');
+  if (!caseFile || !runFile || !reason) {
+    throw new Error('record-failure requires --case, --run, and --failure');
+  }
+  if (!OPERATIONAL_FAILURES.has(reason)) {
+    throw new BenchmarkError(
+      'INVALID_OPERATIONAL_FAILURE',
+      `failure must be one of ${[...OPERATIONAL_FAILURES].join(', ')}`,
+    );
+  }
+
+  const benchmarkCase = readJson(caseFile);
+  const run = readJson(runFile);
+  if (run.case_id !== benchmarkCase.id) {
+    throw new BenchmarkError(
+      'RUN_CASE_MISMATCH',
+      `run case_id "${run.case_id}" does not match benchmark case "${benchmarkCase.id}"`,
+    );
+  }
+  if (typeof run.agent !== 'string' || run.agent.trim() === ''
+      || typeof run.model !== 'string' || run.model.trim() === '') {
+    throw new BenchmarkError('INVALID_RUN', 'run agent and model must be non-empty strings');
+  }
+  if (run.attempt !== 1) {
+    throw new BenchmarkError('NON_FIRST_PASS_RESULT', 'operational failures must record attempt 1');
+  }
+
+  process.stdout.write(`${JSON.stringify({
+    schemaVersion: 1,
+    benchmark: 'ordinary-model-floor',
+    caseId: benchmarkCase.id,
+    operational: { status: 'failed', reason },
+    run: {
+      agent: run.agent,
+      model: run.model,
+      attempt: run.attempt,
+    },
+    gates: {
+      semantic: { ok: false, status: 'not_run' },
+      validation: { ok: false, status: 'not_run' },
+      visualReview: {
+        status: 'skipped',
+        reviewer: null,
+        defects: [],
+        reason: 'candidate was not produced',
+      },
+    },
+    firstPassUsable: false,
+  }, null, 2)}\n`);
+  process.exitCode = 1;
 }
 
 function check(args) {
@@ -296,6 +353,7 @@ function newSummary() {
       semantic: 0,
       validation: 0,
       visualReview: 0,
+      operational: 0,
     },
   };
 }
@@ -303,11 +361,15 @@ function newSummary() {
 function addResult(summary, result) {
   summary.runs += 1;
   if (result.firstPassUsable === true) summary.firstPassUsable += 1;
-  if (result.gates?.semantic?.ok !== true) summary.failureClusters.semantic += 1;
-  if (result.gates?.validation?.ok !== true) summary.failureClusters.validation += 1;
-  if (result.gates?.visualReview?.status !== 'passed'
-      || (result.gates?.visualReview?.defects || []).length > 0) {
-    summary.failureClusters.visualReview += 1;
+  if (result.operational?.status === 'failed') {
+    summary.failureClusters.operational += 1;
+  } else {
+    if (result.gates?.semantic?.ok !== true) summary.failureClusters.semantic += 1;
+    if (result.gates?.validation?.ok !== true) summary.failureClusters.validation += 1;
+    if (result.gates?.visualReview?.status !== 'passed'
+        || (result.gates?.visualReview?.defects || []).length > 0) {
+      summary.failureClusters.visualReview += 1;
+    }
   }
   summary.firstPassUsableRate = summary.runs === 0
     ? 0
@@ -331,8 +393,18 @@ function validateResult(result) {
       `result for ${result.run.agent}/${result.run.model}/${result.caseId} is not attempt 1`,
     );
   }
+  const operationalFailed = result.operational?.status === 'failed';
+  if (result.operational !== undefined
+      && result.operational.status !== 'candidate_produced'
+      && !operationalFailed) {
+    throw new BenchmarkError('INVALID_RESULT', 'result operational status is invalid');
+  }
+  if (operationalFailed && !OPERATIONAL_FAILURES.has(result.operational.reason)) {
+    throw new BenchmarkError('INVALID_RESULT', 'result operational failure reason is invalid');
+  }
   const visual = result.gates?.visualReview;
-  const derivedFirstPassUsable = result.gates?.semantic?.ok === true
+  const derivedFirstPassUsable = !operationalFailed
+    && result.gates?.semantic?.ok === true
     && result.gates?.validation?.ok === true
     && visual?.status === 'passed'
     && typeof visual.reviewer === 'string'
@@ -434,6 +506,8 @@ try {
   const [command, ...args] = process.argv.slice(2);
   if (command === 'verify') {
     verify(args);
+  } else if (command === 'record-failure') {
+    recordFailure(args);
   } else if (command === 'check') {
     check(args);
   } else if (command === 'report') {
@@ -441,7 +515,7 @@ try {
   } else {
     throw new BenchmarkError(
       'USAGE',
-      'usage: benchmark.mjs <verify|check|report> [options]',
+      'usage: benchmark.mjs <verify|record-failure|check|report> [options]',
     );
   }
 } catch (error) {

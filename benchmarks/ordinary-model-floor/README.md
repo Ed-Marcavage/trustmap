@@ -57,6 +57,14 @@ node benchmarks/ordinary-model-floor/benchmark.mjs verify --case benchmarks/ordi
 
 The command writes one machine-readable receipt to stdout. Exit code `0` means first-pass usable, `1` means the candidate failed one or more gates, and `2` means the inputs or benchmark invocation were invalid.
 
+If the agent invocation ends without a candidate, preserve the provider's raw operational record and use `record-failure` to emit a first-pass failure receipt instead of dropping the run:
+
+```bash
+node benchmarks/ordinary-model-floor/benchmark.mjs record-failure --case benchmarks/ordinary-model-floor/cases/web-runtime.architecture.case.json --run /path/to/run.json --failure timeout
+```
+
+The allow-listed reasons are `timeout`, `no_candidate`, and `provider_error`. These receipts count toward complete matrix coverage and the operational failure cluster, but semantic, validation, and visual-review gates remain truthfully `not_run` or `skipped`. Never turn an absent candidate into a fabricated invalid JSON file.
+
 ## Visual review
 
 Review the final browser artifact or canonical raster, not the source JSON alone:
@@ -75,6 +83,6 @@ Store one verifier receipt per line in a JSONL file, then aggregate it against t
 node benchmarks/ordinary-model-floor/benchmark.mjs report --results /path/to/results.jsonl --manifest benchmarks/ordinary-model-floor/manifest.json
 ```
 
-The report separates semantic, deterministic-validation, and visual-review failure clusters. `evidenceEligible` is true only when every agent/model configuration has exactly one valid attempt 1 receipt for every manifest case. The report does not prove that an external transcript is authentic; retain the raw prompts, candidate files, repository commit, and reviewer evidence alongside any published claim.
+The report separates operational, semantic, deterministic-validation, and visual-review failure clusters. `evidenceEligible` is true only when every agent/model configuration has exactly one valid attempt 1 receipt for every manifest case. The report does not prove that an external transcript is authentic; retain the raw prompts, candidate files, repository commit, and reviewer evidence alongside any published claim.
 
 No model result or leaderboard is checked in until the corresponding runs and visual reviews have actually happened.

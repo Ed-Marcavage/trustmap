@@ -306,6 +306,7 @@ test('benchmark report separates first-pass usable rate from semantic, validatio
       semantic: 1,
       validation: 1,
       visualReview: 1,
+      operational: 0,
     },
   });
   assert.deepEqual(report.byConfiguration, [
@@ -315,7 +316,7 @@ test('benchmark report separates first-pass usable rate from semantic, validatio
       runs: 2,
       firstPassUsable: 2,
       firstPassUsableRate: 1,
-      failureClusters: { semantic: 0, validation: 0, visualReview: 0 },
+      failureClusters: { semantic: 0, validation: 0, visualReview: 0, operational: 0 },
     },
     {
       agent: 'opencode',
@@ -323,9 +324,60 @@ test('benchmark report separates first-pass usable rate from semantic, validatio
       runs: 2,
       firstPassUsable: 0,
       firstPassUsableRate: 0,
-      failureClusters: { semantic: 1, validation: 1, visualReview: 1 },
+      failureClusters: { semantic: 1, validation: 1, visualReview: 1, operational: 0 },
     },
   ]);
+});
+
+test('benchmark records a timeout without a candidate as a complete first-pass failure', () => {
+  const caseFile = writeJson('timeout.case.json', {
+    schema_version: 1,
+    id: 'timeout-architecture',
+    diagram_type: 'architecture',
+    requirements: { nodes: [] },
+  });
+  const runFile = writeJson('timeout.run.json', {
+    schema_version: 1,
+    case_id: 'timeout-architecture',
+    agent: 'pi',
+    model: 'glm-5.2-low',
+    attempt: 1,
+  });
+
+  const recorded = run([
+    'record-failure',
+    '--case', caseFile,
+    '--run', runFile,
+    '--failure', 'timeout',
+  ]);
+
+  assert.equal(recorded.status, 1, recorded.stderr || recorded.stdout);
+  assert.equal(recorded.stderr, '');
+  const failureReceipt = JSON.parse(recorded.stdout);
+  assert.deepEqual(failureReceipt.operational, { status: 'failed', reason: 'timeout' });
+  assert.equal(failureReceipt.gates.semantic.status, 'not_run');
+  assert.equal(failureReceipt.gates.validation.status, 'not_run');
+  assert.equal(failureReceipt.gates.visualReview.status, 'skipped');
+  assert.equal(failureReceipt.firstPassUsable, false);
+
+  const resultsFile = path.join(tmp, 'timeout-results.jsonl');
+  fs.writeFileSync(resultsFile, `${JSON.stringify(failureReceipt)}\n`);
+  const manifestFile = writeJson('timeout.manifest.json', {
+    id: 'timeout-suite',
+    cases: [{ case: caseFile }],
+  });
+  const reported = run(['report', '--results', resultsFile, '--manifest', manifestFile]);
+
+  assert.equal(reported.status, 0, reported.stderr || reported.stdout);
+  const report = JSON.parse(reported.stdout);
+  assert.equal(report.evidenceEligible, true);
+  assert.deepEqual(report.overall.failureClusters, {
+    semantic: 0,
+    validation: 0,
+    visualReview: 0,
+    operational: 1,
+  });
+  assert.equal(report.overall.firstPassUsableRate, 0);
 });
 
 test('benchmark semantic requirements bind by accepted technical labels instead of forcing model-authored internal IDs', () => {
@@ -556,6 +608,10 @@ test('benchmark documentation locks the fair-run and truthful-evidence contract'
     'attempt 1',
     'no post-hoc edits',
     'Reference fixtures are not benchmark evidence',
+    '`record-failure`',
+    '`timeout`',
+    '`no_candidate`',
+    '`provider_error`',
     '`passed`',
     '`failed`',
     '`skipped`',
