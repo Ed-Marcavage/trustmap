@@ -24,12 +24,25 @@ test('skill description is portable across 1024-character runtimes and remains s
 });
 
 test('literal packaged-skill path references resolve inside the installed skill root', () => {
-  const references = [...skill.matchAll(/`((?:assets|bin|examples|recipes|renderers|schemas|scripts)\/[^`\s]+)`/g)]
+  const references = [...skill.matchAll(/`((?:assets|bin|examples|recipes|references|renderers|schemas|scripts)\/[^`\s]+)`/g)]
     .map((match) => match[1])
     .filter((reference) => !/[<>{}*\[\]]/.test(reference));
 
   assert.ok(references.length > 0, 'expected literal packaged-skill references');
   for (const reference of new Set(references)) {
     assert.equal(existsSync(path.join(skillRoot, reference)), true, `SKILL.md references missing packaged path ${reference}`);
+  }
+});
+
+test('main skill stays a bounded authoring router with progressive references', () => {
+  const lines = skill.trimEnd().split('\n');
+  assert.ok(lines.length <= 160, `SKILL.md is ${lines.length} lines; keep the entrypoint at 160 or fewer`);
+  for (const reference of [
+    'references/authoring-contract.md',
+    'references/viewer-runtime.md',
+    'references/delivery-contract.md',
+  ]) {
+    assert.match(skill, new RegExp(reference.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.equal(existsSync(path.join(skillRoot, reference)), true, `${reference} must ship with the skill`);
   }
 });

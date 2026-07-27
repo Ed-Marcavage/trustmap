@@ -834,13 +834,16 @@ test('benchmark documentation locks the fair-run and truthful-evidence contract'
   }
 });
 
-test('packaged skill puts a bounded ordinary-model authoring path before the feature catalogue', () => {
+test('packaged skill puts a bounded ordinary-model path before progressive feature references', () => {
   const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
+  const authoring = fs.readFileSync(path.join(skillRoot, 'references', 'authoring-contract.md'), 'utf8');
+  const viewer = fs.readFileSync(path.join(skillRoot, 'references', 'viewer-runtime.md'), 'utf8');
   const fastPath = skill.indexOf('## Fast authoring path');
-  const featureCatalogue = skill.indexOf('Direct Relationship Pin');
+  const progressiveReferences = skill.indexOf('references/authoring-contract.md');
 
   assert.ok(fastPath > 0, 'fast authoring path must exist');
-  assert.ok(fastPath < featureCatalogue, 'fast authoring path must precede the feature catalogue');
+  assert.ok(fastPath < progressiveReferences, 'fast authoring path must precede progressive references');
+  assert.ok(skill.trimEnd().split('\n').length <= 160, 'ordinary authors must not ingest the viewer catalogue');
   for (const required of [
     'one matching schema',
     'one matching JSON example',
@@ -866,8 +869,14 @@ test('packaged skill puts a bounded ordinary-model authoring path before the fea
     'validate <type>',
     'supportedFixes',
   ]) {
-    assert.match(skill.slice(fastPath, featureCatalogue), new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.match(
+      skill.slice(fastPath, progressiveReferences),
+      new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+    );
   }
+  assert.match(authoring, /componentType/);
+  assert.match(authoring, /clear gap between boxes, not center distance/i);
+  assert.match(viewer, /Direct Relationship Pin/);
 });
 
 test('dated three-model evidence retains every frozen attempt-1 candidate and truthful gate result', () => {

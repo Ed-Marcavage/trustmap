@@ -120,12 +120,12 @@ test('Reach Share Card reuses the 1200x630 seam and publishes a truthful scoped 
 });
 
 test('Skill, product docs, and READMEs keep the optional truthful boundary explicit', () => {
-  const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
-  assert.match(skill, /Export → Reach Share Card/);
-  assert.match(skill, /variant=reach/);
-  assert.match(skill, /data-share-reach-\*/);
-  assert.match(skill, /authored reachability/i);
-  assert.match(skill, /download-only/i);
+  const viewer = fs.readFileSync(path.join(skillRoot, 'references', 'viewer-runtime.md'), 'utf8');
+  assert.match(viewer, /Export → Reach Share Card/);
+  assert.match(viewer, /variant=reach/);
+  assert.match(viewer, /data-share-reach-\*/);
+  assert.match(viewer, /authored reachability/i);
+  assert.match(viewer, /download-only/i);
 
   for (const readme of ['README.md', 'README_EN.md', 'README_ZH.md']) {
     const text = fs.readFileSync(path.join(repoRoot, readme), 'utf8');

@@ -4543,7 +4543,7 @@
     </div>
 
     <!-- Main Diagram -->
-    <div class="diagram-container" data-detail-level="map">
+    <div class="diagram-container" data-detail-level="read">
       <svg viewBox="0 0 1436 760" role="img" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="blueprint" data-engineering-profile="deployment-ownership" data-quality-profile="showcase">
         <title id="archify-diagram-title">Production Deployment Ownership</title>
         <desc id="archify-diagram-description">Regions, network boundaries, workload owners, state, and named crossings</desc>
@@ -10292,7 +10292,7 @@
       function detailLevel() {
         if (state.mode === 'semantic') return 'full';
         if (state.scale >= 1.75) return 'full';
-        if (state.scale >= 1.25) return 'read';
+        if (state.scale >= 1) return 'read';
         return 'map';
       }
       function renderControls() {

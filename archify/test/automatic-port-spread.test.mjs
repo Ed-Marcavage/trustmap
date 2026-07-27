@@ -96,8 +96,10 @@ test('architecture: automatic port spread avoids micro-stubs when a target stays
 
   assert.deepEqual(connectionPoints(html, 'read'), [
     [742, 300],
-    [758, 300],
-    [758, 180],
+    [742, 276],
+    [758, 276],
+    [758, 204],
+    [735, 204],
     [735, 180],
   ]);
 });

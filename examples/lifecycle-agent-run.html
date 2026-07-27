@@ -4543,7 +4543,7 @@
     </div>
 
     <!-- Main Diagram -->
-    <div class="diagram-container" data-detail-level="map">
+    <div class="diagram-container" data-detail-level="read">
       <svg viewBox="0 0 980 660" role="img" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase">
         <title id="archify-diagram-title">Agent Run Lifecycle</title>
         <desc id="archify-diagram-description">State machine for planning, tool execution, human approval, retries, and terminal outcomes</desc>
@@ -10219,7 +10219,7 @@
       function detailLevel() {
         if (state.mode === 'semantic') return 'full';
         if (state.scale >= 1.75) return 'full';
-        if (state.scale >= 1.25) return 'read';
+        if (state.scale >= 1) return 'read';
         return 'map';
       }
       function renderControls() {

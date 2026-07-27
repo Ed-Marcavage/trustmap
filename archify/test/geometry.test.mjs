@@ -13,6 +13,7 @@ import {
   segmentRectClearance,
   segmentRectIntersectionLength,
   collectLabelRouteClearance,
+  cleanEndpointSideProblems,
   cleanFlowProblems,
   cleanCrossingProblems,
   collectAmbiguousCorridors,
@@ -25,9 +26,11 @@ import {
   asArray,
   isFinitePoint,
   anchor,
+  automaticPortRhythmBridge,
   defaultFromSide,
   defaultToSide,
   chosenSide,
+  routeHonorsEndpointSides,
   polylinePath,
   roundedPath,
   labelPoint,
@@ -37,6 +40,27 @@ import {
 import { textUnits, applyTemplate, renderSemanticSigil } from '../renderers/shared/utils.mjs';
 
 const rect = (x, y, w, h) => ({ x, y, width: w, height: h, cx: x + w / 2, cy: y + h / 2 });
+
+test('automaticPortRhythmBridge: near parallel ports use readable outside runs', () => {
+  const points = automaticPortRhythmBridge(
+    [742, 300],
+    [735, 180],
+    'top',
+    'bottom',
+  );
+
+  assert.deepEqual(points, [
+    [742, 300],
+    [742, 276],
+    [758, 276],
+    [758, 204],
+    [735, 204],
+    [735, 180],
+  ]);
+  assert.deepEqual(collectRouteRhythmIssues({
+    routedRelations: [{ relation: { id: 'read' }, points }],
+  }), []);
+});
 
 test('rectsOverlap: separated rects do not overlap', () => {
   assert.equal(rectsOverlap(rect(0, 0, 10, 10), rect(20, 0, 10, 10)), false);
@@ -113,6 +137,42 @@ test('collectLabelRouteClearance exempts only the owning relationship at an exac
   assert.equal(hits.length, 1);
   assert.equal(hits[0].clearance, 2);
   assert.equal(hits[0].otherRelation, sharedSource);
+});
+
+test('endpoint-side direction distinguishes perpendicular entry from a tangent border run', () => {
+  const clean = [[350, 160], [350, 200], [150, 200], [150, 240]];
+  const tangent = [[350, 160], [350, 200], [100, 200], [100, 240], [150, 240]];
+  assert.equal(routeHonorsEndpointSides(clean, 'bottom', 'top'), true);
+  assert.equal(routeHonorsEndpointSides(tangent, 'bottom', 'top'), false);
+
+  const relation = { id: 'tasks-file', from: 'cli-agents', to: 'tasks-watch', fromSide: 'bottom', toSide: 'top' };
+  const problems = cleanEndpointSideProblems({
+    relations: [relation],
+    endpointIds: new Set(['cli-agents', 'tasks-watch']),
+    pathFor: () => ({ points: tangent }),
+    diagramType: 'architecture',
+    relationCollection: 'connections',
+  });
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /\[clean-flow\/endpoint-side-direction\] architecture connections\[0\] id "tasks-file"/);
+  assert.match(problems[0], /final segment 3 \[100, 240\] -> \[150, 240\]/);
+  assert.match(problems[0], /toSide "top".*vertical downward from above/);
+});
+
+test('endpoint-side direction can fail closed on renderer-inferred automatic sides', () => {
+  const relation = { id: 'terminal-return', from: 'stream-hub', to: 'workspace' };
+  const problems = cleanEndpointSideProblems({
+    relations: [relation],
+    endpointIds: new Set(['stream-hub', 'workspace']),
+    pathFor: () => ({ points: [[700, 130], [700, 230], [160, 230], [160, 330]] }),
+    diagramType: 'architecture',
+    relationCollection: 'connections',
+    fromSideFor: () => 'left',
+    toSideFor: () => 'right',
+  });
+  assert.equal(problems.length, 2);
+  assert.match(problems[0], /inferred fromSide "left"/);
+  assert.match(problems[1], /inferred toSide "right"/);
 });
 
 test('cleanFlowProblems reports collection index, ids, segment, clearance, and fix', () => {

@@ -90,6 +90,7 @@ test('cli: doctor reports a complete installation is ready', () => {
   assert.match(result.stdout, /\[ok\] Example renderer/);
   assert.match(result.stdout, /\[ok\] Live preview runtime/);
   assert.match(result.stdout, /\[ok\] Scenario recipe guide/);
+  assert.match(result.stdout, /\[ok\] Progressive authoring references/);
   assert.match(result.stdout, /\[ok\] Architecture compare runtime and proof fixtures/);
   assert.match(result.stdout, /\[ok\] Standalone schema validators/);
   assert.match(result.stdout, /\[ok\] architecture renderer, schema, and example/);
@@ -244,6 +245,10 @@ test('cli: deliver atomically writes a checked artifact and structured receipt',
   assert.equal(receipt.type, 'workflow');
   assert.equal(receipt.input, input);
   assert.equal(receipt.output, out);
+  assert.deepEqual(receipt.specification, {
+    sha256: sha256(input),
+    bytes: fs.statSync(input).size,
+  });
   assert.match(receipt.artifact.sha256, /^[a-f0-9]{64}$/);
   assert.equal(receipt.artifact.sha256, sha256(out));
   assert.equal(receipt.artifact.bytes, fs.statSync(out).size);

@@ -138,12 +138,12 @@ test('Route Share Card reuses one 1200x630 variant seam and publishes a truthful
 });
 
 test('skill and READMEs describe the optional Export variant and show one real card without changing the hero', () => {
-  const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
-  assert.match(skill, /Export → Route Share Card/);
-  assert.match(skill, /format=share-card/);
-  assert.match(skill, /variant=route/);
-  assert.match(skill, /data-share-route-\*/);
-  assert.match(skill, /download-only/i);
+  const viewer = fs.readFileSync(path.join(skillRoot, 'references', 'viewer-runtime.md'), 'utf8');
+  assert.match(viewer, /Export → Route Share Card/);
+  assert.match(viewer, /format=share-card/);
+  assert.match(viewer, /variant=route/);
+  assert.match(viewer, /data-share-route-\*/);
+  assert.match(viewer, /download-only/i);
 
   for (const readme of ['README.md', 'README_EN.md', 'README_ZH.md']) {
     const text = fs.readFileSync(path.join(repoRoot, readme), 'utf8');

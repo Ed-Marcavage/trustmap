@@ -4543,7 +4543,7 @@
     </div>
 
     <!-- Main Diagram -->
-    <div class="diagram-container" data-detail-level="map">
+    <div class="diagram-container" data-detail-level="read">
       <svg viewBox="0 0 1080 588" role="img" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
         <title id="archify-diagram-title">Sample Web App</title>
         <desc id="archify-diagram-description">Classic 3-tier SaaS on AWS — rendered by Archify</desc>
@@ -4984,7 +4984,7 @@
 
     <!-- Footer -->
     <p class="footer">
-      Architecture diagram &bull; Built with Archify<span class="no-print"> &bull; <a class="artifact-start-link" href="https://tt-a1i.github.io/archify/start.html?type=architecture" target="_blank" rel="noopener noreferrer">Create yours &nearr;</a> &bull; Hover to trace &bull; <kbd>R</kbd> route &bull; Click to focus &bull; <kbd>+</kbd>/<kbd>&minus;</kbd> zoom &bull; <kbd>M</kbd> radar &bull; <kbd>[</kbd>/<kbd>]</kbd> views &bull; <kbd>P</kbd> play story &bull; <kbd>T</kbd> theme &bull; <kbd>E</kbd> export</span>
+      Architecture diagram &bull; Built with Archify<span class="no-print"> &bull; <a class="artifact-start-link" href="https://tt-a1i.github.io/archify/start.html?type=architecture&amp;source=artifact" target="_blank" rel="noopener noreferrer">Create yours &nearr;</a> &bull; Hover to trace &bull; <kbd>R</kbd> route &bull; Click to focus &bull; <kbd>+</kbd>/<kbd>&minus;</kbd> zoom &bull; <kbd>M</kbd> radar &bull; <kbd>[</kbd>/<kbd>]</kbd> views &bull; <kbd>P</kbd> play story &bull; <kbd>T</kbd> theme &bull; <kbd>E</kbd> export</span>
     </p>
   </div>
 
@@ -10233,7 +10233,7 @@
       function detailLevel() {
         if (state.mode === 'semantic') return 'full';
         if (state.scale >= 1.75) return 'full';
-        if (state.scale >= 1.25) return 'read';
+        if (state.scale >= 1) return 'read';
         return 'map';
       }
       function renderControls() {

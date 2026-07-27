@@ -316,7 +316,76 @@ test('architecture: default auto route selects a safe orthogonal candidate aroun
   const { code, stderr, outPath } = render('architecture', d);
   assert.equal(code, 0, stderr);
   const html = fs.readFileSync(outPath, 'utf8');
-  assert.match(html, /data-composition-points="560,318;560,239;880,239;880,160"/);
+  assert.match(html, /data-composition-points="560,318;856,318;856,160;880,160"/);
+});
+
+test('architecture: auto route enters explicit top and bottom ports perpendicularly', () => {
+  const d = {
+    schema_version: 1,
+    diagram_type: 'architecture',
+    meta: { title: 'Endpoint direction regression' },
+    components: [
+      { id: 'cli-agents', type: 'external', label: 'CLI Agents', pos: [300, 100], size: [100, 60] },
+      { id: 'tasks-watch', type: 'backend', label: 'Tasks Watcher', pos: [100, 240], size: [100, 60] },
+    ],
+    connections: [
+      { id: 'tasks-file', from: 'cli-agents', to: 'tasks-watch', variant: 'dashed', fromSide: 'bottom', toSide: 'top' },
+    ],
+  };
+  const { code, stderr, outPath } = render('architecture', d);
+  assert.equal(code, 0, stderr);
+  const html = fs.readFileSync(outPath, 'utf8');
+  assert.match(html, /data-composition-points="350,160;350,200;150,200;150,240"/);
+});
+
+test('architecture: auto route preserves inferred side normals when the primary dogleg is blocked', () => {
+  const d = {
+    schema_version: 1,
+    diagram_type: 'architecture',
+    meta: { title: 'Inferred endpoint direction regression' },
+    components: [
+      { id: 'workspace', type: 'frontend', label: 'Workspace UI', pos: [40, 300], size: [120, 60] },
+      { id: 'runtime-server', type: 'backend', label: 'Runtime Server', pos: [220, 300], size: [120, 60] },
+      { id: 'runtime-store', type: 'backend', label: 'Runtime Store', pos: [400, 300], size: [120, 60] },
+      { id: 'stream-hub', type: 'messagebus', label: 'Terminal Stream Hub', pos: [700, 100], size: [120, 60] },
+    ],
+    connections: [
+      { id: 'terminal-return', from: 'stream-hub', to: 'workspace' },
+    ],
+  };
+  const { code, stderr, outPath } = render('architecture', d);
+  assert.equal(code, 0, stderr);
+  const html = fs.readFileSync(outPath, 'utf8');
+  assert.match(html, /data-composition-points="700,130;184,130;184,330;160,330"/);
+  assert.doesNotMatch(html, /data-composition-points="700,130;700,230;160,230;160,330"/);
+});
+
+test('architecture: explicit via cannot run tangentially into an authored top port', () => {
+  const d = {
+    schema_version: 1,
+    diagram_type: 'architecture',
+    meta: { title: 'Tangent endpoint regression' },
+    components: [
+      { id: 'cli-agents', type: 'external', label: 'CLI Agents', pos: [300, 100], size: [100, 60] },
+      { id: 'tasks-watch', type: 'backend', label: 'Tasks Watcher', pos: [100, 240], size: [100, 60] },
+    ],
+    connections: [
+      {
+        id: 'tasks-file',
+        from: 'cli-agents',
+        to: 'tasks-watch',
+        variant: 'dashed',
+        fromSide: 'bottom',
+        toSide: 'top',
+        via: [[350, 200], [100, 200], [100, 240]],
+      },
+    ],
+  };
+  const { code, stderr } = render('architecture', d);
+  assert.notEqual(code, 0, `expected non-zero exit; stderr:\n${stderr}`);
+  assert.match(stderr, /\[clean-flow\/endpoint-side-direction\] architecture connections\[0\] id "tasks-file"/);
+  assert.match(stderr, /final segment 3 \[100, 240\] -> \[150, 240\]/);
+  assert.match(stderr, /toSide "top".*vertical downward from above/);
 });
 
 test('architecture: explicit orthogonal route remains authoritative when it crosses a component', () => {
@@ -331,9 +400,9 @@ test('architecture: explicit orthogonal route remains authoritative when it cros
   assert.match(stderr, /connections\[0\] "api" -> "queue" crosses component "cache"/);
 });
 
-test('architecture: auto route still fails closed when both bounded doglegs are blocked', () => {
+test('architecture: auto route still fails closed when doglegs and side-aware bridges are blocked', () => {
   const d = autoRoutePassThroughDocument({ from: 'api', to: 'queue', variant: 'dashed' });
-  d.components.push({ id: 'guard', type: 'security', label: 'Guard', pos: [790, 215], size: [60, 50] });
+  d.components.push({ id: 'guard', type: 'security', label: 'Guard', pos: [825, 215], size: [70, 50] });
   const { code, stderr } = render('architecture', d);
   assert.notEqual(code, 0, `expected non-zero exit; stderr:\n${stderr}`);
   assert.match(stderr, /connections\[0\] "api" -> "queue" crosses component "cache"/);

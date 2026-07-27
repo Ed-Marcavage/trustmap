@@ -60,7 +60,7 @@ try {
 
   const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
   const skillReferences = [...skill.matchAll(
-    /`((?:assets|bin|examples|recipes|renderers|schemas|scripts)\/[^`\s]+)`/g,
+    /`((?:assets|bin|examples|recipes|references|renderers|schemas|scripts)\/[^`\s]+)`/g,
   )]
     .map((match) => match[1])
     .filter((reference) => !/[<>{}*\[\]]/.test(reference));
@@ -116,7 +116,9 @@ try {
     'deliver', 'workflow', path.join(skillRoot, 'examples', fixtures[1][1]),
     path.join(scratch, 'workflow-delivered.html'), '--quality', 'showcase', '--json',
   ]));
-  if (!delivered.ok || delivered.validation?.compositionStatus !== 'pass') {
+  if (!delivered.ok || delivered.validation?.compositionStatus !== 'pass'
+    || !/^[a-f0-9]{64}$/.test(delivered.specification?.sha256 || '')
+    || !(delivered.specification?.bytes > 0)) {
     throw new Error('packaged workflow delivery did not return a passing receipt');
   }
 
@@ -139,6 +141,55 @@ try {
   const failure = JSON.parse(runExpectFailure(['validate', 'workflow', invalidPath, '--json']));
   if (failure.ok || !failure.diagnostics?.some((diagnostic) => diagnostic.code === 'schema/additionalProperties')) {
     throw new Error('packaged skill did not return the expected unknown-field diagnostic');
+  }
+
+  const tangentEndpoint = {
+    schema_version: 1,
+    diagram_type: 'architecture',
+    meta: { title: 'Endpoint direction smoke' },
+    components: [
+      { id: 'source', type: 'external', label: 'Source', pos: [300, 100], size: [100, 60] },
+      { id: 'target', type: 'backend', label: 'Target', pos: [100, 240], size: [100, 60] },
+    ],
+    connections: [{
+      id: 'tangent',
+      from: 'source',
+      to: 'target',
+      fromSide: 'bottom',
+      toSide: 'top',
+      via: [[350, 200], [100, 200], [100, 240]],
+    }],
+  };
+  const tangentPath = path.join(scratch, 'tangent-endpoint.architecture.json');
+  fs.writeFileSync(tangentPath, JSON.stringify(tangentEndpoint));
+  const tangentFailure = JSON.parse(runExpectFailure(['validate', 'architecture', tangentPath, '--json']));
+  const tangentDiagnostic = tangentFailure.diagnostics?.find((diagnostic) => (
+    diagnostic.code === 'clean-flow/endpoint-side-direction'
+  ));
+  if (tangentFailure.ok || tangentDiagnostic?.evidence?.authoredField !== 'toSide'
+    || tangentDiagnostic?.evidence?.side !== 'top') {
+    throw new Error('packaged skill did not reject a tangential target-port entry with structured repair evidence');
+  }
+
+  const inferredBridge = {
+    schema_version: 1,
+    diagram_type: 'architecture',
+    meta: { title: 'Inferred endpoint bridge smoke' },
+    components: [
+      { id: 'workspace', type: 'frontend', label: 'Workspace UI', pos: [40, 300], size: [120, 60] },
+      { id: 'runtime-server', type: 'backend', label: 'Runtime Server', pos: [220, 300], size: [120, 60] },
+      { id: 'runtime-store', type: 'backend', label: 'Runtime Store', pos: [400, 300], size: [120, 60] },
+      { id: 'stream-hub', type: 'messagebus', label: 'Terminal Stream Hub', pos: [700, 100], size: [120, 60] },
+    ],
+    connections: [{ id: 'terminal-return', from: 'stream-hub', to: 'workspace' }],
+  };
+  const inferredBridgePath = path.join(scratch, 'inferred-bridge.architecture.json');
+  const inferredBridgeHtml = path.join(scratch, 'inferred-bridge.html');
+  fs.writeFileSync(inferredBridgePath, JSON.stringify(inferredBridge));
+  run(['render', 'architecture', inferredBridgePath, inferredBridgeHtml]);
+  const inferredBridgeArtifact = fs.readFileSync(inferredBridgeHtml, 'utf8');
+  if (!inferredBridgeArtifact.includes('data-composition-points="700,130;184,130;184,330;160,330"')) {
+    throw new Error('packaged skill did not preserve inferred endpoint normals with a side-aware bridge');
   }
 
   process.stdout.write(`package smoke passed on ${process.platform} (${skillRoot})\n`);
