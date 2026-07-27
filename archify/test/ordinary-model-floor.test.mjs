@@ -854,7 +854,11 @@ test('packaged skill puts a bounded ordinary-model authoring path before the fea
     'A recoverable state uses `type: "failure"` plus a real transition back to the active state',
     'after every candidate edit',
     'A passing final validation freezes the candidate: never edit it afterward',
+    'A receipt with only 4 artifact checks is basic validation, never showcase acceptance',
+    'a showcase pass must report all 9 artifact checks with 0 composition errors and 0 warnings',
+    'If the candidate omits or misspells the exact `meta.quality_profile` field',
     '`deliver` is the final acceptance command',
+    'deliver <type> <candidate.json> <output.html> --quality showcase --json',
     'A non-zero exit can never be described as success',
     'Continue focused correction while the objective error count reaches a new minimum',
     'If two consecutive rounds do not improve that best count',
@@ -954,6 +958,8 @@ test('quality-first evidence preserves the complete matrix and the measured life
   assert.equal(evidence.generation.packageSha256, '92135b360ee1502080dac8f2eea6258bb8fa0aa7f9a59cba119b02233f797593');
   assert.equal(evidence.generation.timeLimitSeconds, null);
   assert.match(evidence.generation.latencyPolicy, /not a quality failure/i);
+  assert.equal(evidence.generation.processRecovery, undefined);
+  assert.ok(evidence.verification.calibratedAliases.includes('Admitted'));
   assert.equal(evidence.report.evidenceEligible, true);
   assert.deepEqual(evidence.report.overall, {
     runs: 15,
@@ -984,9 +990,16 @@ test('quality-first evidence preserves the complete matrix and the measured life
   );
   assert.equal(minimaxLifecycle.receipt.firstPassUsable, true);
   assert.equal(minimaxLifecycle.receipt.gates.validation.checksPassed, 9);
+  assert.ok(minimaxLifecycle.candidate.states.some(
+    (state) => state.id === 'admitted' && state.label === 'Admitted',
+  ));
   assert.equal(
     minimaxLifecycle.run.visual_review.reviewer,
-    'codex-browser-visual-audit-2026-07-26-quality-first',
+    'codex-browser-visual-audit-2026-07-27-quality-first-clean-rerun',
+  );
+  assert.equal(
+    minimaxLifecycle.receipt.gates.visualReview.reviewer,
+    minimaxLifecycle.run.visual_review.reviewer,
   );
 
   const deepseekWorkflow = evidence.runs.find(

@@ -11,12 +11,11 @@
     "timeLimitSeconds": null,
     "latencyPolicy": "generation latency is recorded operationally but is not a quality failure; only final diagram gates determine usability",
     "toolAccess": "identical extracted packaged skill root with shell access",
-    "freezePolicy": "benchmark-candidate.json frozen when each complete pi invocation exited; no post-hoc candidate edits",
-    "processRecovery": "one MiniMax lifecycle invocation created no candidate and lost its underlying pi process; the identical command was restarted before candidate production and remains attempt 1"
+    "freezePolicy": "benchmark-candidate.json frozen after the uninterrupted clean rerun completed; no post-hoc candidate edits"
   },
   "verification": {
     "caseRevision": "same tree as this evidence file",
-    "reviewer": "codex-browser-visual-audit-2026-07-26-quality-first",
+    "reviewer": "codex-browser-visual-audit-2026-07-27-quality-first-clean-rerun",
     "calibratedAliases": [
       "Execution",
       "Dispatcher",
@@ -31,7 +30,8 @@
       "BI Dashboard",
       "identity fields",
       "sanitized events",
-      "encrypted PII"
+      "encrypted PII",
+      "Admitted"
     ],
     "aliasPolicy": "exact equivalent vocabulary only; node types, relationship direction, variants, and required topology remain enforced",
     "visualPolicy": "browser review only after deterministic showcase validation; validation failures remain visual_review=skipped; visible authored-graph contradictions fail review",
@@ -5300,49 +5300,49 @@
         "diagram_type": "lifecycle",
         "meta": {
           "title": "Agent Run Lifecycle",
-          "subtitle": "Ordered phases, human pauses, recoverable failures, and terminal exits",
+          "subtitle": "Queued through planning, execution, review, and completion with human gates, recovery, and terminal exits",
           "output": "agent-run-lifecycle.html",
           "viewBox": [
             980,
             660
           ],
-          "animation": "trace",
+          "animation": "none",
           "quality_profile": "showcase",
           "views": [
             {
-              "id": "happy-path",
-              "label": "Happy path",
+              "id": "ordered-phases",
+              "label": "Ordered phases",
               "focus": [
                 "admitted",
-                "planning-run",
-                "working",
-                "quality-review",
-                "succeeded"
+                "charting",
+                "running",
+                "assessing",
+                "delivered"
               ],
-              "note": "Follow the five ordered phases from a queued request to a completed response."
+              "note": "Trace the canonical run from admission to delivery."
             },
             {
-              "id": "interruptions",
-              "label": "Human and input pauses",
+              "id": "pauses-and-recovery",
+              "label": "Pauses and recovery",
               "focus": [
-                "working",
-                "human-review",
-                "quality-review",
-                "input-wait"
+                "running",
+                "pending_human",
+                "retryable",
+                "awaiting_input"
               ],
-              "note": "See where the run pauses without becoming terminal."
+              "note": "Approval and retryable failure hold the run open without ending it."
             },
             {
-              "id": "recovery-and-exits",
-              "label": "Recovery and terminal exits",
+              "id": "terminal-exits",
+              "label": "Terminal exits",
               "focus": [
-                "working",
-                "transient-error",
-                "input-wait",
-                "user-cancelled",
-                "timed-out"
+                "pending_human",
+                "awaiting_input",
+                "retryable",
+                "aborted",
+                "timed_out"
               ],
-              "note": "Separate retryable failure from cancellation and timeout."
+              "note": "Cancellation, expiry, and successful completion as distinct end states."
             }
           ]
         },
@@ -5356,7 +5356,7 @@
             "label": "Interruptions"
           },
           {
-            "id": "exceptions",
+            "id": "recovery",
             "label": "Recovery loop"
           },
           {
@@ -5368,7 +5368,7 @@
           {
             "id": "admitted",
             "type": "start",
-            "label": "Queued",
+            "label": "Admitted",
             "sublabel": "request accepted",
             "lane": "main",
             "col": 0,
@@ -5376,7 +5376,7 @@
             "tag": "entry"
           },
           {
-            "id": "planning-run",
+            "id": "charting",
             "type": "active",
             "label": "Planning",
             "sublabel": "build task graph",
@@ -5386,27 +5386,27 @@
             "tag": "model"
           },
           {
-            "id": "working",
+            "id": "running",
             "type": "active",
             "label": "Executing",
-            "sublabel": "tool calls",
+            "sublabel": "tool calls in flight",
             "lane": "main",
             "col": 2,
             "step": "03",
             "tag": "work"
           },
           {
-            "id": "quality-review",
+            "id": "assessing",
             "type": "decision",
             "label": "Reviewing",
-            "sublabel": "quality gate",
+            "sublabel": "checks and gates",
             "lane": "main",
             "col": 3,
             "step": "04",
             "tag": "check"
           },
           {
-            "id": "succeeded",
+            "id": "delivered",
             "type": "success",
             "label": "Completed",
             "sublabel": "final response",
@@ -5416,47 +5416,47 @@
             "tag": "done"
           },
           {
-            "id": "human-review",
+            "id": "pending_human",
             "type": "waiting",
-            "label": "Awaiting Approval",
+            "label": "Pending Approval",
             "sublabel": "human gate",
             "lane": "waiting",
             "col": 0,
             "tag": "pause"
           },
           {
-            "id": "input-wait",
+            "id": "awaiting_input",
             "type": "waiting",
             "label": "Awaiting Input",
-            "sublabel": "missing user reply",
+            "sublabel": "review blocked",
             "lane": "waiting",
             "col": 1,
             "tag": "wait"
           },
           {
-            "id": "transient-error",
+            "id": "retryable",
             "type": "failure",
-            "label": "Recoverable Error",
-            "sublabel": "retry budget left",
-            "lane": "exceptions",
+            "label": "Retryable Failure",
+            "sublabel": "transient error",
+            "lane": "recovery",
             "col": 0,
             "yOffset": 78,
             "tag": "retryable"
           },
           {
-            "id": "user-cancelled",
+            "id": "aborted",
             "type": "failure",
             "label": "Cancelled",
-            "sublabel": "user stopped run",
+            "sublabel": "user stopped",
             "lane": "terminal",
             "col": 0,
             "tag": "terminal"
           },
           {
-            "id": "timed-out",
+            "id": "timed_out",
             "type": "failure",
             "label": "Expired",
-            "sublabel": "timed out",
+            "sublabel": "deadline reached",
             "lane": "terminal",
             "col": 1,
             "tag": "terminal"
@@ -5464,56 +5464,52 @@
         ],
         "transitions": [
           {
-            "id": "planning-starts",
+            "id": "admit-to-chart",
             "from": "admitted",
-            "to": "planning-run",
+            "to": "charting",
             "variant": "emphasis"
           },
           {
-            "id": "plan-then-work",
-            "from": "planning-run",
-            "to": "working",
+            "id": "chart-to-run",
+            "from": "charting",
+            "to": "running",
             "variant": "emphasis"
           },
           {
-            "id": "work-then-review",
-            "from": "working",
-            "to": "quality-review",
+            "id": "run-to-review",
+            "from": "running",
+            "to": "assessing",
             "variant": "emphasis"
           },
           {
-            "id": "review-passes",
-            "from": "quality-review",
-            "to": "succeeded",
+            "id": "review-to-done",
+            "from": "assessing",
+            "to": "delivered",
             "variant": "emphasis"
           },
           {
-            "id": "approval-requested",
-            "from": "working",
-            "to": "human-review",
-            "label": "needs approval",
+            "id": "run-needs-human",
+            "from": "running",
+            "to": "pending_human",
             "variant": "security",
             "fromSide": "bottom",
             "toSide": "top",
             "route": "straight",
-            "labelAt": [
-              402,
-              202
-            ]
+            "label": "needs approval",
+            "labelDy": 24
           },
           {
-            "id": "review-needs-input",
-            "from": "quality-review",
-            "to": "input-wait",
-            "label": "blocked on input",
+            "id": "review-blocks",
+            "from": "assessing",
+            "to": "awaiting_input",
             "variant": "default",
-            "route": "drop"
+            "route": "drop",
+            "label": "blocks"
           },
           {
-            "id": "working-fails",
-            "from": "working",
-            "to": "transient-error",
-            "label": "transient failure",
+            "id": "run-failed",
+            "from": "running",
+            "to": "retryable",
             "variant": "security",
             "fromSide": "left",
             "toSide": "left",
@@ -5529,10 +5525,9 @@
             ]
           },
           {
-            "id": "error-retried",
-            "from": "transient-error",
-            "to": "working",
-            "label": "retry",
+            "id": "retry-resume",
+            "from": "retryable",
+            "to": "running",
             "variant": "emphasis",
             "fromSide": "left",
             "toSide": "top",
@@ -5549,13 +5544,24 @@
                 402,
                 80
               ]
-            ]
+            ],
+            "label": "retry"
           },
           {
-            "id": "approval-cancelled",
-            "from": "human-review",
-            "to": "user-cancelled",
-            "label": "user cancels",
+            "id": "block-expired",
+            "from": "awaiting_input",
+            "to": "timed_out",
+            "variant": "security",
+            "fromSide": "bottom",
+            "toSide": "top",
+            "route": "straight",
+            "label": "deadline",
+            "labelDy": 24
+          },
+          {
+            "id": "approval-aborted",
+            "from": "pending_human",
+            "to": "aborted",
             "variant": "security",
             "fromSide": "bottom",
             "toSide": "top",
@@ -5573,52 +5579,36 @@
                 432
               ]
             ],
-            "labelAt": [
-              480,
-              432
-            ]
-          },
-          {
-            "id": "input-expired",
-            "from": "input-wait",
-            "to": "timed-out",
-            "label": "timeout",
-            "variant": "security",
-            "fromSide": "bottom",
-            "toSide": "top",
-            "route": "straight",
-            "labelAt": [
-              556,
-              350
-            ]
+            "label": "cancelled",
+            "labelDy": 54
           }
         ],
         "cards": [
           {
             "dot": "emerald",
-            "title": "Active phases",
+            "title": "Canonical phase rail",
             "items": [
-              "The run advances through five ordered phases from queue to completion",
-              "The primary lifecycle rides one horizontal rail",
-              "Completion is a phase on the rail, not a detached side box"
+              "Five ordered phases advance a single run from admission to completion",
+              "The completed phase is itself a top-band outcome, not a detached box",
+              "Active work stays on the main horizontal rail"
             ]
           },
           {
             "dot": "amber",
-            "title": "Pauses",
+            "title": "Human and input pauses",
             "items": [
-              "Approval pauses execution while a human reviews an action",
-              "Reviewing can block while waiting for missing user input",
-              "Waits stay non-terminal until cancelled or timed out"
+              "Execution pauses for human approval without becoming terminal",
+              "Review blocks on missing input and resolves only through the terminal band",
+              "Waits keep the run alive and recoverable"
             ]
           },
           {
             "dot": "rose",
-            "title": "Recovery and exits",
+            "title": "Recovery and terminal exits",
             "items": [
-              "Transient errors loop back to execution while retries remain",
-              "Cancelled leaves the lifecycle when the user stops a waiting approval",
-              "Expired leaves the lifecycle when a blocked run times out"
+              "Retryable failure loops back into execution while the budget remains",
+              "Cancellation and expiry are the only terminal exits from active work",
+              "Terminal exits sit in their own band and never point back into active work"
             ]
           }
         ]
@@ -5631,10 +5621,11 @@
         "attempt": 1,
         "visual_review": {
           "status": "passed",
-          "reviewer": "codex-browser-visual-audit-2026-07-26-quality-first",
+          "reviewer": "codex-browser-visual-audit-2026-07-27-quality-first-clean-rerun",
           "defects": []
         }
       },
+      "transcript": "Final state:\n\n- **File**: `benchmark-candidate.json` written to the repository root (5403 bytes).\n- **No other files edited.** Only this one artifact.\n- **Diagram type**: `lifecycle`, schema_version `1`, `meta.quality_profile: \"showcase\"`, no animation.\n- **Topology**: 5 ordered main-band phases (`admitted` → `charting` → `running` → `assessing` → `delivered`); 2 waiting-lane waits (`pending_human`, `awaiting_input`); 1 recoverable failure (`retryable`) in the recovery lane with a real transition back to `running` (not just a \"retry\" label); 2 terminal exits (`aborted` for user-cancelled approval, `timed_out` for expired blocked run), in the `terminal` lane and never pointing back into active work.\n- **IDs**: fresh (`admitted`, `charting`, `pending_human`, `awaiting_input`, `retryable`, `delivered`, etc.), distinct from the checked-in `agent-run.lifecycle.json` example.\n- **Three guided views**: ordered phases, pauses-and-recovery, terminal-exits.\n- **Validation**: `archify validate lifecycle benchmark-candidate.json --quality showcase --json` reports `ok: true`, all 9 checks pass, composition `pass` with 0 errors / 0 warnings, `minLabelRouteClearance: 34`, no proper crossings, no ambiguous corridors, no short or micro segments.\n\nThe frozen candidate is at `/private/tmp/archify-omf-minimax-rerun.1E48eG/package/archify/benchmark-candidate.json`. I am not claiming the external harness's independent validation passed.",
       "receipt": {
         "schemaVersion": 1,
         "benchmark": "ordinary-model-floor",
@@ -5652,13 +5643,13 @@
             "ok": true,
             "bindings": {
               "queued": "admitted",
-              "executing": "working",
-              "reviewing": "quality-review",
-              "approval": "human-review",
-              "blocked": "input-wait",
-              "recoverable": "transient-error",
-              "cancelled": "user-cancelled",
-              "expired": "timed-out"
+              "executing": "running",
+              "reviewing": "assessing",
+              "approval": "pending_human",
+              "blocked": "awaiting_input",
+              "recoverable": "retryable",
+              "cancelled": "aborted",
+              "expired": "timed_out"
             },
             "missingNodeIds": [],
             "ambiguousNodes": [],
@@ -5675,13 +5666,12 @@
           },
           "visualReview": {
             "status": "passed",
-            "reviewer": "codex-browser-visual-audit-2026-07-26-quality-first",
+            "reviewer": "codex-browser-visual-audit-2026-07-27-quality-first-clean-rerun",
             "defects": []
           }
         },
         "firstPassUsable": true
-      },
-      "transcript": "Final verification — the candidate is in the correct location (repository root, `benchmark-candidate.json`) and passes validation under the `showcase` quality profile.\n\n**Summary**\n\n- Wrote `benchmark-candidate.json` at the repository root (`/private/tmp/archify-omf-quality-first.ri4vn1/runs/minimax-m3/agent-run-lifecycle/package/archify/benchmark-candidate.json`).\n- Diagram type: `lifecycle`, quality profile: `showcase`.\n- Lanes: `main` (5 ordered phases on the phase rail), `waiting` (interruptions), `exceptions` (recovery loop), `terminal` (terminal exits).\n- States: `admitted` → `planning-run` → `working` → `quality-review` → `succeeded` on the main rail; `human-review` and `input-wait` in the interruptions band; `transient-error` in the recovery band; `user-cancelled` and `timed-out` in the terminal band.\n- Transitions express the requested behavior: execution can pause for `human-review` or fall into a recoverable `transient-error`; `quality-review` can block into `input-wait`; a blocked run may expire into `timed-out`; a waiting approval may be cancelled into `user-cancelled`; transient errors retry back to `working`.\n- All IDs, labels, sublabels, tags, view definitions, and transitions are freshly authored (not copied from the checked-in `examples/agent-run.lifecycle.json`).\n- Three focused repair rounds resolved label/state overlaps and label-vs-route clearance issues raised by the bundled validator.\n- Final validate exit: 0 (`ok lifecycle … (9 artifact checks; composition showcase: 0 errors, 0 warnings)`)."
+      }
     }
   ]
 }

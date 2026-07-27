@@ -5,7 +5,7 @@
   "quality_profile": "showcase",
   "requirements": {
     "nodes": [
-      { "key": "queued", "labels": ["Queued", "Accepted"], "type": "start" },
+      { "key": "queued", "labels": ["Queued", "Accepted", "Admitted"], "type": "start" },
       { "key": "executing", "labels": ["Executing", "Running", "Execution"], "type": "active" },
       { "key": "reviewing", "labels": ["Reviewing", "Quality Review"], "type": "decision" },
       { "key": "approval", "labels": ["Needs Approval", "Waiting for Approval", "Awaiting Approval", "Approval hold", "Pending Approval", "Approval Pending"], "type": "waiting" },
