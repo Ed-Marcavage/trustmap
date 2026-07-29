@@ -12,7 +12,7 @@
 
 **Turn a codebase or system description into a polished, interactive system map — directly in chat.**
 
-Archify is an agent skill for Cursor, Claude Code, Codex CLI, and OpenCode. Give it a system description or repository; get an interactive, shareable technical map.
+Archify is an agent skill for Raven, Cursor, Claude Code, Codex CLI, and OpenCode. Give it a system description or repository; get an interactive, shareable technical map.
 
 - **Open it and present** — five technical diagram types, four visual presets, dark/light themes, and optional finite motion
 - **Review architecture changes before merge** — compare two validated snapshots as Before / Delta / After, with exact added, removed, changed, moved, and rerouted facts
@@ -100,7 +100,7 @@ To try it without a permanent install:
 npx skills use tt-a1i/archify@archify --agent codex
 ```
 
-The same Skill works with `cursor`, `codex`, `claude-code`, and `opencode`; the [quick-start agent switcher](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) generates the exact command without maintaining vendor-specific forks. The packaged [`archify.zip`](archify.zip) also works without `npm install`.
+The same Skill works with `raven`, `cursor`, `codex`, `claude-code`, and `opencode`; the [quick-start agent switcher](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) generates the exact command without maintaining vendor-specific forks. The packaged [`archify.zip`](archify.zip) also works without `npm install`; for Raven, extract it into `~/.raven/workspace/skills`.
 
 ### 2. Ask for one bounded view
 
@@ -245,6 +245,7 @@ The complete generation and viewer contract lives in [`archify/SKILL.md`](archif
 
 | Surface | Install location or method | Capability |
 |---|---|---|
+| **Raven** | `~/.raven/workspace/skills/archify` | Full renderer + validation workflow |
 | **Claude Code** | `~/.claude/skills/` or `.claude/skills/` | Full renderer + validation workflow |
 | **Codex CLI** | `~/.agents/skills/` or `.agents/skills/` | Full renderer + validation workflow |
 | **opencode** | `~/.config/opencode/skills/`, `.opencode/skills/`, or `.agents/skills/` | Full renderer + validation workflow |

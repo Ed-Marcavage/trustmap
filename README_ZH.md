@@ -8,7 +8,7 @@
 
 **在对话里，把代码仓库或系统描述变成漂亮、可靠、可交互的系统地图。**
 
-Archify 是适用于 Cursor、Claude Code、Codex CLI 和 OpenCode 的 Agent Skill。给它系统描述或代码仓库，就能得到可交互、可分享的专业技术地图。
+Archify 是适用于 Raven、Cursor、Claude Code、Codex CLI 和 OpenCode 的 Agent Skill。给它系统描述或代码仓库，就能得到可交互、可分享的专业技术地图。
 
 - **打开就是成品** —— 五种技术图、四套视觉预设、深浅主题，以及显式启用的有限动态
 - **合并前先看清架构变化** —— 把两份已校验快照对比为 Before / Delta / After，准确区分新增、删除、语义变化、移动和重路由
@@ -96,7 +96,7 @@ npx -y skills add tt-a1i/archify --skill archify --agent cursor --global --copy 
 npx skills use tt-a1i/archify@archify --agent codex
 ```
 
-同一份 Skill 可用于 `cursor`、`codex`、`claude-code` 和 `opencode`；[快速开始页的 Agent 切换器](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture)会生成准确命令，不维护厂商专属分叉。仓库内的 [`archify.zip`](archify.zip) 也不需要执行 `npm install`。
+同一份 Skill 可用于 `raven`、`cursor`、`codex`、`claude-code` 和 `opencode`；[快速开始页的 Agent 切换器](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture)会生成准确命令，不维护厂商专属分叉。仓库内的 [`archify.zip`](archify.zip) 也不需要执行 `npm install`；在 Raven 中，将其解压到 `~/.raven/workspace/skills` 即可。
 
 ### 2. 先画一个边界清楚的视图
 
@@ -240,6 +240,7 @@ node bin/archify.mjs deliver workflow examples/agent-tool-call.workflow.json /tm
 
 | 使用位置 | 安装位置或方法 | 能力 |
 |---|---|---|
+| **Raven** | `~/.raven/workspace/skills/archify` | 完整 Renderer + Validation 工作流 |
 | **Claude Code** | `~/.claude/skills/` 或 `.claude/skills/` | 完整 Renderer + Validation 工作流 |
 | **Codex CLI** | `~/.agents/skills/` 或 `.agents/skills/` | 完整 Renderer + Validation 工作流 |
 | **opencode** | `~/.config/opencode/skills/`、`.opencode/skills/` 或 `.agents/skills/` | 完整 Renderer + Validation 工作流 |
