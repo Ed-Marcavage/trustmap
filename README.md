@@ -21,7 +21,9 @@ Archify is an agent skill for Raven, Cursor, Claude Code, Codex CLI, and OpenCod
 
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
 ![Agent Skill](https://img.shields.io/badge/Agent-Skill-7C3AED?style=flat-square)
-![Version](https://img.shields.io/badge/version-2.12.0-0891b2?style=flat-square)
+![Development Version](https://img.shields.io/badge/version-2.13.0--dev.0-0891b2?style=flat-square)
+
+**Current development version:** `v2.13.0-dev.0` (unreleased; latest stable: `v2.12.0`). See [Unreleased](CHANGELOG.md#unreleased).
 
 **[Project page](https://tt-a1i.github.io/archify/)** · **[Scenario guide](https://tt-a1i.github.io/archify/guide.html)** · **[Proof Lab](https://tt-a1i.github.io/archify/gallery.html)**
 
@@ -106,7 +108,7 @@ To try it without a permanent install:
 npx skills use tt-a1i/archify@archify --agent codex
 ```
 
-The same Skill works with `raven`, `cursor`, `codex`, `claude-code`, and `opencode`; the [quick-start agent switcher](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) generates the exact command without maintaining vendor-specific forks. The packaged [`archify.zip`](archify.zip) also works without `npm install`; for Raven, extract it into `~/.raven/workspace/skills`.
+The [agent switcher](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) covers `cursor`, `codex`, `claude-code`, and `opencode`. For Raven's manual ZIP install, extract [`archify.zip`](archify.zip) into `~/.raven/workspace/skills`; it yields `~/.raven/workspace/skills/archify`. Raven is not a switcher target.
 
 ### 2. Ask for one bounded view
 
@@ -251,7 +253,7 @@ The complete generation and viewer contract lives in [`archify/SKILL.md`](archif
 
 | Surface | Install location or method | Capability |
 |---|---|---|
-| **Raven** | `~/.raven/workspace/skills/archify` | Full renderer + validation workflow |
+| **Raven** | Manual ZIP into `~/.raven/workspace/skills` → `~/.raven/workspace/skills/archify` | Full renderer + validation workflow |
 | **Claude Code** | `~/.claude/skills/` or `.claude/skills/` | Full renderer + validation workflow |
 | **Codex CLI** | `~/.agents/skills/` or `.agents/skills/` | Full renderer + validation workflow |
 | **opencode** | `~/.config/opencode/skills/`, `.opencode/skills/`, or `.agents/skills/` | Full renderer + validation workflow |
@@ -267,7 +269,7 @@ The complete generation and viewer contract lives in [`archify/SKILL.md`](archif
 - [Roadmap](ROADMAP.md)
 - [Generated Proof Lab](https://tt-a1i.github.io/archify/gallery.html)
 
-Archify 2.12 includes typed IR across all five modes, real-repository proof, deterministic exact-ID Architecture Delta review, verified live preview, authored reachability, optional finite motion, guided views, semantic search and relationship exploration, shareable deep links, 1200×630 diagram and route cards, browser-native WebM recording, explicit `standard` / `showcase` quality profiles, and an opt-in deployment ownership contract.
+Unreleased `v2.13.0-dev.0` includes typed IR across all five modes, real-repository proof, deterministic exact-ID Architecture Delta review, verified live preview, authored reachability, optional finite motion, guided views, semantic search and relationship exploration, shareable deep links, 1200×630 diagram and route cards, browser-native WebM recording, explicit `standard` / `showcase` quality profiles, and an opt-in deployment ownership contract.
 
 Automatic Mermaid parsing, general-purpose auto-layout, hosted sharing, and WYSIWYG editing are intentionally outside the current scope.
 

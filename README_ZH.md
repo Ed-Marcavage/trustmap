@@ -17,7 +17,9 @@ Archify 是适用于 Raven、Cursor、Claude Code、Codex CLI 和 OpenCode 的 A
 
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
 ![Agent Skill](https://img.shields.io/badge/Agent-Skill-7C3AED?style=flat-square)
-![Version](https://img.shields.io/badge/version-2.12.0-0891b2?style=flat-square)
+![开发版本](https://img.shields.io/badge/version-2.13.0--dev.0-0891b2?style=flat-square)
+
+**当前开发版本：** `v2.13.0-dev.0`（尚未发布；最新稳定版本：`v2.12.0`）。详见 [Unreleased](CHANGELOG.md#unreleased)。
 
 **[在线项目页](https://tt-a1i.github.io/archify/)** · **[场景选图指南](https://tt-a1i.github.io/archify/guide.html)** · **[Proof Lab](https://tt-a1i.github.io/archify/gallery.html)**
 
@@ -102,7 +104,7 @@ npx -y skills add tt-a1i/archify --skill archify --agent cursor --global --copy 
 npx skills use tt-a1i/archify@archify --agent codex
 ```
 
-同一份 Skill 可用于 `raven`、`cursor`、`codex`、`claude-code` 和 `opencode`；[快速开始页的 Agent 切换器](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture)会生成准确命令，不维护厂商专属分叉。仓库内的 [`archify.zip`](archify.zip) 也不需要执行 `npm install`；在 Raven 中，将其解压到 `~/.raven/workspace/skills` 即可。
+[Agent 切换器](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture)只为 `cursor`、`codex`、`claude-code` 和 `opencode` 生成命令。Raven 仅支持 ZIP 手动安装：将 [`archify.zip`](archify.zip) 解压到 `~/.raven/workspace/skills`，解压后会得到 `~/.raven/workspace/skills/archify`；Raven 不属于切换器目标。
 
 ### 2. 先画一个边界清楚的视图
 
@@ -246,7 +248,7 @@ node bin/archify.mjs deliver workflow examples/agent-tool-call.workflow.json /tm
 
 | 使用位置 | 安装位置或方法 | 能力 |
 |---|---|---|
-| **Raven** | `~/.raven/workspace/skills/archify` | 完整 Renderer + Validation 工作流 |
+| **Raven** | ZIP 手动安装：将 `archify.zip` 解压到 `~/.raven/workspace/skills`，解压后会得到 `~/.raven/workspace/skills/archify` | 完整 Renderer + Validation 工作流 |
 | **Claude Code** | `~/.claude/skills/` 或 `.claude/skills/` | 完整 Renderer + Validation 工作流 |
 | **Codex CLI** | `~/.agents/skills/` 或 `.agents/skills/` | 完整 Renderer + Validation 工作流 |
 | **opencode** | `~/.config/opencode/skills/`、`.opencode/skills/` 或 `.agents/skills/` | 完整 Renderer + Validation 工作流 |
@@ -266,7 +268,7 @@ Claude.ai 中的上传入口：
 - [路线图](ROADMAP.md)
 - [自动生成的 Proof Lab](https://tt-a1i.github.io/archify/gallery.html)
 
-Archify 2.12 已覆盖五种 Typed IR、真实仓库证明、基于精确 ID 的确定性 Architecture Delta 评审、验证后实时预览、作者可达性、可选有限动态、引导视图、语义搜索与关系探索、可分享深链、1200×630 整图与路径卡片、浏览器原生 WebM、显式 `standard` / `showcase` 质量档位，以及按需启用的部署所有权契约。
+尚未发布的 `v2.13.0-dev.0` 开发线覆盖五种 Typed IR、真实仓库证明、基于精确 ID 的确定性 Architecture Delta 评审、验证后实时预览、作者可达性、可选有限动态、引导视图、语义搜索与关系探索、可分享深链、1200×630 整图与路径卡片、浏览器原生 WebM、显式 `standard` / `showcase` 质量档位，以及按需启用的部署所有权契约。
 
 自动 Mermaid Parser、通用自动布局、托管分享服务和 WYSIWYG 编辑器目前都不在产品范围内。
 
