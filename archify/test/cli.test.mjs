@@ -29,8 +29,8 @@ function makeFakeOpeners(name, { exitCode = 0 } = {}) {
   const log = path.join(bin, 'open-log.json');
   fs.mkdirSync(bin, { recursive: true });
   const source = `#!/usr/bin/env node
-import fs from 'node:fs';
-const target = process.argv.at(-1);
+const fs = require('node:fs');
+const target = process.argv[process.argv.length - 1];
 fs.writeFileSync(process.env.ARCHIFY_TEST_OPEN_LOG, JSON.stringify({
   argv: process.argv.slice(2),
   target,

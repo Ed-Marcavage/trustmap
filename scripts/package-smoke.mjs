@@ -52,10 +52,24 @@ try {
   requireAbsent('node_modules');
   requireAbsent('package-lock.json');
   requireAbsent(path.join('scripts', 'generate-validators.mjs'));
+  requireAbsent('test');
+  requireAbsent('.hive');
+  requireAbsent('.workbuddy');
 
   const packageJson = JSON.parse(fs.readFileSync(path.join(skillRoot, 'package.json'), 'utf8'));
-  if (packageJson.dependencies || packageJson.devDependencies) {
-    throw new Error('packaged skill must not declare runtime or development dependencies');
+  const dependencyFields = [
+    'dependencies',
+    'devDependencies',
+    'optionalDependencies',
+    'peerDependencies',
+    'bundledDependencies',
+    'bundleDependencies',
+  ];
+  const declaredDependencyField = dependencyFields.find((field) => (
+    Object.prototype.hasOwnProperty.call(packageJson, field)
+  ));
+  if (declaredDependencyField) {
+    throw new Error(`packaged skill must not declare dependency metadata: ${declaredDependencyField}`);
   }
 
   const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
