@@ -4784,15 +4784,29 @@
         </g>
 
         <!-- Legend -->
-        <text x="214" y="704" class="t-primary" font-size="10" font-weight="600">Legend</text>
-        <path d="M 214 724 L 248 724" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <text x="257" y="727" class="t-muted" font-size="8">primary data</text>
-        <path d="M 340 724 L 374 724" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
-        <text x="383" y="727" class="t-muted" font-size="8">policy / PII</text>
-        <path d="M 480 724 L 514 724" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-        <text x="523" y="727" class="t-muted" font-size="8">async batch</text>
-        <rect x="625" y="716" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-        <text x="646" y="724" class="t-muted" font-size="8">data store</text>
+        <g data-legend data-legend-bridge>
+          <text x="40" y="704" class="t-primary" font-size="10" font-weight="600">Legend</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="724" data-legend-width="103">
+            <path d="M 40 721 L 74 721" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="724" class="t-muted" font-size="8">primary data</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-x="165" data-legend-baseline="724" data-legend-width="103">
+            <path d="M 165 721 L 199 721" class="a-security" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+            <text x="208" y="724" class="t-muted" font-size="8">policy / PII</text>
+          </g>
+          <g data-legend-semantic-kind="dashed" data-legend-x="290" data-legend-baseline="724" data-legend-width="98">
+            <path d="M 290 721 L 324 721" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+            <text x="333" y="724" class="t-muted" font-size="8">async batch</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="data store" data-legend-x="410" data-legend-baseline="724" data-legend-width="92">
+            <rect x="410" y="716" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="431" y="724" class="t-muted" font-size="8">data store</text>
+          </g>
+          <g data-legend-semantic-kind="default" data-legend-x="524" data-legend-baseline="724" data-legend-width="88">
+            <path d="M 524 721 L 558 721" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="567" y="724" class="t-muted" font-size="8">data flow</text>
+          </g>
+        </g>
       </svg>
       <p class="intent-trace-status no-print" id="intent-trace-status" role="status" aria-live="polite" aria-atomic="true"></p>
       <div class="share-chapter-cue no-print" id="share-chapter-cue" hidden role="status" aria-live="polite">
@@ -5497,6 +5511,7 @@
         });
         Array.prototype.forEach.call(clone.querySelectorAll('[data-legend-kind]'), function (el) {
           el.removeAttribute('data-legend-kind');
+          el.removeAttribute('data-legend-label');
           el.removeAttribute('data-legend-count');
           el.removeAttribute('data-legend-zero');
           el.removeAttribute('data-legend-selected');
@@ -12455,7 +12470,8 @@
           }
           entry.setAttribute('role', 'button');
           entry.setAttribute('tabindex', legendEntries.length ? '-1' : '0');
-          entry.setAttribute('aria-label', 'Inspect ' + fact.label + ', ' + count + ' node' + (count === 1 ? '' : 's'));
+          var visibleLabel = entry.getAttribute('data-legend-label') || fact.label;
+          entry.setAttribute('aria-label', 'Inspect ' + visibleLabel + ', ' + count + ' node' + (count === 1 ? '' : 's'));
           entry.setAttribute('aria-pressed', 'false');
           entry.setAttribute('aria-haspopup', 'dialog');
           entry.setAttribute('aria-controls', 'semantic-lens');

@@ -4729,24 +4729,32 @@
 
 
         <!-- Legend -->
-        <g data-legend-bridge>
-          <text x="220" y="542" class="t-primary" font-size="10" font-weight="600">Legend</text>
-        <g data-legend-kind="active">
-          <rect x="220" y="554" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
-          <text x="240" y="562" class="t-muted" font-size="7">active state</text>
-        </g>
-        <g data-legend-kind="waiting">
-          <rect x="325" y="554" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
-          <text x="345" y="562" class="t-muted" font-size="7">waiting</text>
-        </g>
-        <g data-legend-kind="success">
-          <rect x="415" y="554" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-          <text x="435" y="562" class="t-muted" font-size="7">terminal success</text>
-        </g>
-        <g data-legend-kind="failure">
-          <rect x="560" y="554" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
-          <text x="580" y="562" class="t-muted" font-size="7">failure / exit</text>
-        </g>
+        <g data-legend data-legend-bridge>
+          <text x="40" y="604" class="t-primary" font-size="10" font-weight="600">Legend</text>
+          <g data-legend-semantic-kind="start" data-legend-kind="start" data-legend-label="start" data-legend-x="40" data-legend-baseline="624" data-legend-width="67">
+            <rect x="40" y="616" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="61" y="624" class="t-muted" font-size="8">start</text>
+          </g>
+          <g data-legend-semantic-kind="active" data-legend-kind="active" data-legend-label="active state" data-legend-x="129" data-legend-baseline="624" data-legend-width="102">
+            <rect x="129" y="616" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="150" y="624" class="t-muted" font-size="8">active state</text>
+          </g>
+          <g data-legend-semantic-kind="waiting" data-legend-kind="waiting" data-legend-label="waiting" data-legend-x="253" data-legend-baseline="624" data-legend-width="77">
+            <rect x="253" y="616" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
+            <text x="274" y="624" class="t-muted" font-size="8">waiting</text>
+          </g>
+          <g data-legend-semantic-kind="decision" data-legend-kind="decision" data-legend-label="decision" data-legend-x="352" data-legend-baseline="624" data-legend-width="82">
+            <rect x="352" y="616" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="373" y="624" class="t-muted" font-size="8">decision</text>
+          </g>
+          <g data-legend-semantic-kind="success" data-legend-kind="success" data-legend-label="terminal success" data-legend-x="456" data-legend-baseline="624" data-legend-width="122">
+            <rect x="456" y="616" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="477" y="624" class="t-muted" font-size="8">terminal success</text>
+          </g>
+          <g data-legend-semantic-kind="failure" data-legend-kind="failure" data-legend-label="failure / exit" data-legend-x="600" data-legend-baseline="624" data-legend-width="112">
+            <rect x="600" y="616" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="621" y="624" class="t-muted" font-size="8">failure / exit</text>
+          </g>
         </g>
       </svg>
       <p class="intent-trace-status no-print" id="intent-trace-status" role="status" aria-live="polite" aria-atomic="true"></p>
@@ -5452,6 +5460,7 @@
         });
         Array.prototype.forEach.call(clone.querySelectorAll('[data-legend-kind]'), function (el) {
           el.removeAttribute('data-legend-kind');
+          el.removeAttribute('data-legend-label');
           el.removeAttribute('data-legend-count');
           el.removeAttribute('data-legend-zero');
           el.removeAttribute('data-legend-selected');
@@ -12410,7 +12419,8 @@
           }
           entry.setAttribute('role', 'button');
           entry.setAttribute('tabindex', legendEntries.length ? '-1' : '0');
-          entry.setAttribute('aria-label', 'Inspect ' + fact.label + ', ' + count + ' node' + (count === 1 ? '' : 's'));
+          var visibleLabel = entry.getAttribute('data-legend-label') || fact.label;
+          entry.setAttribute('aria-label', 'Inspect ' + visibleLabel + ', ' + count + ' node' + (count === 1 ? '' : 's'));
           entry.setAttribute('aria-pressed', 'false');
           entry.setAttribute('aria-haspopup', 'dialog');
           entry.setAttribute('aria-controls', 'semantic-lens');

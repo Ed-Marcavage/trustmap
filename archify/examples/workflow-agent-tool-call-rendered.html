@@ -4800,28 +4800,36 @@
         </g>
 
         <!-- Legend -->
-        <g data-legend-bridge>
-          <text x="175" y="800" class="t-primary" font-size="10" font-weight="600">Legend</text>
-        <g data-legend-kind="frontend">
-          <rect x="175" y="812" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
-          <text x="195" y="820" class="t-muted" font-size="7">User UI</text>
-        </g>
-        <g data-legend-kind="backend">
-          <rect x="260" y="812" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
-          <text x="280" y="820" class="t-muted" font-size="7">Agent logic</text>
-        </g>
-        <g data-legend-kind="security">
-          <rect x="370" y="812" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
-          <text x="390" y="820" class="t-muted" font-size="7">Policy</text>
-        </g>
-        <g data-legend-kind="messagebus">
-          <rect x="455" y="812" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
-          <text x="475" y="820" class="t-muted" font-size="7">Tool action</text>
-        </g>
-        <g data-legend-kind="database">
-          <rect x="565" y="812" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-          <text x="585" y="820" class="t-muted" font-size="7">Context / trace</text>
-        </g>
+        <g data-legend data-legend-bridge>
+          <text x="20" y="800" class="t-primary" font-size="10" font-weight="600">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="User UI" data-legend-x="20" data-legend-baseline="820" data-legend-width="73">
+            <rect x="20" y="812" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="41" y="820" class="t-muted" font-size="7">User UI</text>
+          </g>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Agent logic" data-legend-x="100" data-legend-baseline="820" data-legend-width="90">
+            <rect x="100" y="812" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="121" y="820" class="t-muted" font-size="7">Agent logic</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Policy" data-legend-x="197" data-legend-baseline="820" data-legend-width="69">
+            <rect x="197" y="812" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="218" y="820" class="t-muted" font-size="7">Policy</text>
+          </g>
+          <g data-legend-semantic-kind="messagebus" data-legend-kind="messagebus" data-legend-label="Tool action" data-legend-x="273" data-legend-baseline="820" data-legend-width="90">
+            <rect x="273" y="812" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
+            <text x="294" y="820" class="t-muted" font-size="7">Tool action</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Context / trace" data-legend-x="370" data-legend-baseline="820" data-legend-width="108">
+            <rect x="370" y="812" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="391" y="820" class="t-muted" font-size="7">Context / trace</text>
+          </g>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud service" data-legend-x="485" data-legend-baseline="820" data-legend-width="99">
+            <rect x="485" y="812" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
+            <text x="506" y="820" class="t-muted" font-size="7">Cloud service</text>
+          </g>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External system" data-legend-x="591" data-legend-baseline="820" data-legend-width="108">
+            <rect x="591" y="812" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
+            <text x="612" y="820" class="t-muted" font-size="7">External system</text>
+          </g>
         </g>
       </svg>
       <p class="intent-trace-status no-print" id="intent-trace-status" role="status" aria-live="polite" aria-atomic="true"></p>
@@ -5530,6 +5538,7 @@
         });
         Array.prototype.forEach.call(clone.querySelectorAll('[data-legend-kind]'), function (el) {
           el.removeAttribute('data-legend-kind');
+          el.removeAttribute('data-legend-label');
           el.removeAttribute('data-legend-count');
           el.removeAttribute('data-legend-zero');
           el.removeAttribute('data-legend-selected');
@@ -12488,7 +12497,8 @@
           }
           entry.setAttribute('role', 'button');
           entry.setAttribute('tabindex', legendEntries.length ? '-1' : '0');
-          entry.setAttribute('aria-label', 'Inspect ' + fact.label + ', ' + count + ' node' + (count === 1 ? '' : 's'));
+          var visibleLabel = entry.getAttribute('data-legend-label') || fact.label;
+          entry.setAttribute('aria-label', 'Inspect ' + visibleLabel + ', ' + count + ' node' + (count === 1 ? '' : 's'));
           entry.setAttribute('aria-pressed', 'false');
           entry.setAttribute('aria-haspopup', 'dialog');
           entry.setAttribute('aria-controls', 'semantic-lens');

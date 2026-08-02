@@ -66,6 +66,34 @@ test('architecture compare classifies authored facts separately from geometry an
   assert.deepEqual(boundaryReceipt.changes.boundaries.find((change) => change.label === 'Fraud edge').classifications, ['scope']);
 });
 
+test('legend-only changes are presentation changes and never topology changes', () => {
+  const base = read(baseFixture);
+  const head = read(baseFixture);
+  head.meta.legend = {
+    entries: {
+      security: { label: 'Trust boundary', visible: true },
+      database: { visible: false },
+    },
+  };
+
+  const receipt = compareArchitecture(base, head);
+  assert.equal(receipt.summary.presentationChanged, true);
+  assert.deepEqual(receipt.summary.components, {
+    added: 0,
+    changed: 0,
+    evidenceChanged: 0,
+    removed: 0,
+    moved: 0,
+  });
+  assert.deepEqual(receipt.summary.connections, {
+    added: 0,
+    changed: 0,
+    removed: 0,
+    rerouted: 0,
+  });
+  assert.deepEqual(receipt.changes, { components: [], connections: [], boundaries: [] });
+});
+
 test('canonical architecture ignores formatting, entity order, and set-like order', () => {
   const original = read(baseFixture);
   const reordered = JSON.parse(JSON.stringify(original));
