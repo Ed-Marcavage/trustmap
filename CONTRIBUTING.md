@@ -13,7 +13,7 @@ Do not include secrets, access tokens, credentials, private repository content, 
 
 ## Local setup
 
-The renderer package lives in `archify/` and supports Node.js 20 and 22.
+The renderer package lives in `archify/` and supports Node.js 18 and later; CI covers Node.js 18, 20, 22, and 24.
 
 ```bash
 cd archify
