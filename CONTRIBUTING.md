@@ -21,7 +21,7 @@ npm ci
 npm test
 ```
 
-During development, run the narrowest relevant test first, then the full suite before opening a pull request. Behavioral fixes should include a failing regression test that demonstrates the problem before the implementation changes.
+During development, run the narrowest relevant test first, then the full suite before opening a pull request. Behavioral fixes should include a failing regression test that demonstrates the problem before the implementation changes. Cross-renderer contracts belong in one public CLI seam (`archify render`/`validate` against final SVG/HTML), not tests of private resolver helpers.
 
 ## Bug fixes
 

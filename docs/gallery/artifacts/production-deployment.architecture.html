@@ -4794,31 +4794,31 @@
         </g>
 
         <!-- Legend -->
-        <g data-legend-bridge>
-          <text x="40" y="731" class="t-primary" font-size="9" font-weight="600">Legend</text>
-          <g data-legend-kind="external">
-            <rect x="40" y="736" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
-            <text x="60" y="744" class="t-muted" font-size="8">External</text>
+        <g data-legend data-legend-bridge>
+          <text x="40" y="724" class="t-primary" font-size="10" font-weight="600">Legend</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="40" data-legend-baseline="744" data-legend-width="77">
+            <rect x="40" y="736" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="61" y="744" class="t-muted" font-size="8">Backend</text>
           </g>
-          <g data-legend-kind="cloud">
-            <rect x="144" y="736" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
-            <text x="164" y="744" class="t-muted" font-size="8">Cloud</text>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="139" data-legend-baseline="744" data-legend-width="82">
+            <rect x="139" y="736" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="160" y="744" class="t-muted" font-size="8">Database</text>
           </g>
-          <g data-legend-kind="security">
-            <rect x="233" y="736" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
-            <text x="253" y="744" class="t-muted" font-size="8">Security</text>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="243" data-legend-baseline="744" data-legend-width="67">
+            <rect x="243" y="736" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
+            <text x="264" y="744" class="t-muted" font-size="8">Cloud</text>
           </g>
-          <g data-legend-kind="backend">
-            <rect x="337" y="736" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
-            <text x="357" y="744" class="t-muted" font-size="8">Backend</text>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Security" data-legend-x="332" data-legend-baseline="744" data-legend-width="82">
+            <rect x="332" y="736" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="353" y="744" class="t-muted" font-size="8">Security</text>
           </g>
-          <g data-legend-kind="database">
-            <rect x="436" y="736" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-            <text x="456" y="744" class="t-muted" font-size="8">Database</text>
+          <g data-legend-semantic-kind="messagebus" data-legend-kind="messagebus" data-legend-label="Message bus" data-legend-x="436" data-legend-baseline="744" data-legend-width="97">
+            <rect x="436" y="736" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
+            <text x="457" y="744" class="t-muted" font-size="8">Message bus</text>
           </g>
-          <g data-legend-kind="messagebus">
-            <rect x="540" y="736" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
-            <text x="560" y="744" class="t-muted" font-size="8">Message bus</text>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="555" data-legend-baseline="744" data-legend-width="82">
+            <rect x="555" y="736" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
+            <text x="576" y="744" class="t-muted" font-size="8">External</text>
           </g>
         </g>
       </svg>
@@ -5525,6 +5525,7 @@
         });
         Array.prototype.forEach.call(clone.querySelectorAll('[data-legend-kind]'), function (el) {
           el.removeAttribute('data-legend-kind');
+          el.removeAttribute('data-legend-label');
           el.removeAttribute('data-legend-count');
           el.removeAttribute('data-legend-zero');
           el.removeAttribute('data-legend-selected');
@@ -12483,7 +12484,8 @@
           }
           entry.setAttribute('role', 'button');
           entry.setAttribute('tabindex', legendEntries.length ? '-1' : '0');
-          entry.setAttribute('aria-label', 'Inspect ' + fact.label + ', ' + count + ' node' + (count === 1 ? '' : 's'));
+          var visibleLabel = entry.getAttribute('data-legend-label') || fact.label;
+          entry.setAttribute('aria-label', 'Inspect ' + visibleLabel + ', ' + count + ' node' + (count === 1 ? '' : 's'));
           entry.setAttribute('aria-pressed', 'false');
           entry.setAttribute('aria-haspopup', 'dialog');
           entry.setAttribute('aria-controls', 'semantic-lens');
