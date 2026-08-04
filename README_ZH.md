@@ -272,10 +272,6 @@ Archify 2.13 覆盖五种 Typed IR、真实仓库证明、基于精确 ID 的确
 
 自动 Mermaid Parser、通用自动布局、托管分享服务和 WYSIWYG 编辑器目前都不在产品范围内。
 
-## 致谢
-
-Archify 基于 [Cocoon-AI/architecture-diagram-generator](https://github.com/Cocoon-AI/architecture-diagram-generator) v1.0 Fork 和重写。原始视觉语言仍归功于 Cocoon AI；Archify 2.x 在此基础上增加主题、导出、Typed Renderer、校验、无障碍、交互和统一 CLI。两个项目都采用 MIT License。
-
 ## License
 
 [MIT](LICENSE) —— 可以自由使用、修改和分发。
