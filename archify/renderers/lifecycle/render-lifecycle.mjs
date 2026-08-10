@@ -187,18 +187,17 @@ function validateLifecycle() {
     if (estLabelW > state.width + 6) {
       problems.push(`Label "${state.label}" (~${Math.round(estLabelW)}px) is wider than state "${state.id}" (${state.width}px) — shorten the label or increase state.width.`);
     }
-    if (state.sublabel) {
-      const minimumW = minimumNodeTextWidth(state.sublabel, stateTextFit.sublabelMinimum);
-      const availableW = availableNodeTextWidth(state.width);
-      if (minimumW > availableW) {
-        problems.push(`Sublabel "${state.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${stateTextFit.sublabelMinimum}px legible minimum, but state "${state.id}" provides ${availableW}px — shorten the sublabel or increase state.width.`);
-      }
-    }
-    if (state.tag) {
-      const minimumW = minimumNodeTextWidth(state.tag, stateTextFit.tagMinimum);
-      const availableW = availableNodeTextWidth(state.width);
-      if (minimumW > availableW) {
-        problems.push(`Tag "${state.tag}" needs ~${Math.ceil(minimumW)}px at the ${stateTextFit.tagMinimum}px legible minimum, but state "${state.id}" provides ${availableW}px — shorten the tag or increase state.width.`);
+    // sublabel and tag render as single unwrapped <text> elements; shrink-to-fit
+    // handles the ordinary case, this rejects what it cannot rescue.
+    const availableTextW = availableNodeTextWidth(state.width);
+    for (const [field, value, minimum] of [
+      ['Sublabel', state.sublabel, stateTextFit.sublabelMinimum],
+      ['Tag', state.tag, stateTextFit.tagMinimum],
+    ]) {
+      if (!value) continue;
+      const minimumW = minimumNodeTextWidth(value, minimum);
+      if (minimumW > availableTextW) {
+        problems.push(`${field} "${value}" needs ~${Math.ceil(minimumW)}px at the ${minimum}px legible minimum, but state "${state.id}" provides ${availableTextW}px — shorten the ${field.toLowerCase()} or increase state.width.`);
       }
     }
   }

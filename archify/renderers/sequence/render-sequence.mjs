@@ -138,11 +138,13 @@ function validateSequence() {
     if (estLabelW > layout.participantW + 6) {
       problems.push(`Label "${participant.label}" (~${Math.round(estLabelW)}px) is wider than the ${layout.participantW}px participant box — shorten it.`);
     }
+    // sublabel renders as a single unwrapped <text>; shrink-to-fit handles the
+    // ordinary case, this rejects what it cannot rescue.
     if (participant.sublabel) {
+      const availableTextW = availableNodeTextWidth(layout.participantW);
       const minimumW = minimumNodeTextWidth(participant.sublabel, participantTextFit.sublabelMinimum);
-      const availableW = availableNodeTextWidth(layout.participantW);
-      if (minimumW > availableW) {
-        problems.push(`Sublabel "${participant.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${participantTextFit.sublabelMinimum}px legible minimum, but participant "${participant.id}" provides ${availableW}px — shorten the sublabel (participant boxes are a fixed ${layout.participantW}px).`);
+      if (minimumW > availableTextW) {
+        problems.push(`Sublabel "${participant.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${participantTextFit.sublabelMinimum}px legible minimum, but participant "${participant.id}" provides ${availableTextW}px — shorten the sublabel (participant boxes are a fixed ${layout.participantW}px).`);
       }
     }
   }

@@ -99,6 +99,7 @@ function measureNode(node) {
   };
 }
 
+// Font sizes for this renderer's node text; the fitting geometry is shared.
 const nodeTextFit = {
   labelPreferred: 11,
   labelMinimum: 9,
@@ -218,18 +219,15 @@ function validateWorkflow() {
     if (estLabelW > node.width + 6) {
       problems.push(`Label "${node.label}" (~${Math.round(estLabelW)}px) is wider than node "${node.id}" (${node.width}px) — shorten the label or increase node.width.`);
     }
-    if (node.sublabel) {
-      const minimumSublabelW = minimumNodeTextWidth(node.sublabel, nodeTextFit.sublabelMinimum);
-      const availableSublabelW = availableNodeTextWidth(node.width);
-      if (minimumSublabelW > availableSublabelW) {
-        problems.push(`Sublabel "${node.sublabel}" needs ~${Math.ceil(minimumSublabelW)}px at the ${nodeTextFit.sublabelMinimum}px legible minimum, but node "${node.id}" provides ${availableSublabelW}px — shorten the sublabel or increase node.width.`);
-      }
-    }
-    if (node.tag) {
-      const minimumTagW = minimumNodeTextWidth(node.tag, nodeTextFit.tagMinimum);
-      const availableTagW = availableNodeTextWidth(node.width);
-      if (minimumTagW > availableTagW) {
-        problems.push(`Tag "${node.tag}" needs ~${Math.ceil(minimumTagW)}px at the ${nodeTextFit.tagMinimum}px legible minimum, but node "${node.id}" provides ${availableTagW}px — shorten the tag or increase node.width.`);
+    const availableTextW = availableNodeTextWidth(node.width);
+    for (const [field, value, minimum] of [
+      ['Sublabel', node.sublabel, nodeTextFit.sublabelMinimum],
+      ['Tag', node.tag, nodeTextFit.tagMinimum],
+    ]) {
+      if (!value) continue;
+      const minimumW = minimumNodeTextWidth(value, minimum);
+      if (minimumW > availableTextW) {
+        problems.push(`${field} "${value}" needs ~${Math.ceil(minimumW)}px at the ${minimum}px legible minimum, but node "${node.id}" provides ${availableTextW}px — shorten the ${field.toLowerCase()} or increase node.width.`);
       }
     }
 

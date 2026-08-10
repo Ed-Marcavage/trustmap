@@ -207,18 +207,17 @@ function validateArchitecture() {
     if (estLabelW > c.width + 8) {
       problems.push(`Label "${c.label}" (~${Math.round(estLabelW)}px) is wider than component "${c.id}" (${c.width}px) — shorten the label or widen size.`);
     }
-    if (c.sublabel) {
-      const minimumW = minimumNodeTextWidth(c.sublabel, componentTextFit.sublabelMinimum);
-      const availableW = availableNodeTextWidth(c.width);
-      if (minimumW > availableW) {
-        problems.push(`Sublabel "${c.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${componentTextFit.sublabelMinimum}px legible minimum, but component "${c.id}" provides ${availableW}px — shorten the sublabel or widen size.`);
-      }
-    }
-    if (c.tag) {
-      const minimumW = minimumNodeTextWidth(c.tag, componentTextFit.tagMinimum);
-      const availableW = availableNodeTextWidth(c.width);
-      if (minimumW > availableW) {
-        problems.push(`Tag "${c.tag}" needs ~${Math.ceil(minimumW)}px at the ${componentTextFit.tagMinimum}px legible minimum, but component "${c.id}" provides ${availableW}px — shorten the tag or widen size.`);
+    // sublabel and tag render as single unwrapped <text> elements; shrink-to-fit
+    // handles the ordinary case, this rejects what it cannot rescue.
+    const availableTextW = availableNodeTextWidth(c.width);
+    for (const [field, value, minimum] of [
+      ['Sublabel', c.sublabel, componentTextFit.sublabelMinimum],
+      ['Tag', c.tag, componentTextFit.tagMinimum],
+    ]) {
+      if (!value) continue;
+      const minimumW = minimumNodeTextWidth(value, minimum);
+      if (minimumW > availableTextW) {
+        problems.push(`${field} "${value}" needs ~${Math.ceil(minimumW)}px at the ${minimum}px legible minimum, but component "${c.id}" provides ${availableTextW}px — shorten the ${field.toLowerCase()} or widen size.`);
       }
     }
   }

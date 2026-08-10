@@ -149,18 +149,17 @@ function validateDataflow() {
     if (estLabelW > node.width + 6) {
       problems.push(`Label "${node.label}" (~${Math.round(estLabelW)}px) is wider than node "${node.id}" (${node.width}px) — shorten the label or increase node.width.`);
     }
-    if (node.sublabel) {
-      const minimumW = minimumNodeTextWidth(node.sublabel, nodeTextFit.sublabelMinimum);
-      const availableW = availableNodeTextWidth(node.width);
-      if (minimumW > availableW) {
-        problems.push(`Sublabel "${node.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${nodeTextFit.sublabelMinimum}px legible minimum, but node "${node.id}" provides ${availableW}px — shorten the sublabel or increase node.width.`);
-      }
-    }
-    if (node.tag) {
-      const minimumW = minimumNodeTextWidth(node.tag, nodeTextFit.tagMinimum);
-      const availableW = availableNodeTextWidth(node.width);
-      if (minimumW > availableW) {
-        problems.push(`Tag "${node.tag}" needs ~${Math.ceil(minimumW)}px at the ${nodeTextFit.tagMinimum}px legible minimum, but node "${node.id}" provides ${availableW}px — shorten the tag or increase node.width.`);
+    // sublabel and tag render as single unwrapped <text> elements; shrink-to-fit
+    // handles the ordinary case, this rejects what it cannot rescue.
+    const availableTextW = availableNodeTextWidth(node.width);
+    for (const [field, value, minimum] of [
+      ['Sublabel', node.sublabel, nodeTextFit.sublabelMinimum],
+      ['Tag', node.tag, nodeTextFit.tagMinimum],
+    ]) {
+      if (!value) continue;
+      const minimumW = minimumNodeTextWidth(value, minimum);
+      if (minimumW > availableTextW) {
+        problems.push(`${field} "${value}" needs ~${Math.ceil(minimumW)}px at the ${minimum}px legible minimum, but node "${node.id}" provides ${availableTextW}px — shorten the ${field.toLowerCase()} or increase node.width.`);
       }
     }
   }

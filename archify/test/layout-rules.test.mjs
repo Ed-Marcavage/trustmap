@@ -57,13 +57,6 @@ function hash(s) {
   return h;
 }
 
-function fontSizeForText(html, text) {
-  const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = html.match(new RegExp(`<text[^>]*font-size="([\\d.]+)"[^>]*>${escaped}</text>`));
-  assert.ok(match, `expected rendered text "${text}" with an explicit font-size`);
-  return Number(match[1]);
-}
-
 // [name, mode, mutate(doc), expectedSubstrings[]] — every mutation introduces
 // exactly one layout violation. Each expected substring must appear in stderr.
 const CASES = [
@@ -155,6 +148,7 @@ const CASES = [
     ['Tag', 'legible', 'widen size']],
   ['architecture: component overlap suggests fix', 'architecture',
     (d) => { d.components[1].pos = [...d.components[0].pos]; }, ['Suggested fix', 'move "']],
+
 ];
 
 for (const [name, mode, mutate, expected] of CASES) {
@@ -170,101 +164,91 @@ for (const [name, mode, mutate, expected] of CASES) {
   });
 }
 
+// ---- sublabel/tag shrink-to-fit: the render half of the same rule ----
+// Validation only rejects text that cannot fit even at its legible minimum.
+// Everything between "fits at the preferred size" and that floor must shrink,
+// not overflow — otherwise the common case still paints over its neighbours.
+const SHRINK_CASES = [
+  // [mode, mutate(doc), preferredFontSize, selector for the sublabel <text>]
+  ['architecture', (d) => { d.components[0].sublabel = 'Browser and mobile apps'; }, 9],
+  ['sequence', (d) => { d.participants[0].sublabel = 'long browser session'; }, 7],
+  ['dataflow', (d) => { d.nodes[0].sublabel = 'browser SDK and mobile SDK'; }, 7],
+  ['lifecycle', (d) => { d.states[0].sublabel = 'request accepted and queued'; }, 7],
+];
+
+for (const [mode, mutate, preferred] of SHRINK_CASES) {
+  test(`${mode}: an over-long sublabel shrinks to fit instead of overflowing`, () => {
+    const d = load(mode);
+    mutate(d);
+    const { code, stderr, outPath } = render(mode, d);
+    assert.equal(code, 0, stderr);
+    const html = fs.readFileSync(outPath, 'utf8');
+    const sub = html.match(/<text data-detail="context"[^>]*font-size="([\d.]+)"[^>]*>/);
+    assert.ok(sub, 'expected a sublabel <text> in the rendered SVG');
+    const fontSize = Number(sub[1]);
+    assert.ok(
+      fontSize < preferred,
+      `expected the sublabel to shrink below the ${preferred}px preferred size, got ${fontSize}`,
+    );
+    assert.ok(fontSize >= 6, `expected the sublabel to stay legible, got ${fontSize}`);
+  });
+}
+
+const TAG_SHRINK_CASES = [
+  // [mode, collection, tag, preferredFontSize]
+  ['architecture', 'components', 'owner: platform operations team', 7],
+  ['dataflow', 'nodes', 'owner: analytics platform', 7],
+  ['lifecycle', 'states', 'owner: platform operations pod', 7],
+  ['workflow', 'nodes', 'owner: runtime squad A', 7],
+];
+
+for (const [mode, collection, tag, preferred] of TAG_SHRINK_CASES) {
+  test(`${mode}: an over-long tag shrinks to fit instead of overflowing`, () => {
+    const d = load(mode);
+    d[collection][0].tag = tag;
+    const { code, stderr, outPath } = render(mode, d);
+    assert.equal(code, 0, stderr);
+    const html = fs.readFileSync(outPath, 'utf8');
+    const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = html.match(new RegExp(
+      `<text data-detail="fine"[^>]*font-size="([\\d.]+)"[^>]*>${escapedTag}</text>`,
+    ));
+    assert.ok(match, `expected a tag <text> for "${tag}" in the rendered SVG`);
+    const fontSize = Number(match[1]);
+    assert.ok(
+      fontSize < preferred,
+      `expected the tag to shrink below the ${preferred}px preferred size, got ${fontSize}`,
+    );
+    assert.ok(fontSize >= 6, `expected the tag to stay legible, got ${fontSize}`);
+  });
+}
+
 test('contract: a too-wide label is never redirected into sublabel', () => {
-  const labels = {
+  // Every renderer used to advise "move detail to sublabel" for an over-long
+  // label. Sublabels are measured now, so that advice would move the problem
+  // rather than fix it.
+  const LABELS = {
     workflow: 'An Extremely Long Node Label That Overflows',
     sequence: 'An Extremely Long Participant Label That Overflows',
     dataflow: 'An Extremely Long Node Label That Overflows',
     lifecycle: 'An Extremely Long State Label That Overflows',
     architecture: 'An Extremely Long Component Label Overflow',
   };
-  const fields = {
-    workflow: 'nodes',
-    sequence: 'participants',
-    dataflow: 'nodes',
-    lifecycle: 'states',
-    architecture: 'components',
+  const FIELD = {
+    workflow: 'nodes', sequence: 'participants', dataflow: 'nodes',
+    lifecycle: 'states', architecture: 'components',
   };
-
-  for (const [mode, label] of Object.entries(labels)) {
-    const doc = load(mode);
-    doc[fields[mode]][0].label = label;
-    const { code, stderr } = render(mode, doc);
+  for (const [mode, label] of Object.entries(LABELS)) {
+    const d = load(mode);
+    d[FIELD[mode]][0].label = label;
+    const { code, stderr } = render(mode, d);
     assert.notEqual(code, 0, `${mode}: expected non-zero exit; stderr:\n${stderr}`);
     assert.ok(stderr.includes('wider than'), `${mode}: expected a width message:\n${stderr}`);
-    assert.doesNotMatch(
-      stderr,
-      /move detail to sublabel/,
+    assert.ok(
+      !/move detail to sublabel/.test(stderr),
       `${mode}: label advice still points at the measured sublabel field:\n${stderr}`,
     );
   }
-});
-
-for (const [field, text, preferred] of [
-  ['sublabel', 'Browser and mobile apps', 9],
-  ['tag', 'owner on call rotation alpha', 7],
-]) {
-  test(`architecture: an over-long ${field} shrinks to fit`, () => {
-    const doc = load('architecture');
-    doc.components[0][field] = text;
-    const { code, stderr, outPath } = render('architecture', doc);
-    assert.equal(code, 0, stderr);
-    const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
-    assert.ok(fontSize < preferred, `expected ${field} below ${preferred}px, got ${fontSize}px`);
-    assert.ok(fontSize >= 6, `expected ${field} to remain legible, got ${fontSize}px`);
-  });
-}
-
-test('sequence: an over-long participant sublabel shrinks to fit', () => {
-  const doc = load('sequence');
-  const text = 'long browser session';
-  doc.participants[0].sublabel = text;
-  const { code, stderr, outPath } = render('sequence', doc);
-  assert.equal(code, 0, stderr);
-  const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
-  assert.ok(fontSize < 7, `expected sublabel below 7px, got ${fontSize}px`);
-  assert.ok(fontSize >= 6, `expected sublabel to remain legible, got ${fontSize}px`);
-});
-
-for (const [field, text] of [
-  ['sublabel', 'browser SDK and mobile SDK'],
-  ['tag', 'owner on call rotation alpha'],
-]) {
-  test(`dataflow: an over-long ${field} shrinks to fit`, () => {
-    const doc = load('dataflow');
-    doc.nodes[0][field] = text;
-    const { code, stderr, outPath } = render('dataflow', doc);
-    assert.equal(code, 0, stderr);
-    const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
-    assert.ok(fontSize < 7, `expected ${field} below 7px, got ${fontSize}px`);
-    assert.ok(fontSize >= 6, `expected ${field} to remain legible, got ${fontSize}px`);
-  });
-}
-
-for (const [field, text] of [
-  ['sublabel', 'request accepted and queued'],
-  ['tag', 'owner on call rotation alpha'],
-]) {
-  test(`lifecycle: an over-long ${field} shrinks to fit`, () => {
-    const doc = load('lifecycle');
-    doc.states[0][field] = text;
-    const { code, stderr, outPath } = render('lifecycle', doc);
-    assert.equal(code, 0, stderr);
-    const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
-    assert.ok(fontSize < 7, `expected ${field} below 7px, got ${fontSize}px`);
-    assert.ok(fontSize >= 6, `expected ${field} to remain legible, got ${fontSize}px`);
-  });
-}
-
-test('workflow: an over-long tag shrinks to fit', () => {
-  const doc = load('workflow');
-  const text = 'owner on call primary';
-  doc.nodes[0].tag = text;
-  const { code, stderr, outPath } = render('workflow', doc);
-  assert.equal(code, 0, stderr);
-  const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
-  assert.ok(fontSize < 7, `expected tag below 7px, got ${fontSize}px`);
-  assert.ok(fontSize >= 6, `expected tag to remain legible, got ${fontSize}px`);
 });
 
 // ---- error-message contract: threshold + remediation, not just a path ----
