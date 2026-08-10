@@ -50,7 +50,7 @@
       --text: #ffffff;
       --text-muted: #94a3b8;
       --text-dim: #475569;
-      /* UI chrome (menu hints, footer) needs more contrast than SVG .t-dim accents */
+      /* UI chrome and menu hints need more contrast than SVG .t-dim accents */
       --text-faint: #7d8da1;
 
       --panel: rgba(15, 23, 42, 0.5);
@@ -397,7 +397,6 @@
     html[data-embed="true"] .toolbar,
     html[data-embed="true"] .header,
     html[data-embed="true"] .cards,
-    html[data-embed="true"] .footer,
     html[data-embed="true"] .diagram-nav,
     html[data-embed="true"] .overview-map,
     html[data-embed="true"] .focus-chip,
@@ -593,8 +592,7 @@
       height: 100%;
       min-width: 0;
     }
-    html[data-present="true"]:not([data-embed="true"]) .cards,
-    html[data-present="true"]:not([data-embed="true"]) .footer { display: none; }
+    html[data-present="true"]:not([data-embed="true"]) .cards { display: none; }
     html[data-present="true"]:not([data-embed="true"]) #btn-present {
       border-color: var(--frontend-stroke);
       color: var(--frontend-stroke);
@@ -2759,26 +2757,6 @@
 
     .card li { margin-bottom: 0.375rem; }
 
-    .footer {
-      text-align: center;
-      margin-top: 1.5rem;
-      color: var(--text-faint);
-      font-size: 0.75rem;
-    }
-
-    .footer .artifact-start-link {
-      color: var(--text-faint);
-      text-decoration-color: color-mix(in srgb, var(--frontend-stroke) 48%, transparent);
-      text-underline-offset: 0.22em;
-      transition: color 0.15s ease, text-decoration-color 0.15s ease;
-    }
-
-    .footer .artifact-start-link:hover,
-    .footer .artifact-start-link:focus-visible {
-      color: var(--frontend-stroke);
-      text-decoration-color: currentColor;
-    }
-
     /* ==========================================================
        Print stylesheet — hide interactive controls, force light,
        drop the grid so the diagram doesn't waste ink, use landscape
@@ -4762,35 +4740,35 @@
 
 
         <!-- Legend -->
-        <g data-legend-bridge>
-          <text x="40" y="559" class="t-primary" font-size="9" font-weight="600">Legend</text>
-          <g data-legend-kind="external">
-            <rect x="40" y="564" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
-            <text x="60" y="572" class="t-muted" font-size="8">External</text>
+        <g data-legend data-legend-bridge>
+          <text x="40" y="552" class="t-primary" font-size="10" font-weight="600">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="572" data-legend-width="82">
+            <rect x="40" y="564" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="61" y="572" class="t-muted" font-size="8">Frontend</text>
           </g>
-          <g data-legend-kind="frontend">
-            <rect x="144" y="564" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
-            <text x="164" y="572" class="t-muted" font-size="8">Frontend</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="144" data-legend-baseline="572" data-legend-width="77">
+            <rect x="144" y="564" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="165" y="572" class="t-muted" font-size="8">Backend</text>
           </g>
-          <g data-legend-kind="backend">
-            <rect x="248" y="564" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
-            <text x="268" y="572" class="t-muted" font-size="8">Backend</text>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="243" data-legend-baseline="572" data-legend-width="82">
+            <rect x="243" y="564" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="264" y="572" class="t-muted" font-size="8">Database</text>
           </g>
-          <g data-legend-kind="cloud">
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="347" data-legend-baseline="572" data-legend-width="67">
             <rect x="347" y="564" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
-            <text x="367" y="572" class="t-muted" font-size="8">Cloud</text>
+            <text x="368" y="572" class="t-muted" font-size="8">Cloud</text>
           </g>
-          <g data-legend-kind="security">
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Security" data-legend-x="436" data-legend-baseline="572" data-legend-width="82">
             <rect x="436" y="564" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
-            <text x="456" y="572" class="t-muted" font-size="8">Security</text>
+            <text x="457" y="572" class="t-muted" font-size="8">Security</text>
           </g>
-          <g data-legend-kind="database">
-            <rect x="540" y="564" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-            <text x="560" y="572" class="t-muted" font-size="8">Database</text>
+          <g data-legend-semantic-kind="messagebus" data-legend-kind="messagebus" data-legend-label="Message bus" data-legend-x="540" data-legend-baseline="572" data-legend-width="97">
+            <rect x="540" y="564" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
+            <text x="561" y="572" class="t-muted" font-size="8">Message bus</text>
           </g>
-          <g data-legend-kind="messagebus">
-            <rect x="644" y="564" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
-            <text x="664" y="572" class="t-muted" font-size="8">Message bus</text>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="659" data-legend-baseline="572" data-legend-width="82">
+            <rect x="659" y="564" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
+            <text x="680" y="572" class="t-muted" font-size="8">External</text>
           </g>
         </g>
       </svg>
@@ -5013,10 +4991,6 @@
       </div>
     </div>
 
-    <!-- Footer -->
-    <p class="footer">
-      Architecture diagram &bull; Built with Archify<span class="no-print"> &bull; <a class="artifact-start-link" href="https://tt-a1i.github.io/archify/start.html?type=architecture&amp;source=artifact" target="_blank" rel="noopener noreferrer">Create yours &nearr;</a> &bull; Hover to trace &bull; <kbd>R</kbd> route &bull; Click to focus &bull; <kbd>+</kbd>/<kbd>&minus;</kbd> zoom &bull; <kbd>M</kbd> radar &bull; <kbd>T</kbd> theme &bull; <kbd>E</kbd> export</span>
-    </p>
   </div>
 
   <script>
@@ -5497,6 +5471,7 @@
         });
         Array.prototype.forEach.call(clone.querySelectorAll('[data-legend-kind]'), function (el) {
           el.removeAttribute('data-legend-kind');
+          el.removeAttribute('data-legend-label');
           el.removeAttribute('data-legend-count');
           el.removeAttribute('data-legend-zero');
           el.removeAttribute('data-legend-selected');
@@ -12455,7 +12430,8 @@
           }
           entry.setAttribute('role', 'button');
           entry.setAttribute('tabindex', legendEntries.length ? '-1' : '0');
-          entry.setAttribute('aria-label', 'Inspect ' + fact.label + ', ' + count + ' node' + (count === 1 ? '' : 's'));
+          var visibleLabel = entry.getAttribute('data-legend-label') || fact.label;
+          entry.setAttribute('aria-label', 'Inspect ' + visibleLabel + ', ' + count + ' node' + (count === 1 ? '' : 's'));
           entry.setAttribute('aria-pressed', 'false');
           entry.setAttribute('aria-haspopup', 'dialog');
           entry.setAttribute('aria-controls', 'semantic-lens');

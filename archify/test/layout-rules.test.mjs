@@ -57,6 +57,13 @@ function hash(s) {
   return h;
 }
 
+function fontSizeForText(html, text) {
+  const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = html.match(new RegExp(`<text[^>]*font-size="([\\d.]+)"[^>]*>${escaped}</text>`));
+  assert.ok(match, `expected rendered text "${text}" with an explicit font-size`);
+  return Number(match[1]);
+}
+
 // [name, mode, mutate(doc), expectedSubstrings[]] — every mutation introduces
 // exactly one layout violation. Each expected substring must appear in stderr.
 const CASES = [
@@ -66,6 +73,9 @@ const CASES = [
     (d) => { d.nodes[0].label = 'An Extremely Long Node Label That Overflows'; }, ['wider than node', 'shorten the label']],
   ['workflow: node sublabel wider than its legible minimum', 'workflow',
     (d) => { d.nodes[0].sublabel = 'This supporting sentence is much too long for one workflow node'; }, ['Sublabel', 'legible', 'increase node.width']],
+  ['workflow: node tag wider than its legible minimum', 'workflow',
+    (d) => { d.nodes[0].tag = 'This tag is far too long to sit inside one workflow node box'; },
+    ['Tag', 'legible', 'increase node.width']],
   ['workflow: viewBox width below schema min', 'workflow',
     (d) => { d.meta.viewBox = [699, 900]; }, ['700']],
   ['workflow: nodes too close in a lane', 'workflow',
@@ -86,6 +96,9 @@ const CASES = [
     (d) => { d.messages[0].y = 9000; }, ['outside the readable timeline', 'keep y between']],
   ['sequence: segment to <= from', 'sequence',
     (d) => { d.segments = [{ from: 400, to: 300, label: 'bad' }]; }, ['invalid y range', 'greater than']],
+  ['sequence: participant sublabel wider than its legible minimum', 'sequence',
+    (d) => { d.participants[0].sublabel = 'This supporting sentence is far too long for one sequence participant'; },
+    ['Sublabel', 'legible', 'shorten the sublabel']],
 
   // ---- dataflow layout rules ----
   ['dataflow: flow missing label', 'dataflow',
@@ -96,6 +109,12 @@ const CASES = [
     (d) => {
       d.flows[0].via = [[195, 140], [195, 260]];
     }, ['diagonal segment', 'align via[0]']],
+  ['dataflow: node sublabel wider than its legible minimum', 'dataflow',
+    (d) => { d.nodes[0].sublabel = 'This supporting sentence is far too long for one data-flow node box'; },
+    ['Sublabel', 'legible', 'increase node.width']],
+  ['dataflow: node tag wider than its legible minimum', 'dataflow',
+    (d) => { d.nodes[0].tag = 'This tag is far too long to sit inside one data-flow node box'; },
+    ['Tag', 'legible', 'increase node.width']],
 
   // ---- lifecycle layout rules ----
   ['lifecycle: missing reserved main lane', 'lifecycle',
@@ -112,6 +131,12 @@ const CASES = [
     }, ['less than 10px apart']],
   ['lifecycle: viewBox height below schema min', 'lifecycle',
     (d) => { d.meta.viewBox = [980, 565]; }, ['566']],
+  ['lifecycle: state sublabel wider than its legible minimum', 'lifecycle',
+    (d) => { d.states[0].sublabel = 'This supporting sentence is far too long for one lifecycle state box'; },
+    ['Sublabel', 'legible', 'increase state.width']],
+  ['lifecycle: state tag wider than its legible minimum', 'lifecycle',
+    (d) => { d.states[0].tag = 'This tag is far too long to sit inside one lifecycle state box'; },
+    ['Tag', 'legible', 'increase state.width']],
 
   // ---- architecture layout rules ----
   ['architecture: components overlap', 'architecture',
@@ -122,6 +147,12 @@ const CASES = [
     (d) => { d.boundaries[0].wraps.push('ghost'); }, ['wraps unknown component "ghost"']],
   ['architecture: label wider than component', 'architecture',
     (d) => { d.components[0].label = 'An Extremely Long Component Label Overflow'; }, ['wider than component', 'shorten the label']],
+  ['architecture: component sublabel wider than its legible minimum', 'architecture',
+    (d) => { d.components[0].sublabel = 'This supporting sentence is far too long for one architecture component'; },
+    ['Sublabel', 'legible', 'widen size']],
+  ['architecture: component tag wider than its legible minimum', 'architecture',
+    (d) => { d.components[0].tag = 'This tag is far too long to sit inside one architecture component box'; },
+    ['Tag', 'legible', 'widen size']],
   ['architecture: component overlap suggests fix', 'architecture',
     (d) => { d.components[1].pos = [...d.components[0].pos]; }, ['Suggested fix', 'move "']],
 ];
@@ -138,6 +169,103 @@ for (const [name, mode, mutate, expected] of CASES) {
     }
   });
 }
+
+test('contract: a too-wide label is never redirected into sublabel', () => {
+  const labels = {
+    workflow: 'An Extremely Long Node Label That Overflows',
+    sequence: 'An Extremely Long Participant Label That Overflows',
+    dataflow: 'An Extremely Long Node Label That Overflows',
+    lifecycle: 'An Extremely Long State Label That Overflows',
+    architecture: 'An Extremely Long Component Label Overflow',
+  };
+  const fields = {
+    workflow: 'nodes',
+    sequence: 'participants',
+    dataflow: 'nodes',
+    lifecycle: 'states',
+    architecture: 'components',
+  };
+
+  for (const [mode, label] of Object.entries(labels)) {
+    const doc = load(mode);
+    doc[fields[mode]][0].label = label;
+    const { code, stderr } = render(mode, doc);
+    assert.notEqual(code, 0, `${mode}: expected non-zero exit; stderr:\n${stderr}`);
+    assert.ok(stderr.includes('wider than'), `${mode}: expected a width message:\n${stderr}`);
+    assert.doesNotMatch(
+      stderr,
+      /move detail to sublabel/,
+      `${mode}: label advice still points at the measured sublabel field:\n${stderr}`,
+    );
+  }
+});
+
+for (const [field, text, preferred] of [
+  ['sublabel', 'Browser and mobile apps', 9],
+  ['tag', 'owner on call rotation alpha', 7],
+]) {
+  test(`architecture: an over-long ${field} shrinks to fit`, () => {
+    const doc = load('architecture');
+    doc.components[0][field] = text;
+    const { code, stderr, outPath } = render('architecture', doc);
+    assert.equal(code, 0, stderr);
+    const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
+    assert.ok(fontSize < preferred, `expected ${field} below ${preferred}px, got ${fontSize}px`);
+    assert.ok(fontSize >= 6, `expected ${field} to remain legible, got ${fontSize}px`);
+  });
+}
+
+test('sequence: an over-long participant sublabel shrinks to fit', () => {
+  const doc = load('sequence');
+  const text = 'long browser session';
+  doc.participants[0].sublabel = text;
+  const { code, stderr, outPath } = render('sequence', doc);
+  assert.equal(code, 0, stderr);
+  const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
+  assert.ok(fontSize < 7, `expected sublabel below 7px, got ${fontSize}px`);
+  assert.ok(fontSize >= 6, `expected sublabel to remain legible, got ${fontSize}px`);
+});
+
+for (const [field, text] of [
+  ['sublabel', 'browser SDK and mobile SDK'],
+  ['tag', 'owner on call rotation alpha'],
+]) {
+  test(`dataflow: an over-long ${field} shrinks to fit`, () => {
+    const doc = load('dataflow');
+    doc.nodes[0][field] = text;
+    const { code, stderr, outPath } = render('dataflow', doc);
+    assert.equal(code, 0, stderr);
+    const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
+    assert.ok(fontSize < 7, `expected ${field} below 7px, got ${fontSize}px`);
+    assert.ok(fontSize >= 6, `expected ${field} to remain legible, got ${fontSize}px`);
+  });
+}
+
+for (const [field, text] of [
+  ['sublabel', 'request accepted and queued'],
+  ['tag', 'owner on call rotation alpha'],
+]) {
+  test(`lifecycle: an over-long ${field} shrinks to fit`, () => {
+    const doc = load('lifecycle');
+    doc.states[0][field] = text;
+    const { code, stderr, outPath } = render('lifecycle', doc);
+    assert.equal(code, 0, stderr);
+    const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
+    assert.ok(fontSize < 7, `expected ${field} below 7px, got ${fontSize}px`);
+    assert.ok(fontSize >= 6, `expected ${field} to remain legible, got ${fontSize}px`);
+  });
+}
+
+test('workflow: an over-long tag shrinks to fit', () => {
+  const doc = load('workflow');
+  const text = 'owner on call primary';
+  doc.nodes[0].tag = text;
+  const { code, stderr, outPath } = render('workflow', doc);
+  assert.equal(code, 0, stderr);
+  const fontSize = fontSizeForText(fs.readFileSync(outPath, 'utf8'), text);
+  assert.ok(fontSize < 7, `expected tag below 7px, got ${fontSize}px`);
+  assert.ok(fontSize >= 6, `expected tag to remain legible, got ${fontSize}px`);
+});
 
 // ---- error-message contract: threshold + remediation, not just a path ----
 test('contract: short-edge message carries both the px minimum and a fix verb', () => {

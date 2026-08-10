@@ -4,6 +4,7 @@ import { esc, renderDefinitions, renderSemanticSigil, textUnits } from '../share
 import { animateAttr, focusEdgeAttrs, focusNodeAttrs, focusNodeTitle, loadDiagram, writeDiagram, svgAccessibleText, svgRootAttrs } from '../shared/cli.mjs';
 import { throwDiagnosticProblems } from '../shared/diagnostics.mjs';
 import { resolveLegend, renderLegend as renderResolvedLegend } from '../shared/legend.mjs';
+import { availableNodeTextWidth, fittedNodeFontSize, minimumNodeTextWidth } from '../shared/text-fit.mjs';
 import {
   asArray,
   isFinitePoint,
@@ -27,6 +28,13 @@ import {
   arrowClassMap,
   variantAccent
 } from '../shared/geometry.mjs';
+
+const stateTextFit = {
+  sublabelPreferred: 7,
+  sublabelMinimum: 6,
+  tagPreferred: 7,
+  tagMinimum: 6,
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { diagram: lifecycle, template, outPath } = loadDiagram({
@@ -177,7 +185,21 @@ function validateLifecycle() {
     }
     const estLabelW = textUnits(state.label) * 6.2;
     if (estLabelW > state.width + 6) {
-      problems.push(`Label "${state.label}" (~${Math.round(estLabelW)}px) is wider than state "${state.id}" (${state.width}px) — shorten the label, move detail to sublabel, or increase state.width.`);
+      problems.push(`Label "${state.label}" (~${Math.round(estLabelW)}px) is wider than state "${state.id}" (${state.width}px) — shorten the label or increase state.width.`);
+    }
+    if (state.sublabel) {
+      const minimumW = minimumNodeTextWidth(state.sublabel, stateTextFit.sublabelMinimum);
+      const availableW = availableNodeTextWidth(state.width);
+      if (minimumW > availableW) {
+        problems.push(`Sublabel "${state.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${stateTextFit.sublabelMinimum}px legible minimum, but state "${state.id}" provides ${availableW}px — shorten the sublabel or increase state.width.`);
+      }
+    }
+    if (state.tag) {
+      const minimumW = minimumNodeTextWidth(state.tag, stateTextFit.tagMinimum);
+      const availableW = availableNodeTextWidth(state.width);
+      if (minimumW > availableW) {
+        problems.push(`Tag "${state.tag}" needs ~${Math.ceil(minimumW)}px at the ${stateTextFit.tagMinimum}px legible minimum, but state "${state.id}" provides ${availableW}px — shorten the tag or increase state.width.`);
+      }
     }
   }
 
@@ -380,10 +402,10 @@ function renderState(state) {
   const accent = textClass[state.type] || 't-muted';
   const hasSub = state.sublabel != null && state.sublabel !== '';
   const sub = hasSub
-    ? `\n          <text data-detail="context" x="${state.cx}" y="${state.y + 37}" class="t-muted" font-size="7" text-anchor="middle">${esc(state.sublabel)}</text>`
+    ? `\n          <text data-detail="context" x="${state.cx}" y="${state.y + 37}" class="t-muted" font-size="${fittedNodeFontSize(state.sublabel, state.width, stateTextFit.sublabelPreferred, stateTextFit.sublabelMinimum)}" text-anchor="middle">${esc(state.sublabel)}</text>`
     : '';
   const tag = state.tag
-    ? `\n        <text data-detail="fine" x="${state.cx}" y="${state.y + state.height - 11}" class="${accent}" font-size="7" text-anchor="middle">${esc(state.tag)}</text>`
+    ? `\n        <text data-detail="fine" x="${state.cx}" y="${state.y + state.height - 11}" class="${accent}" font-size="${fittedNodeFontSize(state.tag, state.width, stateTextFit.tagPreferred, stateTextFit.tagMinimum)}" text-anchor="middle">${esc(state.tag)}</text>`
     : '';
   const step = state.step
     ? `\n        <text data-detail="fine" x="${state.x + 10}" y="${state.y + 14}" class="${accent}" font-size="7" font-weight="700">${esc(state.step)}</text>`
@@ -492,7 +514,6 @@ writeDiagram({
   template,
   diagramType: 'lifecycle',
   meta: lifecycle.meta,
-  footerLabel: 'Lifecycle diagram',
   svg: renderSvg(),
   cards: lifecycle.cards,
 });

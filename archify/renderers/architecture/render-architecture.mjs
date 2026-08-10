@@ -5,6 +5,7 @@ import { animateAttr, focusEdgeAttrs, focusNodeAttrs, focusNodeTitle, loadDiagra
 import { componentBox, boundaryBox, connectionPath } from '../shared/layout-report.mjs';
 import { throwDiagnosticProblems } from '../shared/diagnostics.mjs';
 import { legendFootprint, relationshipLegendObstacles, resolveLegend, renderLegend as renderResolvedLegend } from '../shared/legend.mjs';
+import { availableNodeTextWidth, fittedNodeFontSize, minimumNodeTextWidth } from '../shared/text-fit.mjs';
 import { gridLayout, resolveComponentPos, validateGridPlacement } from './grid.mjs';
 import {
   asArray,
@@ -37,6 +38,13 @@ import {
   arrowClassMap,
   variantAccent,
 } from '../shared/geometry.mjs';
+
+const componentTextFit = {
+  sublabelPreferred: 9,
+  sublabelMinimum: 6,
+  tagPreferred: 7,
+  tagMinimum: 6,
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const layoutJsonMode = process.argv.includes('--layout-json');
@@ -197,7 +205,21 @@ function validateArchitecture() {
     }
     const estLabelW = textUnits(c.label) * 6.6;
     if (estLabelW > c.width + 8) {
-      problems.push(`Label "${c.label}" (~${Math.round(estLabelW)}px) is wider than component "${c.id}" (${c.width}px) — shorten the label, move detail to sublabel, or widen size.`);
+      problems.push(`Label "${c.label}" (~${Math.round(estLabelW)}px) is wider than component "${c.id}" (${c.width}px) — shorten the label or widen size.`);
+    }
+    if (c.sublabel) {
+      const minimumW = minimumNodeTextWidth(c.sublabel, componentTextFit.sublabelMinimum);
+      const availableW = availableNodeTextWidth(c.width);
+      if (minimumW > availableW) {
+        problems.push(`Sublabel "${c.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${componentTextFit.sublabelMinimum}px legible minimum, but component "${c.id}" provides ${availableW}px — shorten the sublabel or widen size.`);
+      }
+    }
+    if (c.tag) {
+      const minimumW = minimumNodeTextWidth(c.tag, componentTextFit.tagMinimum);
+      const availableW = availableNodeTextWidth(c.width);
+      if (minimumW > availableW) {
+        problems.push(`Tag "${c.tag}" needs ~${Math.ceil(minimumW)}px at the ${componentTextFit.tagMinimum}px legible minimum, but component "${c.id}" provides ${availableW}px — shorten the tag or widen size.`);
+      }
     }
   }
 
@@ -454,6 +476,52 @@ function sideAwareBridgeCandidates(start, end, fromSide, toSide) {
     .map((points) => points.slice(1, -1));
 }
 
+const AUTOMATIC_PORT_CORNER_GUTTER = 16;
+const AUTOMATIC_PORT_ALIGNMENT_DELTA = 16;
+
+function portHasCornerClearance(rect, side, point) {
+  if (side !== 'left' && side !== 'right') return false;
+  const inset = Math.min(AUTOMATIC_PORT_CORNER_GUTTER, rect.height / 2);
+  return point[1] >= rect.y + inset && point[1] <= rect.y + rect.height - inset;
+}
+
+function alignUnspreadFacingPorts(conn, from, to, start, end, fromSide, toSide) {
+  const hasExplicitGeometry = (
+    conn.via
+    || (conn.route && conn.route !== 'auto')
+    || conn.channelX !== undefined
+    || conn.channelY !== undefined
+    || conn.labelAt
+    || (conn.fromSide && conn.fromSide !== 'auto')
+    || (conn.toSide && conn.toSide !== 'auto')
+  );
+  const horizontallyFacing = (
+    (fromSide === 'right' && toSide === 'left')
+    || (fromSide === 'left' && toSide === 'right')
+  );
+  if (hasExplicitGeometry || !horizontallyFacing) return { start, end };
+  if (Math.abs(start[1] - end[1]) >= AUTOMATIC_PORT_ALIGNMENT_DELTA) return { start, end };
+
+  // A lone near-aligned edge does not need the outside bridge reserved for
+  // genuinely spread ports. Keep one shared flow axis when the opposite
+  // side can accept that port with the same 16px corner clearance.
+  const candidates = [
+    { start, end: [end[0], start[1]] },
+    { start: [start[0], end[1]], end },
+  ];
+  for (const candidate of candidates) {
+    const points = [candidate.start, candidate.end];
+    if (portHasCornerClearance(from, fromSide, candidate.start)
+        && portHasCornerClearance(to, toSide, candidate.end)
+        && routeHonorsEndpointSides(points, fromSide, toSide)
+        && routeClearsEndpointComponents(points, from, to)
+        && routeClearsComponents(conn, points)) {
+      return candidate;
+    }
+  }
+  return { start, end };
+}
+
 function routeVia(conn, from, to, start, end, fromSide, toSide) {
   if (conn.via) return conn.via;
   switch (conn.route || 'auto') {
@@ -575,8 +643,11 @@ function pathFor(conn) {
   const to = components.get(conn.to);
   const ports = automaticPorts.get(conn);
   const { fromSide, toSide } = connectionSides(conn);
-  const start = ports?.from || anchor(from, fromSide);
-  const end = ports?.to || anchor(to, toSide);
+  const baseStart = ports?.from || anchor(from, fromSide);
+  const baseEnd = ports?.to || anchor(to, toSide);
+  const { start, end } = ports
+    ? { start: baseStart, end: baseEnd }
+    : alignUnspreadFacingPorts(conn, from, to, baseStart, baseEnd, fromSide, toSide);
   const points = [start, ...routeVia(conn, from, to, start, end, fromSide, toSide), end];
   const routed = { d: roundedPath(points, 8), points };
   pathCache.set(conn, routed);
@@ -616,10 +687,10 @@ function renderComponent(c) {
   const hasSub = c.sublabel != null && c.sublabel !== '';
   const labelY = hasSub ? c.y + c.height / 2 - 2 : c.y + c.height / 2 + 4;
   const sub = hasSub
-    ? `\n        <text data-detail="context" x="${cx}" y="${c.y + c.height / 2 + 14}" class="t-muted" font-size="9" text-anchor="middle">${esc(c.sublabel)}</text>`
+    ? `\n        <text data-detail="context" x="${cx}" y="${c.y + c.height / 2 + 14}" class="t-muted" font-size="${fittedNodeFontSize(c.sublabel, c.width, componentTextFit.sublabelPreferred, componentTextFit.sublabelMinimum)}" text-anchor="middle">${esc(c.sublabel)}</text>`
     : '';
   const tag = c.tag
-    ? `\n        <text data-detail="fine" x="${cx}" y="${c.y + c.height - 8}" class="${accent}" font-size="7" text-anchor="middle">${esc(c.tag)}</text>`
+    ? `\n        <text data-detail="fine" x="${cx}" y="${c.y + c.height - 8}" class="${accent}" font-size="${fittedNodeFontSize(c.tag, c.width, componentTextFit.tagPreferred, componentTextFit.tagMinimum)}" text-anchor="middle">${esc(c.tag)}</text>`
     : '';
   const passport = { kind: c.type, sublabel: c.sublabel, tag: c.tag, context: componentContext(c) };
   return `        <g ${focusNodeAttrs(c.id, c.label, passport)}>
@@ -658,7 +729,7 @@ function renderLegend() {
       unfit: arch.meta?.legend === undefined ? 'hide' : 'error',
       diagramType: 'architecture',
     },
-    renderSwatch: (entry) => `<rect x="${entry.x}" y="${entry.baseline - 8}" width="14" height="9" rx="2" class="${componentFill[entry.kind] || 'c-external'}" stroke-width="1"/>`,
+    renderSwatch: (entry) => `<rect x="${entry.x}" y="${entry.baseline - 9}" width="16" height="10" rx="2.5" class="${componentFill[entry.kind] || 'c-external'}" stroke-width="1"/>`,
   });
 }
 
@@ -697,7 +768,6 @@ writeDiagram({
   template,
   diagramType: 'architecture',
   meta: arch.meta,
-  footerLabel: 'Architecture diagram',
   svg: renderSvg(),
   cards: arch.cards,
   sourceEvidence,

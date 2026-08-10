@@ -4,6 +4,7 @@ import { esc, renderDefinitions, renderSemanticSigil, textUnits } from '../share
 import { animateAttr, focusEdgeAttrs, focusNodeAttrs, focusNodeTitle, loadDiagram, writeDiagram, svgAccessibleText, svgRootAttrs } from '../shared/cli.mjs';
 import { throwDiagnosticProblems } from '../shared/diagnostics.mjs';
 import { resolveLegend, renderLegend as renderResolvedLegend } from '../shared/legend.mjs';
+import { availableNodeTextWidth, fittedNodeFontSize, minimumNodeTextWidth } from '../shared/text-fit.mjs';
 import {
   asArray,
   isFinitePoint,
@@ -29,6 +30,13 @@ import {
   arrowClassMap,
   variantAccent
 } from '../shared/geometry.mjs';
+
+const nodeTextFit = {
+  sublabelPreferred: 7,
+  sublabelMinimum: 6,
+  tagPreferred: 7,
+  tagMinimum: 6,
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { diagram: dataflow, template, outPath } = loadDiagram({
@@ -139,7 +147,21 @@ function validateDataflow() {
     }
     const estLabelW = textUnits(node.label) * 6.2;
     if (estLabelW > node.width + 6) {
-      problems.push(`Label "${node.label}" (~${Math.round(estLabelW)}px) is wider than node "${node.id}" (${node.width}px) — shorten the label, move detail to sublabel, or increase node.width.`);
+      problems.push(`Label "${node.label}" (~${Math.round(estLabelW)}px) is wider than node "${node.id}" (${node.width}px) — shorten the label or increase node.width.`);
+    }
+    if (node.sublabel) {
+      const minimumW = minimumNodeTextWidth(node.sublabel, nodeTextFit.sublabelMinimum);
+      const availableW = availableNodeTextWidth(node.width);
+      if (minimumW > availableW) {
+        problems.push(`Sublabel "${node.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${nodeTextFit.sublabelMinimum}px legible minimum, but node "${node.id}" provides ${availableW}px — shorten the sublabel or increase node.width.`);
+      }
+    }
+    if (node.tag) {
+      const minimumW = minimumNodeTextWidth(node.tag, nodeTextFit.tagMinimum);
+      const availableW = availableNodeTextWidth(node.width);
+      if (minimumW > availableW) {
+        problems.push(`Tag "${node.tag}" needs ~${Math.ceil(minimumW)}px at the ${nodeTextFit.tagMinimum}px legible minimum, but node "${node.id}" provides ${availableW}px — shorten the tag or increase node.width.`);
+      }
     }
   }
 
@@ -324,10 +346,10 @@ function renderNode(node) {
   const accent = componentText[node.type] || 't-muted';
   const hasSub = node.sublabel != null && node.sublabel !== '';
   const sub = hasSub
-    ? `\n          <text data-detail="context" x="${node.cx}" y="${node.y + 37}" class="t-muted" font-size="7" text-anchor="middle">${esc(node.sublabel)}</text>`
+    ? `\n          <text data-detail="context" x="${node.cx}" y="${node.y + 37}" class="t-muted" font-size="${fittedNodeFontSize(node.sublabel, node.width, nodeTextFit.sublabelPreferred, nodeTextFit.sublabelMinimum)}" text-anchor="middle">${esc(node.sublabel)}</text>`
     : '';
   const tag = node.tag
-    ? `\n        <text data-detail="fine" x="${node.cx}" y="${node.y + node.height - 11}" class="${accent}" font-size="7" text-anchor="middle">${esc(node.tag)}</text>`
+    ? `\n        <text data-detail="fine" x="${node.cx}" y="${node.y + node.height - 11}" class="${accent}" font-size="${fittedNodeFontSize(node.tag, node.width, nodeTextFit.tagPreferred, nodeTextFit.tagMinimum)}" text-anchor="middle">${esc(node.tag)}</text>`
     : '';
   const stage = asArray(dataflow.stages)[node.stage];
   const context = stage ? `${String(node.stage + 1).padStart(2, '0')} / ${stage.label}` : 'Data-flow node';
@@ -420,7 +442,6 @@ writeDiagram({
   template,
   diagramType: 'dataflow',
   meta: dataflow.meta,
-  footerLabel: 'Data-flow diagram',
   svg: renderSvg(),
   cards: dataflow.cards,
 });

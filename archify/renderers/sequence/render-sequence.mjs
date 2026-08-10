@@ -5,6 +5,12 @@ import { animateAttr, focusEdgeAttrs, focusNodeAttrs, focusNodeTitle, loadDiagra
 import { throwDiagnosticProblems } from '../shared/diagnostics.mjs';
 import { resolveLegend, renderLegend as renderResolvedLegend } from '../shared/legend.mjs';
 import { componentFill, arrowClassMap, rectsOverlap, cleanFlowProblems, cleanCrossingProblems, cleanAmbiguousCorridorProblems, cleanBorderRunProblems, cleanRouteRhythmProblems, cleanLabelRouteClearanceProblems, routePointsValue, asArray, isFinitePoint } from '../shared/geometry.mjs';
+import { availableNodeTextWidth, fittedNodeFontSize, minimumNodeTextWidth } from '../shared/text-fit.mjs';
+
+const participantTextFit = {
+  sublabelPreferred: 7,
+  sublabelMinimum: 6,
+};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { diagram: sequence, template, outPath } = loadDiagram({
@@ -130,7 +136,14 @@ function validateSequence() {
   for (const participant of participants.values()) {
     const estLabelW = textUnits(participant.label) * 6.8;
     if (estLabelW > layout.participantW + 6) {
-      problems.push(`Label "${participant.label}" (~${Math.round(estLabelW)}px) is wider than the ${layout.participantW}px participant box — shorten it or move detail to sublabel.`);
+      problems.push(`Label "${participant.label}" (~${Math.round(estLabelW)}px) is wider than the ${layout.participantW}px participant box — shorten it.`);
+    }
+    if (participant.sublabel) {
+      const minimumW = minimumNodeTextWidth(participant.sublabel, participantTextFit.sublabelMinimum);
+      const availableW = availableNodeTextWidth(layout.participantW);
+      if (minimumW > availableW) {
+        problems.push(`Sublabel "${participant.sublabel}" needs ~${Math.ceil(minimumW)}px at the ${participantTextFit.sublabelMinimum}px legible minimum, but participant "${participant.id}" provides ${availableW}px — shorten the sublabel (participant boxes are a fixed ${layout.participantW}px).`);
+      }
     }
   }
 
@@ -272,7 +285,7 @@ function renderParticipant(participant) {
   const fill = componentFill[participant.type] || 'c-external';
   const hasSub = participant.sublabel != null && participant.sublabel !== '';
   const sub = hasSub
-    ? `\n          <text data-detail="context" x="${participant.cx}" y="${layout.topY + 39}" class="t-muted" font-size="7" text-anchor="middle">${esc(participant.sublabel)}</text>`
+    ? `\n          <text data-detail="context" x="${participant.cx}" y="${layout.topY + 39}" class="t-muted" font-size="${fittedNodeFontSize(participant.sublabel, layout.participantW, participantTextFit.sublabelPreferred, participantTextFit.sublabelMinimum)}" text-anchor="middle">${esc(participant.sublabel)}</text>`
     : '';
   const passport = { kind: participant.type, sublabel: participant.sublabel, context: 'Sequence participant' };
   return `        <g ${focusNodeAttrs(participant.id, participant.label, passport)}>
@@ -412,7 +425,6 @@ writeDiagram({
   template,
   diagramType: 'sequence',
   meta: sequence.meta,
-  footerLabel: 'Sequence diagram',
   svg: renderSvg(),
   cards: sequence.cards,
 });

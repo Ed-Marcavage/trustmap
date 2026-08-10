@@ -119,6 +119,23 @@ test('architecture: single and explicitly positioned relationships keep legacy a
   assert.deepEqual(connectionPoints(html, 'fixed-label'), [[220, 310], [360, 310], [360, 130], [500, 130]]);
 });
 
+test('architecture: an unspread near-aligned connection shares one horizontal axis', () => {
+  const html = render('architecture', {
+    schema_version: 1,
+    diagram_type: 'architecture',
+    meta: { title: 'Near-aligned single connection' },
+    components: [
+      { id: 'console', type: 'frontend', label: 'Console', pos: [260, 300], size: [170, 64] },
+      { id: 'controlplane', type: 'backend', label: 'Control plane', pos: [500, 300], size: [190, 72] },
+    ],
+    connections: [
+      { id: 'console-controlplane', from: 'console', to: 'controlplane', label: 'REST /api', variant: 'emphasis', labelDy: -36 },
+    ],
+  });
+
+  assert.deepEqual(connectionPoints(html, 'console-controlplane'), [[430, 332], [500, 332]]);
+});
+
 test('workflow: automatic cross-lane fan-out spreads the shared source port', () => {
   const html = render('workflow', {
     schema_version: 1,
@@ -229,6 +246,10 @@ test('skill and READMEs describe automatic port spread as bounded default behavi
   assert.match(skill, /Automatic Port Spread is a default renderer behavior/);
   assert.match(skill, /single relationship|single relationships/);
   assert.match(skill, /explicit `via`.*`channelX`.*`channelY`.*`labelAt`/);
+  assert.match(skill, /lone, unobstructed pair of automatic left\/right ports on one horizontal axis/);
+
+  const authoringContract = fs.readFileSync(path.join(skillRoot, 'references/authoring-contract.md'), 'utf8');
+  assert.match(authoringContract, /unobstructed left\/right ports.*may share one horizontal axis/);
 
   const repoRoot = path.resolve(skillRoot, '..');
   for (const file of ['README.md', 'README_EN.md']) {
