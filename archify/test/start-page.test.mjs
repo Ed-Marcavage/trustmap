@@ -103,7 +103,8 @@ test('generated artifacts omit the promotional footer and shortcut manual', () =
 
 test('viewer gives wide screens a larger canvas without forcing a subtitle row', () => {
   const template = fs.readFileSync(path.join(skillRoot, 'assets', 'template.html'), 'utf8');
-  assert.match(template, /\.container \{ width: 100%; max-width: 1440px; margin: 0 auto; \}/);
+  assert.match(template, /max-width: var\(--archify-reader-width, 1440px\)/);
+  assert.match(template, /Archify\.readerLayout = \(function \(\)/);
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-title-hierarchy-'));
   try {
