@@ -4,6 +4,20 @@ All notable changes are documented here. Format loosely follows [Keep a Changelo
 
 ## [Unreleased]
 
+## [2.14.0] — 2026-08-11
+
+### Added
+- **Bounded visual evidence checks.** `archify visual-check <output.html> --json` now measures first-screen containment at 1440×900, 1600×1000, 1920×1080, and 2048×1320, captures light/dark evidence at the two endpoint sizes, and writes a relative-path contact sheet plus a machine receipt that remains explicitly `visualReview: "pending"`. Chrome absence is reported as `skipped` rather than a false pass, and the zero-install Node 18 runtime remains dependency-free.
+
+### Changed
+- **Safer diagram authoring defaults.** Generated copy follows the user's conversation language while preserving technical names; titles stay compact and omit redundant subtitles; relationship labels are treated as semantic data and may be removed only as an auditable last resort; and `deployment-ownership` is reserved for explicit deployment or ownership reviews rather than inferred from ordinary security boundaries.
+- **More compact viewer chrome.** The default remains Classic in both themes, the toolbar and single-column Export menu use quieter sizing and hierarchy, generated promotional footers are removed, and the diagram view dock now shows only the current percentage at rest while retaining PATH, MAP, LENS, search, help, zoom, and touch-safe mobile controls.
+
+### Fixed
+- Wide desktop diagrams now use the available viewport height without forcing unnecessary page scrolling or leaving a conspicuous empty lower band.
+- Near-aligned architecture relationships keep a straight axis when only one endpoint needs automatic port spreading, while fan-out separation, two-ended bridges, obstacle avoidance, and explicit route controls remain authoritative.
+- Long component sublabels and tags use shared measured fitting across all five renderers instead of overflowing their nodes.
+
 ## [2.13.0] — 2026-08-03
 
 ### Added
