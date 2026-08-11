@@ -36,3 +36,20 @@ test('mobile menus share one viewport-safe placement and disabled exports remain
   assert.match(template, /\.toolbar \.export-menu button:disabled \{[\s\S]*?cursor: not-allowed;/);
   assert.doesNotMatch(template, /it\.style\.opacity = '0\.5'/);
 });
+
+test('diagram view dock stays compact on desktop and touch-safe on narrow screens', () => {
+  assert.match(template, /\.diagram-nav \{[\s\S]*?padding: 0\.2rem;[\s\S]*?border-radius: 0\.7rem;/);
+  assert.match(template, /\.diagram-nav button \{[\s\S]*?min-width: 2\.25rem;[\s\S]*?height: 2\.25rem;/);
+  assert.match(template, /@media \(max-width: 720px\)[\s\S]*?\.diagram-nav button \{[\s\S]*?min-width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
+  assert.match(template, /class="diagram-nav-icon find"/);
+  assert.match(template, /class="diagram-nav-icon guide"/);
+  assert.match(template, /class="diagram-nav-icon minus"/);
+  assert.match(template, /class="diagram-nav-icon plus"/);
+});
+
+test('diagram view reset separates semantic detail from zoom percentage', () => {
+  assert.match(template, /data-view="reset"[\s\S]*?data-view-detail>READ<[\s\S]*?data-view-percent>100%</);
+  assert.match(template, /var resolvedLevel = \(semantic \? 'AUTO ' : levelLabel\)\.trim\(\);/);
+  assert.match(template, /detailLabel\.textContent = resolvedLevel/);
+  assert.match(template, /percentLabel\.textContent = percent/);
+});
