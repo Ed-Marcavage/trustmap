@@ -479,35 +479,65 @@ const AUTOMATIC_PORT_CORNER_GUTTER = 16;
 const AUTOMATIC_PORT_ALIGNMENT_DELTA = 16;
 
 function portHasCornerClearance(rect, side, point) {
-  if (side !== 'left' && side !== 'right') return false;
-  const inset = Math.min(AUTOMATIC_PORT_CORNER_GUTTER, rect.height / 2);
-  return point[1] >= rect.y + inset && point[1] <= rect.y + rect.height - inset;
+  if (side === 'left' || side === 'right') {
+    const inset = Math.min(AUTOMATIC_PORT_CORNER_GUTTER, rect.height / 2);
+    return point[1] >= rect.y + inset && point[1] <= rect.y + rect.height - inset;
+  }
+  if (side === 'top' || side === 'bottom') {
+    const inset = Math.min(AUTOMATIC_PORT_CORNER_GUTTER, rect.width / 2);
+    return point[0] >= rect.x + inset && point[0] <= rect.x + rect.width - inset;
+  }
+  return false;
 }
 
-function alignUnspreadFacingPorts(conn, from, to, start, end, fromSide, toSide) {
+function alignFacingPorts(conn, from, to, start, end, fromSide, toSide, ports) {
   const hasExplicitGeometry = (
     conn.via
     || (conn.route && conn.route !== 'auto')
     || conn.channelX !== undefined
     || conn.channelY !== undefined
     || conn.labelAt
-    || (conn.fromSide && conn.fromSide !== 'auto')
-    || (conn.toSide && conn.toSide !== 'auto')
   );
   const horizontallyFacing = (
     (fromSide === 'right' && toSide === 'left')
     || (fromSide === 'left' && toSide === 'right')
   );
-  if (hasExplicitGeometry || !horizontallyFacing) return { start, end };
-  if (Math.abs(start[1] - end[1]) >= AUTOMATIC_PORT_ALIGNMENT_DELTA) return { start, end };
+  const verticallyFacing = (
+    (fromSide === 'bottom' && toSide === 'top')
+    || (fromSide === 'top' && toSide === 'bottom')
+  );
+  if (hasExplicitGeometry || (!horizontallyFacing && !verticallyFacing)) return { start, end };
 
-  // A lone near-aligned edge does not need the outside bridge reserved for
-  // genuinely spread ports. Keep one shared flow axis when the opposite
-  // side can accept that port with the same 16px corner clearance.
-  const candidates = [
-    { start, end: [end[0], start[1]] },
-    { start: [start[0], end[1]], end },
-  ];
+  const fromSpread = Boolean(ports?.from);
+  const toSpread = Boolean(ports?.to);
+  if (fromSpread && toSpread) return { start, end };
+  const hasExplicitSides = (
+    (conn.fromSide && conn.fromSide !== 'auto')
+    || (conn.toSide && conn.toSide !== 'auto')
+  );
+  if (!fromSpread && !toSpread && hasExplicitSides) return { start, end };
+
+  const alignmentDelta = horizontallyFacing
+    ? Math.abs(start[1] - end[1])
+    : Math.abs(start[0] - end[0]);
+  if (alignmentDelta >= AUTOMATIC_PORT_ALIGNMENT_DELTA) return { start, end };
+
+  // Keep the shared endpoint's distinct spread slot and move only the
+  // relationship's unshared endpoint onto that axis. With no spread endpoint,
+  // retain the existing least-movement choice between the two facing sides.
+  // If both endpoints are shared, preserve the outside bridge so no competing
+  // port is silently collapsed.
+  const alignEndToStart = horizontallyFacing
+    ? { start, end: [end[0], start[1]] }
+    : { start, end: [start[0], end[1]] };
+  const alignStartToEnd = horizontallyFacing
+    ? { start: [start[0], end[1]], end }
+    : { start: [end[0], start[1]], end };
+  const candidates = fromSpread
+    ? [alignEndToStart]
+    : toSpread
+      ? [alignStartToEnd]
+      : [alignEndToStart, alignStartToEnd];
   for (const candidate of candidates) {
     const points = [candidate.start, candidate.end];
     if (portHasCornerClearance(from, fromSide, candidate.start)
@@ -644,9 +674,16 @@ function pathFor(conn) {
   const { fromSide, toSide } = connectionSides(conn);
   const baseStart = ports?.from || anchor(from, fromSide);
   const baseEnd = ports?.to || anchor(to, toSide);
-  const { start, end } = ports
-    ? { start: baseStart, end: baseEnd }
-    : alignUnspreadFacingPorts(conn, from, to, baseStart, baseEnd, fromSide, toSide);
+  const { start, end } = alignFacingPorts(
+    conn,
+    from,
+    to,
+    baseStart,
+    baseEnd,
+    fromSide,
+    toSide,
+    ports,
+  );
   const points = [start, ...routeVia(conn, from, to, start, end, fromSide, toSide), end];
   const routed = { d: roundedPath(points, 8), points };
   pathCache.set(conn, routed);
