@@ -168,7 +168,7 @@ Archify is flat and tonal by default. Borders and surface contrast establish str
 ### Buttons
 
 - **Shape:** compact rounded rectangle (`0.5rem`), or precise corners (`0.2rem`) in Blueprint.
-- **Primary:** translucent toolbar material, one-pixel structural border, mono body label, and at least `2.75rem` height.
+- **Primary:** translucent toolbar material, one-pixel structural border, and mono body label. Desktop viewer chrome may use compact 32px controls; touch and narrow-screen targets stay at least `2.75rem` high.
 - **Hover / Focus:** 150ms border/background response; `2px` cyan focus ring with `2px` offset.
 - **Secondary / Ghost:** transparent within menus; never add a second saturated fill hierarchy.
 
