@@ -136,6 +136,16 @@ try {
     throw new Error('packaged workflow delivery did not return a passing receipt');
   }
 
+  const visualSkipped = JSON.parse(runExpectFailure([
+    'visual-check', delivered.output, '--json',
+  ], {
+    env: { ...process.env, ARCHIFY_CHROME: path.join(scratch, 'missing-chrome') },
+  }));
+  if (visualSkipped.status !== 'skipped' || visualSkipped.visualReview !== 'pending'
+    || visualSkipped.chrome?.status !== 'unavailable') {
+    throw new Error('packaged visual-check did not return the expected Chrome-unavailable receipt');
+  }
+
   const emptyPath = path.join(scratch, 'empty-path');
   fs.mkdirSync(emptyPath);
   const openReceipt = JSON.parse(run([

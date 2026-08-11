@@ -54,6 +54,16 @@ independent viewer state: switching Light / Dark must preserve the current
 preset. Author `signal-flow`, `blueprint`, or `editorial` only when the user
 explicitly requests that visual style.
 
+## Engineering profile default
+
+Omit `meta.engineering_profile` for an ordinary system architecture. Region,
+cluster, and security boundary wording do not by themselves enable an
+engineering profile. Enable `deployment-ownership` only when the user
+explicitly asks for a production deployment topology, ownership handoff, or
+fail-closed deployment review and the source facts are known. Once enabled,
+do not remove the engineering profile merely to pass validation; repair the
+authored facts or report the diagnostics truthfully.
+
 ## Title hierarchy
 
 Use one concise title and let the diagram carry the explanation. Omit
@@ -84,7 +94,14 @@ label mask width ≈ 6.5px × ASCII units + 13px
 CJK characters count as two units
 ```
 
-If the gap is too small, prefer an unlabeled obvious edge. Otherwise increase the clear gap or apply a diagnosed `labelAt`, `labelDx`/`labelDy`, or `labelSegment`. Never guess several geometry controls at once.
+Relationship labels are semantic data. If the gap is too small, move the label,
+adjust the route or spacing, then shorten the wording while preserving meaning.
+Only delete a label when both endpoints fully imply the relationship and it
+contains no protocol, action, direction, synchronous/asynchronous behavior, or
+cross-boundary mechanism. Explain why a deleted label is redundant. Never
+delete a meaningful label merely to pass `showcase`. Apply a diagnosed
+`labelAt`, `labelDx`/`labelDy`, or `labelSegment` before guessing several
+geometry controls at once.
 
 ### Repair order
 
