@@ -38,8 +38,8 @@ test('mobile menus share one viewport-safe placement and disabled exports remain
 });
 
 test('diagram view dock stays compact on desktop and touch-safe on narrow screens', () => {
-  assert.match(template, /\.diagram-nav \{[\s\S]*?padding: 0\.2rem;[\s\S]*?border-radius: 0\.7rem;/);
-  assert.match(template, /\.diagram-nav button \{[\s\S]*?min-width: 2\.25rem;[\s\S]*?height: 2\.25rem;/);
+  assert.match(template, /\.diagram-nav \{[\s\S]*?padding: 0\.15rem;[\s\S]*?border-radius: 0\.58rem;/);
+  assert.match(template, /\.diagram-nav button \{[\s\S]*?min-width: 2rem;[\s\S]*?height: 2rem;/);
   assert.match(template, /@media \(max-width: 720px\)[\s\S]*?\.diagram-nav button \{[\s\S]*?min-width: 2\.75rem;[\s\S]*?height: 2\.75rem;/);
   assert.match(template, /class="diagram-nav-icon find"/);
   assert.match(template, /class="diagram-nav-icon guide"/);
@@ -48,8 +48,10 @@ test('diagram view dock stays compact on desktop and touch-safe on narrow screen
 });
 
 test('diagram view reset separates semantic detail from zoom percentage', () => {
-  assert.match(template, /data-view="reset"[\s\S]*?data-view-detail>READ<[\s\S]*?data-view-percent>100%</);
+  assert.match(template, /data-view="reset"[\s\S]*?data-view-detail hidden>READ<[\s\S]*?data-view-percent>100%</);
   assert.match(template, /var resolvedLevel = \(semantic \? 'AUTO ' : levelLabel\)\.trim\(\);/);
-  assert.match(template, /detailLabel\.textContent = resolvedLevel/);
-  assert.match(template, /percentLabel\.textContent = percent/);
+  assert.match(template, /var showDetailLevel = resolvedLevel !== 'READ';/);
+  assert.match(template, /resetDetailLabel\.hidden = !showDetailLevel/);
+  assert.match(template, /resetPercentLabel\.textContent = percent/);
+  assert.match(template, /resetBtn\.toggleAttribute\('data-detail-visible', showDetailLevel\)/);
 });

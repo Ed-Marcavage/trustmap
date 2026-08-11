@@ -916,14 +916,14 @@
       display: inline-flex;
       align-items: center;
       max-width: calc(100% - 2rem);
-      padding: 0.2rem;
+      padding: 0.15rem;
       gap: 0;
       overflow-x: auto;
-      border: 1px solid color-mix(in srgb, var(--toolbar-border) 56%, transparent);
-      border-radius: 0.7rem;
-      background: color-mix(in srgb, var(--toolbar-bg) 88%, transparent);
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.09);
-      backdrop-filter: blur(12px);
+      border: 1px solid color-mix(in srgb, var(--toolbar-border) 48%, transparent);
+      border-radius: 0.58rem;
+      background: color-mix(in srgb, var(--toolbar-bg) 82%, transparent);
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.07);
+      backdrop-filter: blur(10px);
       scrollbar-width: none;
     }
     .diagram-nav::-webkit-scrollbar { display: none; }
@@ -937,12 +937,12 @@
       cursor: pointer;
     }
     .diagram-nav button {
-      min-width: 2.25rem;
-      height: 2.25rem;
-      padding: 0 0.45rem;
-      border-radius: 0.45rem;
+      min-width: 2rem;
+      height: 2rem;
+      padding: 0 0.35rem;
+      border-radius: 0.35rem;
       color: color-mix(in srgb, var(--toolbar-text) 68%, transparent);
-      font-size: 0.625rem;
+      font-size: 0.56rem;
       font-weight: 600;
       letter-spacing: 0.02em;
       transition: background 0.15s, color 0.15s;
@@ -965,21 +965,21 @@
     .diagram-nav #btn-overview-map,
     .diagram-nav #btn-semantic-lens {
       min-width: auto;
-      padding-inline: 0.65rem;
+      padding-inline: 0.5rem;
       color: color-mix(in srgb, var(--toolbar-text) 86%, transparent);
       font-weight: 650;
     }
     .diagram-nav #btn-node-finder,
     .diagram-nav [data-view="out"] {
       position: relative;
-      margin-left: 0.35rem;
+      margin-left: 0.25rem;
     }
     .diagram-nav #btn-node-finder::before,
     .diagram-nav [data-view="out"]::before {
       position: absolute;
-      top: 0.45rem;
-      bottom: 0.45rem;
-      left: -0.2rem;
+      top: 0.4rem;
+      bottom: 0.4rem;
+      left: -0.13rem;
       width: 1px;
       background: color-mix(in srgb, var(--toolbar-border) 62%, transparent);
       content: "";
@@ -987,8 +987,8 @@
     }
     .diagram-nav-icon {
       display: block;
-      width: 0.8rem;
-      height: 0.8rem;
+      width: 0.72rem;
+      height: 0.72rem;
       margin: auto;
       background: currentColor;
       -webkit-mask-position: center;
@@ -1016,26 +1016,27 @@
     }
     .diagram-nav [data-view="reset"] {
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: center;
-      gap: 0.3rem;
-      min-width: 4.2rem;
-      padding-inline: 0.5rem;
+      gap: 0.2rem;
+      min-width: 3.1rem;
+      padding-inline: 0.35rem;
+    }
+    .diagram-nav [data-view="reset"][data-detail-visible] {
+      min-width: 3.8rem;
     }
     .diagram-nav-detail {
       color: color-mix(in srgb, var(--toolbar-text) 52%, transparent);
-      font-size: 0.48rem;
+      font-size: 0.44rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      line-height: 1;
+      letter-spacing: 0.07em;
     }
     .diagram-nav-percent {
       color: color-mix(in srgb, var(--toolbar-text) 84%, transparent);
-      font-size: 0.6rem;
+      font-size: 0.55rem;
       font-weight: 650;
-    }
-    .diagram-container[data-camera-indicator="true"] .diagram-nav [data-view="reset"] {
-      min-width: 4.7rem;
-      color: var(--frontend-stroke);
+      line-height: 1;
     }
     .diagram-container[data-camera-indicator="true"] .diagram-nav-detail,
     .diagram-container[data-camera-indicator="true"] .diagram-nav-percent { color: var(--frontend-stroke); }
@@ -3558,7 +3559,8 @@
         min-width: 2.75rem;
         height: 2.75rem;
       }
-      .diagram-nav [data-view="reset"] { min-width: 4.6rem; }
+      .diagram-nav [data-view="reset"] { min-width: 3.75rem; }
+      .diagram-nav [data-view="reset"][data-detail-visible] { min-width: 4.35rem; }
       .overview-map {
         right: 0.5rem;
         bottom: 3.7rem;
@@ -5334,7 +5336,7 @@
         <button id="btn-node-finder" type="button" aria-label="Find a node" aria-haspopup="dialog" aria-expanded="false" aria-controls="node-finder" title="Find a node (/)" data-node-finder-trigger><span class="diagram-nav-icon find" aria-hidden="true"></span></button>
         <button id="btn-diagram-guide" type="button" aria-label="Open diagram guide" aria-haspopup="dialog" aria-expanded="false" aria-controls="diagram-guide" title="Diagram guide (?)"><span class="diagram-nav-icon guide" aria-hidden="true"></span></button>
         <button data-view="out" type="button" aria-label="Zoom out" title="Zoom out (-)"><span class="diagram-nav-icon minus" aria-hidden="true"></span></button>
-        <button data-view="reset" type="button" aria-label="Reset diagram view" title="Reset view (0)"><span class="diagram-nav-detail" data-view-detail>READ</span><span class="diagram-nav-percent" data-view-percent>100%</span></button>
+        <button data-view="reset" type="button" aria-label="Reset diagram view" title="Reset view (0)"><span class="diagram-nav-detail" data-view-detail hidden>READ</span><span class="diagram-nav-percent" data-view-percent>100%</span></button>
         <button data-view="in" type="button" aria-label="Zoom in" title="Zoom in (+)"><span class="diagram-nav-icon plus" aria-hidden="true"></span></button>
       </div>
     </div>
@@ -10709,6 +10711,8 @@
       var svg = container.querySelector('svg');
       var outBtn = container.querySelector('[data-view="out"]');
       var resetBtn = container.querySelector('[data-view="reset"]');
+      var resetDetailLabel = resetBtn.querySelector('[data-view-detail]');
+      var resetPercentLabel = resetBtn.querySelector('[data-view-percent]');
       var inBtn = container.querySelector('[data-view="in"]');
       var state = { scale: 1, x: 0, y: 0, mode: 'overview' };
       var drag = null;
@@ -10783,11 +10787,14 @@
           : detail === 'read'
             ? 'Zoom in again to reveal tags and annotations'
             : 'Full diagram detail';
-        var detailLabel = resetBtn.querySelector('[data-view-detail]');
-        var percentLabel = resetBtn.querySelector('[data-view-percent]');
         var resolvedLevel = (semantic ? 'AUTO ' : levelLabel).trim();
-        if (detailLabel) detailLabel.textContent = resolvedLevel;
-        if (percentLabel) percentLabel.textContent = percent;
+        var showDetailLevel = resolvedLevel !== 'READ';
+        if (resetDetailLabel) {
+          resetDetailLabel.textContent = resolvedLevel;
+          resetDetailLabel.hidden = !showDetailLevel;
+        }
+        if (resetPercentLabel) resetPercentLabel.textContent = percent;
+        resetBtn.toggleAttribute('data-detail-visible', showDetailLevel);
         resetBtn.title = (semantic ? 'Semantic camera active · ' : '') + detailHint + ' · reset view (0)';
         resetBtn.setAttribute('aria-label', detailHint + '. Reset diagram view');
         resetBtn.setAttribute('data-detail-level', detail);
