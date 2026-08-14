@@ -29,6 +29,18 @@ test('Windows npm shims launch their JavaScript CLI through Node', () => {
   assert.deepEqual(invocation, { command: execPath, args: [npmCli, '--version'] });
 });
 
+test('Windows tar uses the system bsdtar instead of a Git for Windows PATH shadow', () => {
+  const systemTar = 'C:\\Windows\\System32\\tar.exe';
+  const invocation = resolveCliInvocation('tar', ['-tf', 'archive.tgz'], {
+    platform: 'win32',
+    env: { SystemRoot: 'C:\\Windows' },
+    existsSync(candidate) {
+      return candidate === systemTar;
+    },
+  });
+  assert.deepEqual(invocation, { command: systemTar, args: ['-tf', 'archive.tgz'] });
+});
+
 test('resolved npm invocation can actually be spawned', () => {
   const invocation = resolveCliInvocation('npm', ['--version']);
   const result = spawnSync(invocation.command, invocation.args, { encoding: 'utf8' });

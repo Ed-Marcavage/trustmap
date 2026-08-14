@@ -182,7 +182,9 @@ pass('pack', { filename: packReceipt.filename, fileCount: packReceipt.files?.len
 
 const inspectRoot = path.join(scratch, 'tarball');
 fs.mkdirSync(inspectRoot);
-requireStatus('tarball-inspect', run('tar', ['-xzf', tarball, '-C', inspectRoot]));
+requireStatus('tarball-inspect', run('tar', ['-xzf', path.basename(tarball), '-C', inspectRoot], {
+  cwd: path.dirname(tarball),
+}));
 const packedPkg = JSON.parse(fs.readFileSync(path.join(inspectRoot, 'package', 'package.json'), 'utf8'));
 const packedFiles = listRelativeFiles(path.join(inspectRoot, 'package'));
 const forbidden = packedFiles.filter((file) => (

@@ -93,17 +93,20 @@ try {
       }),
     );
     const parsed = JSON.parse(packed.stdout.slice(jsonStart));
-    packMeta = Array.isArray(parsed) ? parsed[0] : parsed;
+    if (Array.isArray(parsed)) {
+      packMeta = parsed[0] || {};
+    } else if (parsed?.name) {
+      packMeta = parsed;
+    } else {
+      packMeta = Object.values(parsed || {}).find((entry) => entry?.name === '@tt-a1i/archify-dsh') || {};
+    }
   } catch {
     packMeta = {};
   }
-  const listing = spawnCliSync('tar', ['-tzf', path.join(stage, produced)], { encoding: 'utf8' });
-  if (listing.status !== 0) {
-    throw new Error(`unable to list packed tarball: ${listing.stderr || listing.error?.message}`);
+  if (!Array.isArray(packMeta.files)) {
+    throw new Error(`npm pack metadata did not include a file list\n${packed.stdout}`);
   }
-  const files = listing.stdout.trim().split('\n').filter(Boolean).map((entry) => ({
-    path: entry.replace(/^package\//, ''),
-  }));
+  const files = packMeta.files.map((file) => ({ path: file.path }));
   const destination = path.resolve(out || path.join(process.cwd(), produced));
   fs.mkdirSync(path.dirname(destination), { recursive: true });
   fs.copyFileSync(path.join(stage, produced), destination);
