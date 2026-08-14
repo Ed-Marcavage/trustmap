@@ -245,12 +245,14 @@ const runtimeInstall = run('npm', [
   '--no-audit',
   '--no-fund',
   '--foreground-scripts',
-  '--loglevel=info',
+  '--loglevel=warn',
   DSH_SPEC,
 ], {
   cwd: scratch,
   env: dshEnv,
-  stdio: 'inherit',
+  // Stream npm lifecycle diagnostics without polluting the JSON-only receipt
+  // written to this process's stdout.
+  stdio: ['ignore', 2, 2],
   timeout: DSH_RUNTIME_INSTALL_TIMEOUT,
 });
 requireStatus('dsh-runtime-install', runtimeInstall, { command: `npm install ${DSH_SPEC}` });
