@@ -37,13 +37,17 @@ test('the repository still has exactly one checked-in Archify SKILL.md and no ge
 });
 
 test('Archify core does not import, detect, or branch on DeepSeek Harness', () => {
-  const grep = spawnSync('rg', [
+  const grep = spawnSync('git', [
+    'grep',
     '-n',
+    '-E',
     'deepseek-harness|@deepseek-ai/dsh|DSH_HOME|DSH_AGENTS_HOME|archify-dsh',
+    '--',
     'archify',
     'scripts/build-zip.sh',
     'scripts/package-smoke.mjs',
   ], { cwd: repoRoot, encoding: 'utf8' });
+  assert.equal(grep.status, 1, grep.stderr || grep.stdout);
   assert.equal(grep.stdout.trim(), '');
 });
 
