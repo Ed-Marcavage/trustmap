@@ -16,6 +16,7 @@ const PROFILE = 'archify-dsh-acceptance';
 const FIXED_POINT = '45f0611dfc0dc824e9a13a12efcac207a8a2bdce';
 const ARCHIFY_ZIP_BLOB = '4249d32a5a07deb63152a06ac8c2cf4784d25136';
 const ARCHIFY_PACKAGE_BLOB = '238d6237ff0c942d459e7ec257f19386522306a0';
+const PLUGIN_MUTATION_TIMEOUT = process.platform === 'win32' ? 480_000 : 180_000;
 
 const receipt = {
   ok: false,
@@ -222,7 +223,7 @@ function dsh(args, options = {}) {
   });
 }
 
-const install = dsh(['plugin', '--profile', PROFILE, 'add', tarball], { timeout: 180_000 });
+const install = dsh(['plugin', '--profile', PROFILE, 'add', tarball], { timeout: PLUGIN_MUTATION_TIMEOUT });
 requireStatus('plugin-install', install, { command: `dsh plugin --profile ${PROFILE} add <tarball>` });
 pass('plugin-install', { profile: PROFILE });
 
@@ -337,7 +338,7 @@ const smoke = run(process.execPath, [path.join(repoRoot, 'scripts', 'package-smo
 requireStatus('package-smoke', smoke, { command: 'package-smoke.mjs <installed-skill-root>' });
 pass('package-smoke', { skillRoot, output: smoke.stdout.trim() });
 
-const remove = dsh(['plugin', '--profile', PROFILE, 'remove', PACKAGE_NAME], { timeout: 180_000 });
+const remove = dsh(['plugin', '--profile', PROFILE, 'remove', PACKAGE_NAME], { timeout: PLUGIN_MUTATION_TIMEOUT });
 requireStatus('uninstall', remove, { command: `dsh plugin --profile ${PROFILE} remove ${PACKAGE_NAME}` });
 const removedManifest = JSON.parse(fs.readFileSync(path.join(profileDir, 'package.json'), 'utf8'));
 if ((removedManifest.dsh?.profile?.bundles || []).includes(PACKAGE_NAME)
