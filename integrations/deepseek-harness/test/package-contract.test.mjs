@@ -56,6 +56,8 @@ test('bundle patch inserts one uniquely named filesystem Skill provider resolved
   assert.match(patch, /name:\s*'@deepseek-ai\/dsh-skill-filesystem'/);
   assert.match(patch, /providerName:\s*archify-plugin/);
   assert.match(patch, /includeDefaultRoots:\s*false/);
+  assert.match(patch, /bundledSkillDir:\s*!!js/);
+  assert.doesNotMatch(patch, /customSkillDirs/);
   assert.match(
     patch,
     /createRequire\(baseUrl\)\.resolve\('@tt-a1i\/archify-dsh\/package\.json'\)/,
