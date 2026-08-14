@@ -72,7 +72,19 @@ function listRelativeFiles(root) {
   return files.sort();
 }
 
-function treesMatch(left, right) {
+const CHECKOUT_TEXT_EXTENSIONS = new Set(['.html', '.json', '.md', '.mjs']);
+
+function checkoutContentsEqual(file, left, right, normalizeTextEol) {
+  if (left.equals(right)) return true;
+  if (!normalizeTextEol) return false;
+  const isCheckoutText = path.basename(file) === 'LICENSE'
+    || CHECKOUT_TEXT_EXTENSIONS.has(path.extname(file).toLowerCase());
+  if (!isCheckoutText) return false;
+  return left.toString('utf8').replaceAll('\r\n', '\n')
+    === right.toString('utf8').replaceAll('\r\n', '\n');
+}
+
+function treesMatch(left, right, { normalizeTextEol = false } = {}) {
   const leftFiles = listRelativeFiles(left);
   const rightFiles = listRelativeFiles(right);
   if (leftFiles.join('\n') !== rightFiles.join('\n')) {
@@ -81,7 +93,12 @@ function treesMatch(left, right) {
   for (const file of leftFiles) {
     const leftPath = path.join(left, ...file.split('/'));
     const rightPath = path.join(right, ...file.split('/'));
-    if (!fs.readFileSync(leftPath).equals(fs.readFileSync(rightPath))) {
+    if (!checkoutContentsEqual(
+      file,
+      fs.readFileSync(leftPath),
+      fs.readFileSync(rightPath),
+      normalizeTextEol,
+    )) {
       return { ok: false, file };
     }
   }
@@ -403,12 +420,12 @@ const committedZip = path.join(repoRoot, 'archify.zip');
 const packedSkill = path.join(inspectRoot, 'package', 'skills', 'archify');
 let unzipContentsIdentical = false;
 if (skipFreshZipRebuild) {
-  receipt.zipContainerNote = 'Fresh ZIP rebuild skipped on Windows (rsync/zip are not on GitHub Windows runners). Used committed archify.zip for content comparison. ZIP container bytes are already known non-reproducible.';
+  receipt.zipContainerNote = 'Fresh ZIP rebuild skipped on Windows (rsync/zip are not on GitHub Windows runners). Used committed archify.zip for content comparison; known text files normalize checkout CRLF while all other files remain byte-exact. ZIP container bytes are already known non-reproducible.';
   const checkedDir = path.join(scratch, 'checked');
   fs.mkdirSync(checkedDir);
   fs.copyFileSync(committedZip, path.join(checkedDir, 'committed.zip'));
   requireStatus('zero-regression', run('tar', ['-xf', 'committed.zip'], { cwd: checkedDir }));
-  const compared = treesMatch(packedSkill, path.join(checkedDir, 'archify'));
+  const compared = treesMatch(packedSkill, path.join(checkedDir, 'archify'), { normalizeTextEol: true });
   if (!compared.ok) {
     fail('zero-regression', 'packed skill drifted from the committed ZIP', compared);
   }
@@ -435,7 +452,7 @@ pass('zero-regression', {
   archifyPackageBlob: pkgBlob.stdout.trim(),
   unzipContentsIdentical,
   zipContainerBytesReproducible: false,
-  ...(skipFreshZipRebuild ? { freshZipRebuildSkipped: true } : {}),
+  ...(skipFreshZipRebuild ? { freshZipRebuildSkipped: true, checkoutTextEolNormalized: true } : {}),
   skillsCli: skillsList.stdout.trim().slice(0, 500),
 });
 
