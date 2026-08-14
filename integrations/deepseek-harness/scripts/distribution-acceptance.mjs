@@ -289,7 +289,11 @@ probeChild.kill('SIGTERM');
 const probeReceipt = JSON.parse(fs.readFileSync(probeOut, 'utf8'));
 const archifyHits = (probeReceipt.skills || []).filter((skill) => skill.name === 'archify');
 if (archifyHits.length !== 1 || archifyHits[0].provider !== 'archify-plugin') {
-  fail('skill-discovery', 'public Skill registry did not discover archify only from archify-plugin', { probeReceipt });
+  fail('skill-discovery', 'public Skill registry did not discover archify only from archify-plugin', {
+    probeReceipt,
+    stdout: probeStdout,
+    stderr: probeStderr,
+  });
 }
 pass('skill-discovery', { provider: 'archify-plugin' });
 
