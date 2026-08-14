@@ -258,10 +258,11 @@ node bin/archify.mjs deliver workflow examples/agent-tool-call.workflow.json /tm
 | **opencode** | `~/.config/opencode/skills/`、`.opencode/skills/` 或 `.agents/skills/` | 完整 Renderer + Validation 工作流 |
 | **Claude.ai** | Settings → Capabilities → Skills 中上传 `archify.zip` | 取决于沙箱是否提供 Node.js |
 | **Project Knowledge** | 把 `archify.zip` 上传到项目 | Prompt 驱动的 Architecture Fallback |
-
 Claude.ai 中的上传入口：
 
 ![Claude Skills 设置](docs/assets/claude-skills-settings.png)
+
+**DeepSeek Harness：** 面向开发者预览版 `@deepseek-ai/dsh@0.1.0-rc.6` 的社区集成，不是 DeepSeek 官方产品；Node `^22.19.0 || >=24.0.0`。安装：`dsh plugin --profile web add @tt-a1i/archify-dsh@0.1.0`；调用：`Use the archify skill to map this repository's runtime architecture.`；卸载：`dsh plugin --profile web remove @tt-a1i/archify-dsh`。没有遥测；shell 文件不会自动进入 Web Produced Files，请返回精确工作区路径。[详情](integrations/deepseek-harness/README.md)。
 
 ## 参考与边界
 
@@ -271,8 +272,6 @@ Claude.ai 中的上传入口：
 - [版本历史](CHANGELOG.md)
 - [路线图](ROADMAP.md)
 - [自动生成的 Proof Lab](https://tt-a1i.github.io/archify/gallery.html)
-
-Archify 2.13 覆盖五种 Typed IR、真实仓库证明、基于精确 ID 的确定性 Architecture Delta 评审、验证后实时预览、作者可达性、真实可配置图例、可选有限动态、引导视图、语义搜索与关系探索、可分享深链、1200×630 整图与路径卡片、浏览器原生 WebM、显式 `standard` / `showcase` 质量档位，以及按需启用的部署所有权契约。
 
 自动 Mermaid Parser、通用自动布局、托管分享服务和 WYSIWYG 编辑器目前都不在产品范围内。
 

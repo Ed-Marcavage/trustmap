@@ -263,6 +263,7 @@ The complete generation and viewer contract lives in [`archify/SKILL.md`](archif
 | **opencode** | `~/.config/opencode/skills/`, `.opencode/skills/`, or `.agents/skills/` | Full renderer + validation workflow |
 | **Claude.ai** | Upload `archify.zip` under Settings → Capabilities → Skills | Depends on Node.js access in the sandbox |
 | **Project Knowledge** | Upload `archify.zip` to the project | Prompt-driven architecture fallback |
+**DeepSeek Harness:** Community integration, not an official DeepSeek product; developer-preview `@deepseek-ai/dsh@0.1.0-rc.6`, Node `^22.19.0 || >=24.0.0`. Install: `dsh plugin --profile web add @tt-a1i/archify-dsh@0.1.0`; invoke: `Use the archify skill to map this repository's runtime architecture.`; remove: `dsh plugin --profile web remove @tt-a1i/archify-dsh`. No telemetry. Shell files need exact workspace paths, not Web Produced Files. [Details](integrations/deepseek-harness/README.md).
 
 ## Reference and scope
 
@@ -272,8 +273,6 @@ The complete generation and viewer contract lives in [`archify/SKILL.md`](archif
 - [Changelog](CHANGELOG.md)
 - [Roadmap](ROADMAP.md)
 - [Generated Proof Lab](https://tt-a1i.github.io/archify/gallery.html)
-
-Archify 2.13 includes typed IR across all five modes, real-repository proof, deterministic exact-ID Architecture Delta review, verified live preview, authored reachability, truthful configurable legends, optional finite motion, guided views, semantic search and relationship exploration, shareable deep links, 1200×630 diagram and route cards, browser-native WebM recording, explicit `standard` / `showcase` quality profiles, and an opt-in deployment ownership contract.
 
 Automatic Mermaid parsing, general-purpose auto-layout, hosted sharing, and WYSIWYG editing are intentionally outside the current scope.
 
