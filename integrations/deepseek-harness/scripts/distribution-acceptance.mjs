@@ -244,11 +244,13 @@ const runtimeInstall = run('npm', [
   '--package-lock=false',
   '--no-audit',
   '--no-fund',
-  '--loglevel=warn',
+  '--foreground-scripts',
+  '--loglevel=info',
   DSH_SPEC,
 ], {
   cwd: scratch,
   env: dshEnv,
+  stdio: 'inherit',
   timeout: DSH_RUNTIME_INSTALL_TIMEOUT,
 });
 requireStatus('dsh-runtime-install', runtimeInstall, { command: `npm install ${DSH_SPEC}` });
