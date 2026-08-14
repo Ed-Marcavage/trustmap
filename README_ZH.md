@@ -108,6 +108,14 @@ npx -y skills add tt-a1i/archify --skill archify --agent cursor --global --copy 
 npx skills use tt-a1i/archify@archify --agent codex
 ```
 
+使用 DeepSeek Harness？安装独立、显式启用的社区集成包：
+
+```bash
+dsh plugin --profile web add @tt-a1i/archify-dsh@0.1.0
+```
+
+[兼容范围、限制与安全说明](integrations/deepseek-harness/README.md)
+
 [Agent 切换器](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture)只为 `cursor`、`codex`、`claude-code` 和 `opencode` 生成命令。Raven 仅支持 ZIP 手动安装：将 [`archify.zip`](archify.zip) 解压到 `~/.raven/workspace/skills`，解压后会得到 `~/.raven/workspace/skills/archify`；Raven 不属于切换器目标。
 
 ### 2. 先画一个边界清楚的视图
