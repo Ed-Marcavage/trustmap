@@ -106,19 +106,13 @@ For an explicit, non-interactive Cursor install:
 npx -y skills add tt-a1i/archify --skill archify --agent cursor --global --copy --yes
 ```
 
-To try it without a permanent install:
+To try without installing:
 
 ```bash
 npx skills use tt-a1i/archify@archify --agent codex
 ```
 
-Using DeepSeek Harness? Install the separate, opt-in community bundle:
-
-```bash
-dsh plugin --profile web add @tt-a1i/archify-dsh@0.1.0
-```
-
-[Compatibility, limitations, and security details](integrations/deepseek-harness/README.md)
+[DSH community opt-in](integrations/deepseek-harness/README.md): `dsh plugin --profile web add @tt-a1i/archify-dsh@0.1.0`
 
 The [agent switcher](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) covers `cursor`, `codex`, `claude-code`, and `opencode`. For Raven's manual ZIP install, extract [`archify.zip`](archify.zip) into `~/.raven/workspace/skills`; it yields `~/.raven/workspace/skills/archify`. Raven is not a switcher target.
 
