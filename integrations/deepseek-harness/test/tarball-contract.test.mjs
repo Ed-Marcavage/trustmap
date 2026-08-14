@@ -72,7 +72,10 @@ test('packed Skill payload matches the existing ZIP clean-staging contract', () 
     assert.equal(result.status, 0, result.stderr || result.stdout);
     const packedRoot = path.join(scratch, 'packed');
     fs.mkdirSync(packedRoot);
-    const tar = spawnSync('tar', ['-xzf', out, '-C', packedRoot], { encoding: 'utf8' });
+    const tar = spawnSync('tar', ['-xzf', path.basename(out), '-C', packedRoot], {
+      cwd: path.dirname(out),
+      encoding: 'utf8',
+    });
     assert.equal(tar.status, 0, tar.stderr);
     const zipPath = path.join(zipScratch, 'archify.zip');
     const zip = spawnSync('bash', [path.join(repoRoot, 'scripts', 'build-zip.sh'), zipPath], {

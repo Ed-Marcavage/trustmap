@@ -69,3 +69,14 @@ test('bundle patch inserts one uniquely named filesystem Skill provider resolved
   const insertedIds = [...insertBlocks[0].matchAll(/^\s+- id:\s*(\S+)/gm)].map((match) => match[1]);
   assert.deepEqual(insertedIds, ['archify-skill-filesystem']);
 });
+
+test('distribution acceptance reserves stdout for its machine-readable JSON receipt', () => {
+  const source = fs.readFileSync(
+    path.join(integrationRoot, 'scripts', 'distribution-acceptance.mjs'),
+    'utf8',
+  );
+  const runtimeInstall = source.match(/const runtimeInstall = run\([\s\S]*?\n\}\);/)?.[0] || '';
+  assert.match(runtimeInstall, /stdio:\s*\['ignore',\s*2,\s*2\]/);
+  assert.doesNotMatch(source, /stdio:\s*['"]inherit['"]/);
+  assert.equal([...source.matchAll(/process\.stdout\.write/g)].length, 2);
+});

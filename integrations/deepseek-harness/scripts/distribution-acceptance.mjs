@@ -16,6 +16,8 @@ const PROFILE = 'archify-dsh-acceptance';
 const FIXED_POINT = '45f0611dfc0dc824e9a13a12efcac207a8a2bdce';
 const ARCHIFY_ZIP_BLOB = '4249d32a5a07deb63152a06ac8c2cf4784d25136';
 const ARCHIFY_PACKAGE_BLOB = '238d6237ff0c942d459e7ec257f19386522306a0';
+const DSH_RUNTIME_INSTALL_TIMEOUT = process.platform === 'win32' ? 600_000 : 300_000;
+const PLUGIN_MUTATION_TIMEOUT = 180_000;
 
 const receipt = {
   ok: false,
@@ -70,7 +72,19 @@ function listRelativeFiles(root) {
   return files.sort();
 }
 
-function treesMatch(left, right) {
+const CHECKOUT_TEXT_EXTENSIONS = new Set(['.html', '.json', '.md', '.mjs']);
+
+function checkoutContentsEqual(file, left, right, normalizeTextEol) {
+  if (left.equals(right)) return true;
+  if (!normalizeTextEol) return false;
+  const isCheckoutText = path.basename(file) === 'LICENSE'
+    || CHECKOUT_TEXT_EXTENSIONS.has(path.extname(file).toLowerCase());
+  if (!isCheckoutText) return false;
+  return left.toString('utf8').replaceAll('\r\n', '\n')
+    === right.toString('utf8').replaceAll('\r\n', '\n');
+}
+
+function treesMatch(left, right, { normalizeTextEol = false } = {}) {
   const leftFiles = listRelativeFiles(left);
   const rightFiles = listRelativeFiles(right);
   if (leftFiles.join('\n') !== rightFiles.join('\n')) {
@@ -79,7 +93,12 @@ function treesMatch(left, right) {
   for (const file of leftFiles) {
     const leftPath = path.join(left, ...file.split('/'));
     const rightPath = path.join(right, ...file.split('/'));
-    if (!fs.readFileSync(leftPath).equals(fs.readFileSync(rightPath))) {
+    if (!checkoutContentsEqual(
+      file,
+      fs.readFileSync(leftPath),
+      fs.readFileSync(rightPath),
+      normalizeTextEol,
+    )) {
       return { ok: false, file };
     }
   }
@@ -150,10 +169,12 @@ const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-dsh-acceptance-')
 const tarball = path.join(scratch, 'tt-a1i-archify-dsh-0.1.0.tgz');
 const dshHome = path.join(scratch, 'dsh-home');
 const agentsHome = path.join(scratch, 'agents-home');
+const dshRuntime = path.join(scratch, 'dsh-runtime');
 const workspace = path.join(scratch, 'workspace');
 const probeOut = path.join(scratch, 'skill-probe.json');
 fs.mkdirSync(dshHome);
 fs.mkdirSync(agentsHome);
+fs.mkdirSync(dshRuntime);
 fs.mkdirSync(workspace);
 
 function cleanup() {
@@ -182,7 +203,9 @@ pass('pack', { filename: packReceipt.filename, fileCount: packReceipt.files?.len
 
 const inspectRoot = path.join(scratch, 'tarball');
 fs.mkdirSync(inspectRoot);
-requireStatus('tarball-inspect', run('tar', ['-xzf', tarball, '-C', inspectRoot]));
+requireStatus('tarball-inspect', run('tar', ['-xzf', path.basename(tarball), '-C', inspectRoot], {
+  cwd: path.dirname(tarball),
+}));
 const packedPkg = JSON.parse(fs.readFileSync(path.join(inspectRoot, 'package', 'package.json'), 'utf8'));
 const packedFiles = listRelativeFiles(path.join(inspectRoot, 'package'));
 const forbidden = packedFiles.filter((file) => (
@@ -210,17 +233,49 @@ const dshEnv = {
   ARCHIFY_DSH_PROBE_OUT: probeOut,
   npm_config_update_notifier: 'false',
 };
-const npx = ['-y', '--package', DSH_SPEC, 'dsh'];
+
+// Install the pinned host once, as a user-level global install would. Keeping
+// this separate from plugin mutation makes a slow first-time npm download
+// distinguishable from `dsh plugin add`, especially on Windows runners.
+const runtimeInstall = run('npm', [
+  'install',
+  '--prefix', dshRuntime,
+  '--no-save',
+  '--package-lock=false',
+  '--no-audit',
+  '--no-fund',
+  '--foreground-scripts',
+  '--loglevel=warn',
+  DSH_SPEC,
+], {
+  cwd: scratch,
+  env: dshEnv,
+  // Stream npm lifecycle diagnostics without polluting the JSON-only receipt
+  // written to this process's stdout.
+  stdio: ['ignore', 2, 2],
+  timeout: DSH_RUNTIME_INSTALL_TIMEOUT,
+});
+requireStatus('dsh-runtime-install', runtimeInstall, { command: `npm install ${DSH_SPEC}` });
+const dshPackageRoot = path.join(dshRuntime, 'node_modules', '@deepseek-ai', 'dsh');
+const dshManifest = JSON.parse(fs.readFileSync(path.join(dshPackageRoot, 'package.json'), 'utf8'));
+const dshBin = path.join(dshPackageRoot, 'lib', 'bin.js');
+if (dshManifest.version !== DSH_SPEC.slice(DSH_SPEC.lastIndexOf('@') + 1) || !fs.existsSync(dshBin)) {
+  fail('dsh-runtime-install', 'installed DSH runtime identity mismatch', {
+    version: dshManifest.version,
+    binExists: fs.existsSync(dshBin),
+  });
+}
+pass('dsh-runtime-install', { version: dshManifest.version });
 
 function dsh(args, options = {}) {
-  return run('npx', [...npx, ...args], {
+  return run(process.execPath, [dshBin, ...args], {
     cwd: options.cwd || workspace,
     env: dshEnv,
     timeout: options.timeout ?? 120_000,
   });
 }
 
-const install = dsh(['plugin', '--profile', PROFILE, 'add', tarball], { timeout: 180_000 });
+const install = dsh(['plugin', '--profile', PROFILE, 'add', tarball], { timeout: PLUGIN_MUTATION_TIMEOUT });
 requireStatus('plugin-install', install, { command: `dsh plugin --profile ${PROFILE} add <tarball>` });
 pass('plugin-install', { profile: PROFILE });
 
@@ -270,7 +325,7 @@ fs.writeFileSync(probePatch, `- insert:
       name: ${JSON.stringify(pathToFileURL(probeModule).href)}
       inject: [skills]
 `);
-const probeChild = spawnCli('npx', [...npx, '--profile', PROFILE, '--patch', probePatch], {
+const probeChild = spawnCli(process.execPath, [dshBin, '--profile', PROFILE, '--patch', probePatch], {
   cwd: workspace,
   env: dshEnv,
   stdio: ['ignore', 'pipe', 'pipe'],
@@ -335,7 +390,7 @@ const smoke = run(process.execPath, [path.join(repoRoot, 'scripts', 'package-smo
 requireStatus('package-smoke', smoke, { command: 'package-smoke.mjs <installed-skill-root>' });
 pass('package-smoke', { skillRoot, output: smoke.stdout.trim() });
 
-const remove = dsh(['plugin', '--profile', PROFILE, 'remove', PACKAGE_NAME], { timeout: 180_000 });
+const remove = dsh(['plugin', '--profile', PROFILE, 'remove', PACKAGE_NAME], { timeout: PLUGIN_MUTATION_TIMEOUT });
 requireStatus('uninstall', remove, { command: `dsh plugin --profile ${PROFILE} remove ${PACKAGE_NAME}` });
 const removedManifest = JSON.parse(fs.readFileSync(path.join(profileDir, 'package.json'), 'utf8'));
 if ((removedManifest.dsh?.profile?.bundles || []).includes(PACKAGE_NAME)
@@ -369,12 +424,12 @@ const committedZip = path.join(repoRoot, 'archify.zip');
 const packedSkill = path.join(inspectRoot, 'package', 'skills', 'archify');
 let unzipContentsIdentical = false;
 if (skipFreshZipRebuild) {
-  receipt.zipContainerNote = 'Fresh ZIP rebuild skipped on Windows (rsync/zip are not on GitHub Windows runners). Used committed archify.zip for content comparison. ZIP container bytes are already known non-reproducible.';
+  receipt.zipContainerNote = 'Fresh ZIP rebuild skipped on Windows (rsync/zip are not on GitHub Windows runners). Used committed archify.zip for content comparison; known text files normalize checkout CRLF while all other files remain byte-exact. ZIP container bytes are already known non-reproducible.';
   const checkedDir = path.join(scratch, 'checked');
   fs.mkdirSync(checkedDir);
   fs.copyFileSync(committedZip, path.join(checkedDir, 'committed.zip'));
   requireStatus('zero-regression', run('tar', ['-xf', 'committed.zip'], { cwd: checkedDir }));
-  const compared = treesMatch(packedSkill, path.join(checkedDir, 'archify'));
+  const compared = treesMatch(packedSkill, path.join(checkedDir, 'archify'), { normalizeTextEol: true });
   if (!compared.ok) {
     fail('zero-regression', 'packed skill drifted from the committed ZIP', compared);
   }
@@ -401,7 +456,7 @@ pass('zero-regression', {
   archifyPackageBlob: pkgBlob.stdout.trim(),
   unzipContentsIdentical,
   zipContainerBytesReproducible: false,
-  ...(skipFreshZipRebuild ? { freshZipRebuildSkipped: true } : {}),
+  ...(skipFreshZipRebuild ? { freshZipRebuildSkipped: true, checkoutTextEolNormalized: true } : {}),
   skillsCli: skillsList.stdout.trim().slice(0, 500),
 });
 
