@@ -16,7 +16,8 @@ const PROFILE = 'archify-dsh-acceptance';
 const FIXED_POINT = '45f0611dfc0dc824e9a13a12efcac207a8a2bdce';
 const ARCHIFY_ZIP_BLOB = '4249d32a5a07deb63152a06ac8c2cf4784d25136';
 const ARCHIFY_PACKAGE_BLOB = '238d6237ff0c942d459e7ec257f19386522306a0';
-const PLUGIN_MUTATION_TIMEOUT = process.platform === 'win32' ? 480_000 : 180_000;
+const DSH_RUNTIME_INSTALL_TIMEOUT = process.platform === 'win32' ? 600_000 : 300_000;
+const PLUGIN_MUTATION_TIMEOUT = 180_000;
 
 const receipt = {
   ok: false,
@@ -151,10 +152,12 @@ const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-dsh-acceptance-')
 const tarball = path.join(scratch, 'tt-a1i-archify-dsh-0.1.0.tgz');
 const dshHome = path.join(scratch, 'dsh-home');
 const agentsHome = path.join(scratch, 'agents-home');
+const dshRuntime = path.join(scratch, 'dsh-runtime');
 const workspace = path.join(scratch, 'workspace');
 const probeOut = path.join(scratch, 'skill-probe.json');
 fs.mkdirSync(dshHome);
 fs.mkdirSync(agentsHome);
+fs.mkdirSync(dshRuntime);
 fs.mkdirSync(workspace);
 
 function cleanup() {
@@ -213,10 +216,38 @@ const dshEnv = {
   ARCHIFY_DSH_PROBE_OUT: probeOut,
   npm_config_update_notifier: 'false',
 };
-const npx = ['-y', '--package', DSH_SPEC, 'dsh'];
+
+// Install the pinned host once, as a user-level global install would. Keeping
+// this separate from plugin mutation makes a slow first-time npm download
+// distinguishable from `dsh plugin add`, especially on Windows runners.
+const runtimeInstall = run('npm', [
+  'install',
+  '--prefix', dshRuntime,
+  '--no-save',
+  '--package-lock=false',
+  '--no-audit',
+  '--no-fund',
+  '--loglevel=warn',
+  DSH_SPEC,
+], {
+  cwd: scratch,
+  env: dshEnv,
+  timeout: DSH_RUNTIME_INSTALL_TIMEOUT,
+});
+requireStatus('dsh-runtime-install', runtimeInstall, { command: `npm install ${DSH_SPEC}` });
+const dshPackageRoot = path.join(dshRuntime, 'node_modules', '@deepseek-ai', 'dsh');
+const dshManifest = JSON.parse(fs.readFileSync(path.join(dshPackageRoot, 'package.json'), 'utf8'));
+const dshBin = path.join(dshPackageRoot, 'lib', 'bin.js');
+if (dshManifest.version !== DSH_SPEC.slice(DSH_SPEC.lastIndexOf('@') + 1) || !fs.existsSync(dshBin)) {
+  fail('dsh-runtime-install', 'installed DSH runtime identity mismatch', {
+    version: dshManifest.version,
+    binExists: fs.existsSync(dshBin),
+  });
+}
+pass('dsh-runtime-install', { version: dshManifest.version });
 
 function dsh(args, options = {}) {
-  return run('npx', [...npx, ...args], {
+  return run(process.execPath, [dshBin, ...args], {
     cwd: options.cwd || workspace,
     env: dshEnv,
     timeout: options.timeout ?? 120_000,
@@ -273,7 +304,7 @@ fs.writeFileSync(probePatch, `- insert:
       name: ${JSON.stringify(pathToFileURL(probeModule).href)}
       inject: [skills]
 `);
-const probeChild = spawnCli('npx', [...npx, '--profile', PROFILE, '--patch', probePatch], {
+const probeChild = spawnCli(process.execPath, [dshBin, '--profile', PROFILE, '--patch', probePatch], {
   cwd: workspace,
   env: dshEnv,
   stdio: ['ignore', 'pipe', 'pipe'],
