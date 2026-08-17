@@ -1225,6 +1225,12 @@ export function labelPoint(item, points) {
   return [(a[0] + b[0]) / 2 + (item.labelDx || 0), (a[1] + b[1]) / 2 - 10 + (item.labelDy || 0)];
 }
 
+// Inherited Archify kinds first, then the trustmap smart-contract security
+// vocabulary. Each security kind owns its own CSS class and color tokens; the
+// template currently aliases those tokens onto the closest inherited signal
+// (actor→frontend cyan, contract→backend green, asset→database violet,
+// role→security rose, oracle→cloud amber, offchain→messagebus orange) so one
+// diagram never mixes the two vocabularies visually while palettes stay small.
 export const componentFill = {
   frontend: 'c-frontend',
   backend: 'c-backend',
@@ -1232,7 +1238,13 @@ export const componentFill = {
   cloud: 'c-cloud',
   security: 'c-security',
   messagebus: 'c-messagebus',
-  external: 'c-external'
+  external: 'c-external',
+  contract: 'c-contract',
+  actor: 'c-actor',
+  role: 'c-role',
+  asset: 'c-asset',
+  oracle: 'c-oracle',
+  offchain: 'c-offchain'
 };
 
 export const componentText = {
@@ -1242,8 +1254,19 @@ export const componentText = {
   cloud: 't-cloud',
   security: 't-security',
   messagebus: 't-messagebus',
-  external: 't-external'
+  external: 't-external',
+  contract: 't-contract',
+  actor: 't-actor',
+  role: 't-role',
+  asset: 't-asset',
+  oracle: 't-oracle',
+  offchain: 't-offchain'
 };
+
+// Smart-contract security kinds and the security-only relationship
+// classifications, exported so renderers, legends, and tests share one list.
+export const SECURITY_COMPONENT_KINDS = ['contract', 'actor', 'role', 'asset', 'oracle', 'offchain'];
+export const CONNECTION_CLASSIFICATIONS = ['call', 'delegatecall', 'value', 'read', 'event', 'message', 'untrusted-callback'];
 
 export const arrowClassMap = {
   default: ['a-default', 'arrowhead'],

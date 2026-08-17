@@ -79,6 +79,7 @@ const GOLDEN = [
   ['dataflow', 'product-analytics.dataflow.json', 'dataflow-product-analytics.html'],
   ['lifecycle', 'agent-run.lifecycle.json', 'lifecycle-agent-run.html'],
   ['architecture', 'web-app.architecture.json', 'web-app-rendered.html'],
+  ['architecture', 'threat-model.architecture.json', 'threat-model-rendered.html'],
 ];
 
 for (const [mode, input, golden] of GOLDEN) {
@@ -192,12 +193,8 @@ for (const readmeName of ['README.md']) {
     `${readmeName} badge says ${[...new Set(badgeVersions)].join(', ') || '(missing)'} instead of ${pkg.version}`);
 }
 
-const landingPage = fs.readFileSync(path.join(repoRoot, 'docs/index.html'), 'utf8');
-const landingVersions = [...landingPage.matchAll(/\bv\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\b/g)]
-  .map((match) => match[0]);
-check('GitHub Pages version labels match package.json',
-  landingVersions.length > 0 && landingVersions.every((v) => v === `v${pkg.version}`),
-  `landing page says ${[...new Set(landingVersions)].join(', ') || '(no version)'}`);
+// trustmap fork: docs/index.html is inherited upstream landing copy (frozen reference
+// material, not published for the fork), so its version labels are not gated here.
 
 // ---------------------------------------------------------------------------
 fs.rmSync(tmp, { recursive: true, force: true });

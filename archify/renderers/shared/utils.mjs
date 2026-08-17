@@ -39,6 +39,12 @@ const SIGIL_TONE = {
   messagebus: 'messagebus',
   external: 'external',
   neutral: 'external',
+  contract: 'contract',
+  actor: 'actor',
+  role: 'role',
+  asset: 'asset',
+  oracle: 'oracle',
+  offchain: 'offchain',
 };
 
 const SIGIL_SHAPE = {
@@ -68,6 +74,22 @@ const SIGIL_SHAPE = {
             <path d="m5.7 5.7 4.6 4.6m0-4.6-4.6 4.6"/>`,
   neutral: `<rect x="3" y="3" width="10" height="10" rx="2"/>
             <circle cx="8" cy="8" r="1.2" class="sigil-fill"/>`,
+  // trustmap smart-contract security kinds
+  contract: `<path d="M4 2.5h6l3 3V13.5H4Z"/>
+            <path d="M10 2.5v3h3M6 8h4.5M6 10.5h3"/>`,
+  actor: `<circle cx="8" cy="5.2" r="2.6"/>
+            <path d="M3 14c0-3.1 2.2-5 5-5s5 1.9 5 5"/>`,
+  role: `<circle cx="5.5" cy="10.5" r="3"/>
+            <path d="m7.6 8.4 5.9-5.9M11 5l2 2M9 7l1.6 1.6"/>`,
+  asset: `<circle cx="8" cy="8" r="5.6"/>
+            <circle cx="8" cy="8" r="2.3"/>
+            <path d="M8 2.4v1.6M8 12v1.6M2.4 8H4M12 8h1.6"/>`,
+  oracle: `<path d="M2 8c1.6-3 3.6-4.6 6-4.6S12.4 5 14 8c-1.6 3-3.6 4.6-6 4.6S3.6 11 2 8Z"/>
+            <circle cx="8" cy="8" r="1.8" class="sigil-fill"/>`,
+  offchain: `<rect x="3" y="6" width="10" height="7.5" rx="1.6"/>
+            <path d="M8 6V3.4M5.8 3.4h4.4"/>
+            <circle cx="6.2" cy="9.6" r=".85" class="sigil-fill"/>
+            <circle cx="9.8" cy="9.6" r=".85" class="sigil-fill"/>`,
 };
 
 // A quiet, renderer-owned role stamp. It is authored SVG content rather than a

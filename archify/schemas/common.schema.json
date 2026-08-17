@@ -18,7 +18,15 @@
       "maxItems": 2
     },
     "componentType": {
-      "enum": ["frontend", "backend", "database", "cloud", "security", "messagebus", "external"]
+      "description": "Semantic node kind. The web-infrastructure kinds are inherited from Archify; the smart-contract security kinds (contract, actor, role, asset, oracle, offchain) are the trustmap vocabulary. external is shared: an out-of-scope dependency in either vocabulary.",
+      "enum": [
+        "frontend", "backend", "database", "cloud", "security", "messagebus", "external",
+        "contract", "actor", "role", "asset", "oracle", "offchain"
+      ]
+    },
+    "connectionClassification": {
+      "description": "What an authored relationship is, in smart-contract terms: an external call, a delegatecall into another implementation, an asset/value transfer, a read (view call or oracle read), an emitted event, a cross-chain or off-chain message, or a callback/hook into an address the caller does not control (untrusted-callback).",
+      "enum": ["call", "delegatecall", "value", "read", "event", "message", "untrusted-callback"]
     },
     "variant": {
       "enum": ["default", "emphasis", "security", "dashed"]

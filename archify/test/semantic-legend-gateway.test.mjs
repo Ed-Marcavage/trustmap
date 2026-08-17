@@ -63,6 +63,10 @@ test('only legends with an exact node-kind meaning publish bridge entries', () =
   assert.deepEqual(values(workflow, 'data-legend-kind'), [
     'frontend', 'backend', 'security', 'messagebus', 'database', 'cloud', 'external',
   ]);
+  // all mode also lists the trustmap security kinds as non-bridged catalog rows.
+  assert.deepEqual(values(workflow, 'data-legend-semantic-kind').slice(-6), [
+    'contract', 'actor', 'role', 'asset', 'oracle', 'offchain',
+  ]);
 
   const lifecycle = canonicalSvg(render('lifecycle'));
   assert.deepEqual(values(lifecycle, 'data-legend-kind'), [

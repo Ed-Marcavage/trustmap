@@ -48,7 +48,13 @@
                 "cloud": { "$ref": "common.schema.json#/$defs/legendEntry" },
                 "security": { "$ref": "common.schema.json#/$defs/legendEntry" },
                 "messagebus": { "$ref": "common.schema.json#/$defs/legendEntry" },
-                "external": { "$ref": "common.schema.json#/$defs/legendEntry" }
+                "external": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "contract": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "actor": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "role": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "asset": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "oracle": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "offchain": { "$ref": "common.schema.json#/$defs/legendEntry" }
               }
             }
           }
@@ -131,7 +137,10 @@
         "additionalProperties": false,
         "required": ["kind", "label", "wraps"],
         "properties": {
-          "kind": { "enum": ["region", "security-group"] },
+          "kind": {
+            "description": "region and security-group are the inherited deployment boundaries. trust-boundary separates what the protocol trusts from what it does not (in-scope vs. external, on-chain vs. off-chain); privilege-domain groups privileged roles with what they gate; chain groups components deployed on one chain; upgrade-domain groups a proxy with its implementation and admin.",
+            "enum": ["region", "security-group", "trust-boundary", "privilege-domain", "chain", "upgrade-domain"]
+          },
           "label": { "type": "string", "minLength": 1 },
           "wraps": {
             "type": "array",
@@ -153,6 +162,13 @@
           "from": { "$ref": "common.schema.json#/$defs/id" },
           "to": { "$ref": "common.schema.json#/$defs/id" },
           "label": { "type": "string" },
+          "classification": { "$ref": "common.schema.json#/$defs/connectionClassification" },
+          "guard": {
+            "description": "The mechanism that gates this relationship where it crosses a boundary: an access check (onlyRole(GUARDIAN), msg.sender == owner), a re-entrancy or pause guard, a signature check, an oracle staleness/deviation check, a timelock delay, or the explicit literal none. Authored fact only; the renderer never infers it.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
           "variant": { "$ref": "common.schema.json#/$defs/variant" },
           "fromSide": { "enum": ["left", "right", "top", "bottom"] },
           "toSide": { "enum": ["left", "right", "top", "bottom"] },
