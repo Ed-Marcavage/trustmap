@@ -4,11 +4,11 @@
 
 trustmap turns a smart-contract repository (or a written protocol description) into a validated, interactive **threat-model map**: contracts, actors, privileged roles, assets, oracles, and off-chain participants; the trust boundaries between them; the guard on every boundary crossing; and the invariants that must hold — each pinned to `path:line` evidence. It ships as an agent skill for Claude Code, Cursor, Codex CLI, and OpenCode, and produces one self-contained HTML file per diagram.
 
-![Version](https://img.shields.io/badge/version-2.14.0-0891b2?style=flat-square)
+![Version](https://img.shields.io/badge/version-3.0.0--dev.0-0891b2?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
 ![Agent Skill](https://img.shields.io/badge/Agent-Skill-7C3AED?style=flat-square)
 
-**Current stable version:** `v2.14.0` — upstream parity. The security specialization lands in phases (see [Status](#status)); until Phase 1 merges, this repository renders exactly what Archify v2.14.0 renders.
+**Current development version:** `v3.0.0-dev.0` — forked from Archify v2.14.0 (upstream parity on `main` before Phase 1). The security specialization lands in phases; see [Status](#status).
 
 ## Why this fork exists
 
@@ -50,8 +50,8 @@ The other modes carry supporting views: `sequence` for one transaction over time
 
 | Phase | Scope | State |
 |---|---|---|
-| 0 | Fork identity: rename, README, fork-appropriate release gates | done (this commit) |
-| 1 | Security vocabulary: node kinds, trust boundaries, `classification`/`guard` on connections, palettes and sigils, legend catalogs, tests, goldens, one hand-authored threat-model example | in review — branch `phase-1/security-vocabulary` |
+| 0 | Fork identity: rename, README, fork-appropriate release gates | done |
+| 1 | Security vocabulary: node kinds, trust boundaries, `classification`/`guard` on connections, palettes and sigils, legend catalogs, tests, goldens, one hand-authored threat-model example ([`archify/examples/threat-model.architecture.json`](archify/examples/threat-model.architecture.json)) | in review — branch `phase-1/security-vocabulary` |
 | 2 | Fail-closed `contract-security` engineering profile | planned |
 | 3 | First-class `invariants[]` + Semantic Passport section + adapter from a public pre-audit scan format | planned |
 | 4 | Evidence union (local-git, verified-source), per-ecosystem extraction notes, guide recipes, SKILL.md rewrite | planned |
@@ -90,8 +90,8 @@ Put invariants in cards for now.
 cd archify
 node bin/archify.mjs doctor
 node bin/archify.mjs guide "Map a lending protocol's roles, oracle dependency, and liquidation path"
-node bin/archify.mjs validate architecture examples/web-app.architecture.json --quality showcase --json
-node bin/archify.mjs deliver  architecture examples/web-app.architecture.json /tmp/map.html --quality showcase --open --json
+node bin/archify.mjs validate architecture examples/threat-model.architecture.json --quality showcase --json
+node bin/archify.mjs deliver  architecture examples/threat-model.architecture.json /tmp/threat-model.html --quality showcase --open --json
 ```
 
 `validate` prints one JSON receipt with `diagnostics[]` (stable rule code, exact subject, measured evidence, supported fixes) on failure; `deliver` atomically replaces the target only after every check passes. The full authoring contract is [`archify/SKILL.md`](archify/SKILL.md).
@@ -119,7 +119,10 @@ node bin/archify.mjs deliver  architecture examples/web-app.architecture.json /t
 cd archify
 npm ci
 npm test            # validators check, release identity, goldens, ~600 node:test cases
-npm run render:examples && node scripts/render-examples.mjs ../examples   # regenerate goldens after template changes
+node scripts/render-examples.mjs && npm run render:examples   # regenerate packaged + repo-root goldens after template changes
+node renderers/architecture/render-architecture.mjs examples/web-app.architecture.json ../examples/web-app.html
+npm run build:gallery && npm run build:guide && npm run build:start   # inherited docs pages track the template and version
+(cd .. && scripts/build-zip.sh)                                       # refresh the zero-dependency archive
 ```
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) (inherited) for the reproducible-bug expectations.

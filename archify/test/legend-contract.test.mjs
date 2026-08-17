@@ -26,7 +26,9 @@ const FIXTURES = {
   workflow: {
     schema_version: 1,
     diagram_type: 'workflow',
-    meta: { title: 'Legend workflow', viewBox: [720, 360] },
+    // trustmap: the workflow catalog lists 13 kinds in all mode; the workflow legend is a
+    // single fixed baseline row, so all-mode fixtures need a wider viewBox than the 720 default.
+    meta: { title: 'Legend workflow', viewBox: [1100, 360] },
     lanes: [{ id: 'main', label: 'Main' }],
     nodes: [
       { id: 'ui', lane: 'main', col: 0, type: 'frontend', label: 'UI' },
@@ -78,8 +80,8 @@ const FIXTURES = {
 };
 
 const CATALOGS = {
-  architecture: ['frontend', 'backend', 'database', 'cloud', 'security', 'messagebus', 'external'],
-  workflow: ['frontend', 'backend', 'security', 'messagebus', 'database', 'cloud', 'external'],
+  architecture: ['frontend', 'backend', 'database', 'cloud', 'security', 'messagebus', 'external', 'contract', 'actor', 'role', 'asset', 'oracle', 'offchain'],
+  workflow: ['frontend', 'backend', 'security', 'messagebus', 'database', 'cloud', 'external', 'contract', 'actor', 'role', 'asset', 'oracle', 'offchain'],
   sequence: ['emphasis', 'return', 'security', 'dashed', 'default'],
   dataflow: ['emphasis', 'security', 'dashed', 'database', 'default'],
   lifecycle: ['start', 'active', 'waiting', 'decision', 'success', 'failure', 'neutral', 'external'],

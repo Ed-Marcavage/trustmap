@@ -580,6 +580,13 @@ const LEGEND_CATALOG = [
   ['database', 'Context / trace'],
   ['cloud', 'Cloud service'],
   ['external', 'External system'],
+  // trustmap smart-contract security vocabulary
+  ['contract', 'Contract'],
+  ['actor', 'Actor'],
+  ['role', 'Privileged role'],
+  ['asset', 'Asset'],
+  ['oracle', 'Oracle'],
+  ['offchain', 'Off-chain'],
 ].map(([kind, label]) => ({ kind, label }));
 
 function renderLegend() {

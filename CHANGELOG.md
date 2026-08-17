@@ -6,6 +6,19 @@ All notable changes are documented here. Format loosely follows [Keep a Changelo
 
 ## [Unreleased]
 
+> Development identity: `v3.0.0-dev.0`. Not a stable release. First trustmap line after the fork from Archify v2.14.0.
+
+### Added
+- **Smart-contract security vocabulary (Phase 1).** Component kinds `contract`, `actor`, `role`, `asset`, `oracle`, and `offchain` join the inherited kinds in every renderer, with their own semantic sigils, legend rows (`Contract`, `Actor`, `Privileged role`, `Asset`, `Oracle`, `Off-chain`), CSS classes, Node Finder, Semantic Lens, and radar support. Colors alias the seven inherited signals so palettes stay small.
+- **Trust boundaries.** Architecture `boundaries[].kind` accepts `trust-boundary`, `privilege-domain`, `chain`, and `upgrade-domain`, each with a distinct frame style; boundary-crossing math, border-run diagnostics, and Architecture Delta keying are unchanged.
+- **Guarded connections.** Architecture `connections[]` accept `classification` (`call`, `delegatecall`, `value`, `read`, `event`, `message`, `untrusted-callback`) and `guard` (the mechanism gating a crossing). Both render as `data-edge-classification` / `data-edge-guard`; Semantic Flow Tokens prefer an authored classification over kind heuristics.
+- **Threat-model example.** `examples/threat-model.architecture.json` — a yield-vault protocol with a permissionless depositor, guardian and timelock roles, vault/strategy contracts, a share asset, an oracle, a keeper, and two external markets — validates at showcase quality and is a checked-in golden.
+- `test/security-vocabulary.test.mjs` locks the schema, renderer, template, and example contracts above.
+
+### Changed
+- Fork identity: the package, Skill, and generated-HTML `generator` meta are named `trustmap`; the release-identity gate covers the machine-facing identity contract only.
+- Removed upstream's README mirrors (`README_EN.md`, `README_ZH.md`), the README showcase builder, and README-copy assertions from tests.
+
 ## [2.14.0] — 2026-08-11
 
 ### Added

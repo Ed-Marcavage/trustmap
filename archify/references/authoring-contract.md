@@ -6,7 +6,9 @@ Read this reference only after the Fast authoring path calls for more detail. Th
 
 Read both the mode schema and `schemas/common.schema.json`. The mode schemas use `$ref`, so the common file is where shared enums live.
 
-- `componentType`: `frontend`, `backend`, `database`, `cloud`, `security`, `messagebus`, `external`
+- `componentType`: inherited `frontend`, `backend`, `database`, `cloud`, `security`, `messagebus`, `external`; security `contract`, `actor`, `role`, `asset`, `oracle`, `offchain`
+- `connectionClassification` (architecture `connections[].classification`): `call`, `delegatecall`, `value`, `read`, `event`, `message`, `untrusted-callback`; `connections[].guard` is free text (1–120 characters)
+- Architecture `boundaries[].kind`: inherited `region`, `security-group`; security `trust-boundary`, `privilege-domain`, `chain`, `upgrade-domain`
 - `variant`: `default`, `emphasis`, `security`, `dashed`
 - Relationship IDs use the shared identifier pattern and must be unique in their collection.
 
@@ -53,6 +55,18 @@ Omit `meta.visual_preset` by default. The renderer then opens the diagram in
 independent viewer state: switching Light / Dark must preserve the current
 preset. Author `signal-flow`, `blueprint`, or `editorial` only when the user
 explicitly requests that visual style.
+
+## Security vocabulary placement
+
+On a threat-model map, keep the primary value path horizontal (actor → contract
+→ contract → external), put privileged roles above the contracts they gate so
+their guarded edges enter from the top, and place external dependencies in one
+column inside their own `trust-boundary`. Boundary labels sit at the frame's
+top-left; keep them short (`In scope`) when role edges enter a member from the
+top-left, or the label collides with the arrows. `classification` and `guard`
+render as relationship data (`data-edge-classification`, `data-edge-guard`),
+never as extra label text; keep the label to the action (`pause`,
+`deposit / redeem`) and put the guard in `guard`.
 
 ## Engineering profile default
 

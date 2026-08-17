@@ -77,7 +77,29 @@ const LEGEND_CATALOG = [
   ['security', 'Security'],
   ['messagebus', 'Message bus'],
   ['external', 'External'],
+  // trustmap smart-contract security vocabulary
+  ['contract', 'Contract'],
+  ['actor', 'Actor'],
+  ['role', 'Privileged role'],
+  ['asset', 'Asset'],
+  ['oracle', 'Oracle'],
+  ['offchain', 'Off-chain'],
 ].map(([kind, label]) => ({ kind, label }));
+
+// Boundary presentation by kind. region/security-group are inherited; the
+// trustmap kinds carry their own classes so a threat-model map can distinguish
+// trust, privilege, chain, and upgrade scopes without new authoring fields.
+const BOUNDARY_STYLE = {
+  'region': { cls: 'c-region', labelCls: 't-cloud', rx: 12 },
+  'security-group': { cls: 'c-security-group', labelCls: 't-security', rx: 8 },
+  'trust-boundary': { cls: 'c-trust-boundary', labelCls: 't-security', rx: 8 },
+  'privilege-domain': { cls: 'c-privilege-domain', labelCls: 't-role', rx: 10 },
+  'chain': { cls: 'c-chain', labelCls: 't-cloud', rx: 14 },
+  'upgrade-domain': { cls: 'c-upgrade-domain', labelCls: 't-database', rx: 8 },
+};
+function boundaryStyle(kind) {
+  return BOUNDARY_STYLE[kind] || BOUNDARY_STYLE.region;
+}
 
 // ---- Measure components from free coordinates --------------------------------
 function measureComponent(c) {
@@ -119,7 +141,7 @@ const compositionFrames = boundaries.map((boundary, index) => ({
   ...boundary,
   id: boundary.id || index,
   kind: boundary.kind || 'boundary',
-  radius: boundary.kind === 'security-group' ? 8 : 12,
+  radius: boundaryStyle(boundary.kind).rx,
 }));
 
 function componentContext(component) {
@@ -692,25 +714,36 @@ function pathFor(conn) {
 
 // ---- Rendering ---------------------------------------------------------------
 function renderBoundary(b, index) {
-  const cls = b.kind === 'security-group' ? 'c-security-group' : 'c-region';
-  const labelCls = b.kind === 'security-group' ? 't-security' : 't-cloud';
-  const rx = b.kind === 'security-group' ? 8 : 12;
+  const { cls, labelCls, rx } = boundaryStyle(b.kind);
   return `        <rect data-graph-role="structural-frame" data-composition-frame-kind="${esc(b.kind || 'boundary')}" data-composition-frame-id="${index}" x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" rx="${rx}" class="${cls}" stroke-width="1"/>
         <text x="${b.x + 8}" y="${b.y + 18}" class="${labelCls}" font-size="9" font-weight="600">${esc(b.label)}</text>`;
+}
+
+// Authored security facts travel on the relationship as data attributes so the
+// viewer (Semantic Flow Tokens, Relationship Preview) and later engineering
+// profiles can read them without inferring anything from labels or kinds.
+function securityEdgeAttrs(conn) {
+  const classification = typeof conn.classification === 'string' && conn.classification
+    ? ` data-edge-classification="${esc(conn.classification)}"`
+    : '';
+  const guard = typeof conn.guard === 'string' && conn.guard.trim() !== ''
+    ? ` data-edge-guard="${esc(conn.guard.trim())}"`
+    : '';
+  return classification + guard;
 }
 
 function renderConnectionPath(conn, index) {
   const [cls, marker] = arrowClassMap[conn.variant || 'default'] || arrowClassMap.default;
   const routed = pathFor(conn);
   const strokeWidth = conn.width || (conn.variant === 'emphasis' ? 1.8 : 1.5);
-  return `        <path ${focusEdgeAttrs(conn.from, conn.to, conn.label, index, conn.id)} data-composition-points="${routePointsValue(routed.points)}" d="${routed.d}" class="${cls}"${animateAttr(arch.meta, 'edge', index)} stroke-width="${strokeWidth}" marker-end="url(#${marker})"/>`;
+  return `        <path ${focusEdgeAttrs(conn.from, conn.to, conn.label, index, conn.id)}${securityEdgeAttrs(conn)} data-composition-points="${routePointsValue(routed.points)}" d="${routed.d}" class="${cls}"${animateAttr(arch.meta, 'edge', index)} stroke-width="${strokeWidth}" marker-end="url(#${marker})"/>`;
 }
 
 function renderConnectionLabel(conn, index) {
   if (!conn.label) return '';
   const [lx, ly] = labelPoint(conn, pathFor(conn).points);
   const w = Math.max(30, textUnits(conn.label) * 4.8 + 10);
-  return `        <g data-detail="context" ${focusEdgeAttrs(conn.from, conn.to, conn.label, index, conn.id)}>
+  return `        <g data-detail="context" ${focusEdgeAttrs(conn.from, conn.to, conn.label, index, conn.id)}${securityEdgeAttrs(conn)}>
           <rect x="${lx - w / 2}" y="${ly - 10}" width="${w}" height="14" rx="3" class="c-mask"/>
           <text x="${lx}" y="${ly}" class="${variantAccent(conn.variant)}" font-size="8" text-anchor="middle">${esc(conn.label)}</text>
         </g>`;

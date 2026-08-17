@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="generator" content="archify 2.14.0">
+  <meta name="generator" content="trustmap 3.0.0-dev.0">
   <title>[PROJECT NAME] Architecture Diagram</title>
   <script>
     // Resolve the theme before first paint so light-preference users don't
@@ -1181,6 +1181,12 @@
     .overview-map-node[data-kind="failure"] { fill: var(--security-stroke); stroke: var(--security-stroke); }
     .overview-map-node[data-kind="external"],
     .overview-map-node[data-kind="neutral"] { fill: var(--external-stroke); stroke: var(--external-stroke); }
+    .overview-map-node[data-kind="contract"] { fill: var(--backend-stroke); stroke: var(--backend-stroke); }
+    .overview-map-node[data-kind="actor"] { fill: var(--frontend-stroke); stroke: var(--frontend-stroke); }
+    .overview-map-node[data-kind="role"] { fill: var(--security-stroke); stroke: var(--security-stroke); }
+    .overview-map-node[data-kind="asset"] { fill: var(--database-stroke); stroke: var(--database-stroke); }
+    .overview-map-node[data-kind="oracle"] { fill: var(--cloud-stroke); stroke: var(--cloud-stroke); }
+    .overview-map-node[data-kind="offchain"] { fill: var(--messagebus-stroke); stroke: var(--messagebus-stroke); }
     .overview-map-node[data-radar-active="true"],
     .overview-map-node:hover,
     .overview-map-node:focus-visible {
@@ -1328,6 +1334,12 @@
     .semantic-lens-kind[data-kind="security"],
     .semantic-lens-kind[data-kind="decision"],
     .semantic-lens-kind[data-kind="failure"] { --lens-color: var(--security-stroke); }
+    .semantic-lens-kind[data-kind="contract"] { --lens-color: var(--backend-stroke); }
+    .semantic-lens-kind[data-kind="actor"] { --lens-color: var(--frontend-stroke); }
+    .semantic-lens-kind[data-kind="role"] { --lens-color: var(--security-stroke); }
+    .semantic-lens-kind[data-kind="asset"] { --lens-color: var(--database-stroke); }
+    .semantic-lens-kind[data-kind="oracle"] { --lens-color: var(--cloud-stroke); }
+    .semantic-lens-kind[data-kind="offchain"] { --lens-color: var(--messagebus-stroke); }
     .semantic-lens-kind:hover,
     .semantic-lens-kind:focus-visible,
     .semantic-lens-kind[aria-pressed="true"] {
@@ -3853,6 +3865,16 @@
     .c-security   { fill: var(--security-fill);   stroke: var(--security-stroke); }
     .c-messagebus { fill: var(--messagebus-fill); stroke: var(--messagebus-stroke); }
     .c-external   { fill: var(--external-fill);   stroke: var(--external-stroke); }
+    /* trustmap smart-contract security kinds. Each kind owns a class; the
+       colors alias the closest inherited semantic signal so a threat-model map
+       keeps the seven-signal palette (actor→cyan, contract→green,
+       asset→violet, role→rose, oracle→amber, off-chain→orange). */
+    .c-contract   { fill: var(--backend-fill);    stroke: var(--backend-stroke); }
+    .c-actor      { fill: var(--frontend-fill);   stroke: var(--frontend-stroke); }
+    .c-role       { fill: var(--security-fill);   stroke: var(--security-stroke); }
+    .c-asset      { fill: var(--database-fill);   stroke: var(--database-stroke); }
+    .c-oracle     { fill: var(--cloud-fill);      stroke: var(--cloud-stroke); }
+    .c-offchain   { fill: var(--messagebus-fill); stroke: var(--messagebus-stroke); }
 
     /* Text helpers */
     .t-primary { fill: var(--text); }
@@ -3865,6 +3887,12 @@
     .t-security   { fill: var(--security-stroke); }
     .t-messagebus { fill: var(--messagebus-stroke); }
     .t-external   { fill: var(--external-stroke); }
+    .t-contract   { fill: var(--backend-stroke); }
+    .t-actor      { fill: var(--frontend-stroke); }
+    .t-role       { fill: var(--security-stroke); }
+    .t-asset      { fill: var(--database-stroke); }
+    .t-oracle     { fill: var(--cloud-stroke); }
+    .t-offchain   { fill: var(--messagebus-stroke); }
 
     /* Semantic Sigils are small authored role stamps, not icons from a brand
        pack and not viewer controls. Prefix selectors with svg so the canonical
@@ -3887,6 +3915,12 @@
     svg .s-security   { color: var(--security-stroke); }
     svg .s-messagebus { color: var(--messagebus-stroke); }
     svg .s-external   { color: var(--external-stroke); }
+    svg .s-contract   { color: var(--backend-stroke); }
+    svg .s-actor      { color: var(--frontend-stroke); }
+    svg .s-role       { color: var(--security-stroke); }
+    svg .s-asset      { color: var(--database-stroke); }
+    svg .s-oracle     { color: var(--cloud-stroke); }
+    svg .s-offchain   { color: var(--messagebus-stroke); }
 
     /* Reading Depth is a viewer-only level-of-detail layer. MAP preserves the
        authored structure and primary labels, READ restores relationship labels
@@ -4435,6 +4469,9 @@
       stroke-dasharray: 12 4 2 4;
     }
     svg[data-preset="blueprint"] .c-security-group,
+    svg[data-preset="blueprint"] .c-trust-boundary,
+    svg[data-preset="blueprint"] .c-privilege-domain,
+    svg[data-preset="blueprint"] .c-upgrade-domain,
     svg[data-preset="blueprint"] .c-lane { stroke-dasharray: 7 3; }
     svg[data-preset="blueprint"] [data-node-id]:hover,
     svg[data-preset="blueprint"] [data-node-id]:focus-visible {
@@ -4543,6 +4580,13 @@
     .c-security-group { fill: transparent; stroke: var(--security-stroke); stroke-dasharray: 4,4; }
     .c-region         { fill: rgba(251, 191, 36, 0.05); stroke: var(--cloud-stroke); stroke-dasharray: 8,4; }
     .c-lane           { fill: var(--lane-fill); stroke: var(--lane-stroke); stroke-dasharray: 6,6; }
+    /* trustmap boundaries: trust (what the protocol trusts vs. not), privilege
+       (roles and what they gate), chain (deployment locality), upgrade
+       (proxy + implementation + admin). Distinct dash rhythms, inherited hues. */
+    .c-trust-boundary   { fill: transparent; stroke: var(--security-stroke); stroke-dasharray: 10,4,2,4; }
+    .c-privilege-domain { fill: rgba(251, 113, 133, 0.05); stroke: var(--security-stroke); stroke-dasharray: 2,3; }
+    .c-chain            { fill: rgba(251, 191, 36, 0.04); stroke: var(--cloud-stroke); stroke-dasharray: 14,4; }
+    .c-upgrade-domain   { fill: rgba(167, 139, 250, 0.05); stroke: var(--database-stroke); stroke-dasharray: 5,3; }
 
     /* Optional trace animation, enabled only by meta.animation = "trace".
        The ordinary viewer performs one ambient pass and then restores the
@@ -7754,9 +7798,17 @@
         var target = nodes().find(function (node) { return node.getAttribute('data-node-id') === to; });
         var sourceKind = source ? source.getAttribute('data-node-kind') || 'neutral' : 'neutral';
         var targetKind = target ? target.getAttribute('data-node-kind') || 'neutral' : 'neutral';
-        if (/\ba-security\b/.test(classEvidence) || sourceKind === 'security' || targetKind === 'security' || targetKind === 'failure') return 'security';
-        if (/\ba-dashed\b/.test(classEvidence) || sourceKind === 'messagebus' || targetKind === 'messagebus') return 'event';
-        if (sourceKind === 'database' || targetKind === 'database') return 'data';
+        // An authored trustmap classification is exact and wins over kind heuristics.
+        var authored = edge.getAttribute('data-edge-classification') || '';
+        if (authored) {
+          if (authored === 'untrusted-callback') return 'security';
+          if (authored === 'event' || authored === 'message') return 'event';
+          if (authored === 'value' || authored === 'read') return 'data';
+          return 'call';
+        }
+        if (/\ba-security\b/.test(classEvidence) || sourceKind === 'security' || targetKind === 'security' || targetKind === 'failure' || sourceKind === 'role') return 'security';
+        if (/\ba-dashed\b/.test(classEvidence) || sourceKind === 'messagebus' || targetKind === 'messagebus' || sourceKind === 'offchain' || targetKind === 'offchain') return 'event';
+        if (sourceKind === 'database' || targetKind === 'database' || sourceKind === 'asset' || targetKind === 'asset' || sourceKind === 'oracle') return 'data';
         if (targetKind === 'waiting' || targetKind === 'success') return 'state';
         return 'call';
       }
@@ -11458,7 +11510,8 @@
       function semanticType(node) {
         var authored = node.getAttribute('data-node-kind');
         if (authored) return authored;
-        var types = ['frontend', 'backend', 'database', 'cloud', 'security', 'messagebus', 'external'];
+        var types = ['frontend', 'backend', 'database', 'cloud', 'security', 'messagebus', 'external',
+          'contract', 'actor', 'role', 'asset', 'oracle', 'offchain'];
         return types.find(function (type) { return node.querySelector('.c-' + type); }) || 'node';
       }
 
@@ -12725,6 +12778,7 @@
       function kindLabel(value) {
         return String(value || 'neutral')
           .replace(/messagebus/gi, 'message bus')
+          .replace(/offchain/gi, 'off-chain')
           .replace(/[-_]+/g, ' ')
           .replace(/\b\w/g, function (letter) { return letter.toUpperCase(); });
       }

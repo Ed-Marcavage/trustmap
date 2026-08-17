@@ -71,11 +71,17 @@ Supported keys are renderer-owned:
 
 | Renderer | `meta.legend.entries` keys |
 |---|---|
-| Architecture | `frontend`, `backend`, `database`, `cloud`, `security`, `messagebus`, `external` |
-| Workflow | `frontend`, `backend`, `security`, `messagebus`, `database`, `cloud`, `external` |
+| Architecture | `frontend`, `backend`, `database`, `cloud`, `security`, `messagebus`, `external`, `contract`, `actor`, `role`, `asset`, `oracle`, `offchain` |
+| Workflow | `frontend`, `backend`, `security`, `messagebus`, `database`, `cloud`, `external`, `contract`, `actor`, `role`, `asset`, `oracle`, `offchain` |
 | Sequence | `emphasis`, `return`, `security`, `dashed`, `default` |
 | Dataflow | `emphasis`, `security`, `dashed`, `database`, `default` |
 | Lifecycle | `start`, `active`, `waiting`, `decision`, `success`, `failure`, `neutral`, `external` |
+
+With the trustmap kinds, Architecture and Workflow catalogs list 13 entries in
+`mode: "all"`; the Workflow legend is one fixed baseline row, so an all-mode
+Workflow legend needs a wider `meta.viewBox` (about 1100) or hidden entries.
+`auto` mode is unaffected: one diagram uses one vocabulary, so at most seven
+rows appear.
 
 Labels are presentation only: they do not rename the stable kind, change
 nodes/relationships, or create Semantic Lens edge facts. Sequence message and
@@ -108,8 +114,13 @@ The five diagram schemas reference `common.schema.json#/$defs/...`:
 
 - `id` — element identifiers, pattern `^[a-zA-Z][a-zA-Z0-9_-]*$`
 - `point` — an `[x, y]` pair of numbers (used by `via` and `labelAt`)
-- `componentType` — `frontend`, `backend`, `database`, `cloud`, `security`,
-  `messagebus`, `external`
+- `componentType` — inherited `frontend`, `backend`, `database`, `cloud`,
+  `security`, `messagebus`, `external`, plus the trustmap smart-contract
+  security kinds `contract`, `actor`, `role`, `asset`, `oracle`, `offchain`
+- `connectionClassification` — `call`, `delegatecall`, `value`, `read`,
+  `event`, `message`, `untrusted-callback` (architecture
+  `connections[].classification`; the sibling free-text `guard` names the
+  mechanism gating a crossing)
 - `variant` — `default`, `emphasis`, `security`, `dashed` (sequence messages
   extend this list locally with `return`)
 - `legendMode` and `legendEntry` — the shared strict mode and label/visibility
@@ -149,6 +160,27 @@ questions. `quality_profile` is available in all five modes and controls how
 strictly Archify judges composition. `engineering_profile` is an optional
 Architecture-only semantic contract; omitting it preserves the ordinary v1
 behavior.
+
+## Security vocabulary (trustmap)
+
+Architecture `boundaries[].kind` accepts the inherited `region` and
+`security-group` plus `trust-boundary` (what the protocol trusts vs. not),
+`privilege-domain` (privileged roles and what they gate), `chain` (deployment
+locality), and `upgrade-domain` (proxy + implementation + admin). Boundary
+identity stays `kind + label`; the deployment-ownership profile reasons only
+about `region` and `security-group`, so a `trust-boundary` crossing never
+triggers `engineering/deployment-crossing-mechanism`.
+
+Architecture `connections[]` accept two additive authored facts:
+`classification` (see `connectionClassification`) and `guard` (1–120
+characters, the access check, re-entrancy or pause guard, signature check,
+oracle staleness/deviation check, timelock delay, or the explicit literal
+`none`). The renderer copies both onto the relationship as
+`data-edge-classification` / `data-edge-guard`; the viewer's Semantic Flow
+Tokens prefer an authored classification over kind heuristics. Nothing is
+inferred: an absent `guard` means "not stated", and a later fail-closed
+`contract-security` engineering profile will turn "not stated on a trust
+crossing" into a diagnostic.
 
 The first engineering profile is `deployment-ownership`. Enable it only when
 the user wants a fail-closed deployment review and the source facts are known.

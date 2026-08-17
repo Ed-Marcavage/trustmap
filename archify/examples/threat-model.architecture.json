@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Yield Vault — Threat-Model Map",
+    "output": "examples/threat-model.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "value-path",
+        "label": "Value path",
+        "focus": ["depositor", "vault", "strategy", "lending", "shares"],
+        "note": "Follow deposited assets from a permissionless caller into the strategy and out to the yield source."
+      },
+      {
+        "id": "privileged-surface",
+        "label": "Privileged surface",
+        "focus": ["guardian", "timelock", "vault"],
+        "note": "Every privileged entry point, the role that gates it, and the delay in front of it."
+      },
+      {
+        "id": "external-dependencies",
+        "label": "External dependencies",
+        "focus": ["strategy", "oracle", "dex", "lending", "keeper"],
+        "note": "What the protocol trusts outside its own code, and the guard on each crossing."
+      }
+    ]
+  },
+  "components": [
+    {"id": "depositor", "type": "actor", "label": "Depositor", "sublabel": "any EOA or contract", "pos": [40, 300], "size": [120, 60]},
+    {"id": "guardian", "type": "role", "label": "Guardian", "sublabel": "3-of-5 multisig", "pos": [430, 120], "size": [120, 64], "tag": "pause / unpause"},
+    {"id": "timelock", "type": "role", "label": "Timelock", "sublabel": "governance · 48h delay", "pos": [590, 120], "size": [130, 64], "tag": "upgrade / set strategy"},
+    {"id": "vault", "type": "contract", "label": "Vault", "sublabel": "ERC-4626 · UUPS proxy", "pos": [490, 300], "size": [130, 60], "tag": "in scope"},
+    {"id": "strategy", "type": "contract", "label": "Strategy", "sublabel": "yield adapter", "pos": [700, 300], "size": [130, 60], "tag": "in scope"},
+    {"id": "shares", "type": "asset", "label": "Vault shares", "sublabel": "ERC-20 receipt token", "pos": [490, 420], "size": [130, 60]},
+    {"id": "keeper", "type": "offchain", "label": "Keeper bot", "sublabel": "harvest / rebalance", "pos": [960, 95], "size": [130, 60], "tag": "off-chain signer"},
+    {"id": "oracle", "type": "oracle", "label": "Price feed", "sublabel": "USDC/USD aggregator", "pos": [960, 200], "size": [130, 60], "tag": "heartbeat 1h"},
+    {"id": "lending", "type": "external", "label": "Lending market", "sublabel": "yield source", "pos": [960, 300], "size": [130, 60]},
+    {"id": "dex", "type": "external", "label": "DEX router", "sublabel": "reward swaps", "pos": [960, 420], "size": [130, 60]}
+  ],
+  "boundaries": [
+    {"kind": "privilege-domain", "label": "Privileged roles", "wraps": ["guardian", "timelock"]},
+    {"kind": "trust-boundary", "label": "In scope", "wraps": ["vault", "strategy", "shares"]},
+    {"kind": "trust-boundary", "label": "External — not trusted", "wraps": ["keeper", "oracle", "lending", "dex"]}
+  ],
+  "connections": [
+    {"id": "deposit-redeem", "from": "depositor", "to": "vault", "label": "deposit / redeem", "classification": "value", "guard": "none (permissionless)", "variant": "emphasis"},
+    {"id": "guardian-pause", "from": "guardian", "to": "vault", "label": "pause", "classification": "call", "guard": "onlyRole(GUARDIAN)", "variant": "security", "fromSide": "bottom", "toSide": "top"},
+    {"id": "timelock-upgrade", "from": "timelock", "to": "vault", "label": "upgrade · setStrategy", "classification": "call", "guard": "onlyRole(TIMELOCK) · 48h delay", "variant": "security", "fromSide": "bottom", "toSide": "top"},
+    {"id": "invest", "from": "vault", "to": "strategy", "label": "invest / divest", "classification": "value", "guard": "onlyVault", "variant": "emphasis"},
+    {"id": "mint-burn", "from": "vault", "to": "shares", "label": "mint / burn", "classification": "value", "guard": "internal", "fromSide": "bottom", "toSide": "top", "labelDy": 50},
+    {"id": "harvest", "from": "keeper", "to": "strategy", "label": "harvest()", "classification": "call", "guard": "onlyKeeper allowlist", "variant": "dashed", "fromSide": "left", "toSide": "top"},
+    {"id": "read-price", "from": "strategy", "to": "oracle", "label": "read price", "classification": "read", "guard": "staleness ≤ 1h · deviation cap", "fromSide": "right", "toSide": "left"},
+    {"id": "supply", "from": "strategy", "to": "lending", "label": "supply / withdraw", "classification": "value", "guard": "market allowlist", "variant": "emphasis", "labelDy": 22},
+    {"id": "swap", "from": "strategy", "to": "dex", "label": "swap rewards", "classification": "call", "guard": "minAmountOut · deadline", "variant": "security", "fromSide": "bottom", "toSide": "left"}
+  ],
+  "cards": [
+    {"dot": "rose", "title": "Trust boundaries", "items": ["In scope: Vault (UUPS proxy), Strategy, Vault shares", "Not trusted: lending market, DEX router, price feed, keeper bot", "Privileged: Guardian multisig (pause), Timelock (upgrade, set strategy)"]},
+    {"dot": "amber", "title": "Guarded crossings", "items": ["Every edge into the protocol from outside names its guard", "Permissionless entry is explicit: deposit / redeem carries guard none", "Oracle reads carry the staleness and deviation checks that make them safe"]},
+    {"dot": "emerald", "title": "Invariants (authored)", "items": ["Vault shares are backed: convertToAssets(totalSupply) ≤ idle + deployed assets", "Only Guardian can pause; only Timelock, after 48h, can upgrade or change strategy", "Strategy interacts only with the allowlisted market and the configured router"]}
+  ]
+}

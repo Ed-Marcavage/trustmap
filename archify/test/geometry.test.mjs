@@ -589,6 +589,7 @@ test('semantic sigils cover every component and lifecycle kind without literal c
   const kinds = [
     'frontend', 'backend', 'database', 'cloud', 'security', 'messagebus', 'external',
     'start', 'active', 'waiting', 'success', 'failure', 'neutral',
+    'contract', 'actor', 'role', 'asset', 'oracle', 'offchain',
   ];
   for (const kind of kinds) {
     const sigil = renderSemanticSigil(kind, { x: 12, y: 18 });

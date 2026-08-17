@@ -74,7 +74,13 @@
                 "cloud": { "$ref": "common.schema.json#/$defs/legendEntry" },
                 "security": { "$ref": "common.schema.json#/$defs/legendEntry" },
                 "messagebus": { "$ref": "common.schema.json#/$defs/legendEntry" },
-                "external": { "$ref": "common.schema.json#/$defs/legendEntry" }
+                "external": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "contract": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "actor": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "role": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "asset": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "oracle": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "offchain": { "$ref": "common.schema.json#/$defs/legendEntry" }
               }
             }
           }

@@ -3,7 +3,7 @@ name: trustmap
 description: Create polished, validated threat-model, architecture, workflow, sequence, data-flow, and lifecycle diagrams for smart-contract protocols as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Security-focused fork of Archify — map contracts, actors, privileged roles, assets, oracles, and off-chain participants, the trust boundaries between them, the guard on every crossing, and invariants pinned to source evidence. Accept plain-language protocol descriptions or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to map a protocol's trust boundaries, privileged roles, value flows, attack-path call sequences, protocol state machines, upgrade paths, or general system architecture, infrastructure, workflows, API call sequences, data pipelines, or state machines.
 license: MIT
 metadata:
-  version: "2.14"
+  version: "3.0"
   author: Ed-Marcavage
   based_on: tt-a1i/archify (MIT, v2.14.0), itself based on Cocoon-AI/architecture-diagram-generator (MIT, v1.0)
 ---
@@ -44,7 +44,7 @@ Lifecycle note: phase columns `0..4` occupy the main rail; event/outcome columns
 
 | Type | Use for |
 |---|---|
-| `architecture` | Components, services, cloud/security boundaries, infrastructure |
+| `architecture` | Threat-model maps: contracts, actors, privileged roles, assets, oracles, off-chain participants, trust/privilege boundaries, guarded crossings; also ordinary components, services, cloud/security boundaries, infrastructure |
 | `workflow` | Processes, approval gates, tool calls, runbooks, CI/CD |
 | `sequence` | API call chains, request lifecycles, async traces, returns |
 | `dataflow` | Pipelines, ETL/ELT, lineage, governance, consumers |
@@ -70,7 +70,9 @@ Read Mermaid for topology and meaning, then author fresh Archify JSON; do not me
 - Match every reader-facing authored string to the language of the user's request, or the conversation's dominant language when the request is language-neutral. Apply it consistently to titles/subtitles, node/edge/boundary/lane/group text, guided-view labels/notes, legend label overrides, and card titles/items; use another language or bilingual copy only when the user asks.
 - Preserve exact product names, code identifiers, commands, protocols, API paths, and environment names. They may remain English inside localized copy, but never justify leaving the surrounding explanatory prose in another language.
 - For sequence diagrams, omit `meta.column_fit` for the stable `fixed` layout. Set it to `"spread"` when a wide viewBox would otherwise leave unused horizontal space or when meaningful participant labels do not fit the fixed boxes; do not shorten semantic labels before trying `spread`.
-- Component types are `frontend`, `backend`, `database`, `cloud`, `security`, `messagebus`, and `external`; variants are `default`, `emphasis`, `security`, and `dashed`.
+- Component types are the inherited `frontend`, `backend`, `database`, `cloud`, `security`, `messagebus`, `external`, plus the smart-contract security kinds `contract`, `actor`, `role`, `asset`, `oracle`, and `offchain`; variants are `default`, `emphasis`, `security`, and `dashed`. Use one vocabulary per diagram: the security kinds for protocol maps, the inherited kinds for ordinary infrastructure (`external` belongs to both).
+- Architecture boundaries are `region`, `security-group` (inherited) and `trust-boundary`, `privilege-domain`, `chain`, `upgrade-domain` (security). A protocol map has at least one `trust-boundary` around the in-scope contracts; put privileged roles in a `privilege-domain`; use `chain` only when components live on different chains and `upgrade-domain` for a proxy with its implementation and admin.
+- Architecture connections may carry `classification` (`call`, `delegatecall`, `value`, `read`, `event`, `message`, `untrusted-callback`) and `guard` (the mechanism gating the crossing: `onlyRole(GUARDIAN)`, `nonReentrant`, `staleness ≤ 1h`, `48h timelock`, or the explicit literal `none`). Both are authored facts: state what the code enforces, never what it should enforce. On a protocol map, give every connection that crosses a `trust-boundary` a `guard`; `examples/threat-model.architecture.json` is the reference shape.
 - Relationship labels are semantic data. When one collides, move the label, adjust the route or spacing, then shorten the wording while preserving meaning. Only delete a label when both endpoints fully imply the relationship and it contains no protocol, action, direction, synchronous/asynchronous behavior, or cross-boundary mechanism; explain why the deleted label is redundant. Never delete a meaningful label merely to pass `showcase`.
 - Omit `meta.engineering_profile` by default. Region, cluster, and security boundary wording do not by themselves enable it. Enable `deployment-ownership` only when the user explicitly asks for a production deployment topology, ownership handoff, or fail-closed deployment review and the source facts are known. Once enabled, must not remove the engineering profile merely to pass validation; repair the facts or report the diagnostics truthfully.
 - Spacing means clear gap, not center distance. For a relationship label, clear gap must exceed its measured mask width; use the label-preserving repair order before considering deletion.
