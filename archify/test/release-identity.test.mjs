@@ -6,6 +6,12 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+// trustmap fork: the release-identity gate covers the machine-facing identity
+// contract only (package ↔ lockfile ↔ SKILL.md ↔ template generator ↔ README
+// badge/marker ↔ CHANGELOG development identity). Upstream's bilingual README
+// mirrors, Raven ZIP copy, landing/start pages, and ROADMAP marker are not part
+// of the fork gate.
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..', '..');
 const checker = path.join(repoRoot, 'scripts', 'check-release-identity.mjs');
@@ -17,302 +23,146 @@ function writeFile(root, relativePath, content) {
 }
 
 function runCheck(root) {
-  return spawnSync(process.execPath, [checker, '--root', root], {
-    encoding: 'utf8',
-  });
+  return spawnSync(process.execPath, [checker, '--root', root], { encoding: 'utf8' });
 }
 
-function writeValidDevelopmentFixture(root, overrides = {}) {
-  const version = '2.13.0-dev.0';
-  const english = [
-    '![Development Version](https://img.shields.io/badge/version-2.13.0--dev.0-blue)',
+function readmeFor(version, isDevelopment) {
+  const escaped = version.replaceAll('-', '--');
+  const label = isDevelopment ? 'Current development version:' : 'Current stable version:';
+  return [
+    `![Version](https://img.shields.io/badge/version-${escaped}-0891b2?style=flat-square)`,
     '',
-    `Current development version: \`v${version}\``,
+    `**${label}** \`v${version}\``,
     '',
-    'Raven uses manual ZIP installation: extract archify.zip into `~/.raven/workspace/skills`, which yields `~/.raven/workspace/skills/archify`; Raven is not an agent-switcher target.',
   ].join('\n');
-  const chinese = [
-    '![开发版本](https://img.shields.io/badge/version-2.13.0--dev.0-blue)',
-    '',
-    `当前开发版本：\`v${version}\``,
-    '',
-    'Raven 使用 ZIP 手动安装：将 archify.zip 解压到 `~/.raven/workspace/skills`，解压后会得到 `~/.raven/workspace/skills/archify`；Raven 不属于 Agent 切换器目标。',
-  ].join('\n');
+}
+
+function writeFixture(root, { version, generatorName = 'trustmap', unreleased = [], packageName = 'trustmap', skillName = 'trustmap', overrides = {} }) {
+  const isDevelopment = version.includes('-');
+  const [major, minor] = version.split('.');
   const files = {
-    'archify/package.json': JSON.stringify({ version }),
-    'archify/package-lock.json': JSON.stringify({ version, packages: { '': { version } } }),
-    'archify/SKILL.md': '---\nmetadata:\n  version: "2.13"\n---\n',
-    'archify/assets/template.html': '<meta name="generator" content="archify 2.13.0-dev.0">',
+    'archify/package.json': JSON.stringify({ name: packageName, version }),
+    'archify/package-lock.json': JSON.stringify({ name: packageName, version, packages: { '': { name: packageName, version } } }),
+    'archify/SKILL.md': `---\nname: ${skillName}\nmetadata:\n  version: "${major}.${minor}"\n---\n`,
+    'archify/assets/template.html': `<meta name="generator" content="${generatorName} ${version}">`,
     'CHANGELOG.md': [
       '# Changelog',
       '',
       '## [Unreleased]',
       '',
-      `> Development identity: \`v${version}\`. Not a stable release.`,
+      ...(unreleased.length ? [`> Development identity: \`v${version}\`. Not a stable release.`, '', '### Added', ...unreleased, ''] : []),
+      '## [2.14.0] — 2026-08-11',
       '',
       '### Added',
-      '- Real unreleased work.',
-      '',
-      '## [2.12.0] — 2026-07-23',
+      '- Published upstream work.',
       '',
     ].join('\n'),
-    'README.md': english,
-    'README_EN.md': english,
-    'README_ZH.md': chinese,
-    'scripts/start-template.html': 'development · 开发版 · [[ARCHIFY_VERSION]]',
-    'scripts/guide-template.html': 'development · 开发版 · [[ARCHIFY_VERSION]]',
-    'scripts/gallery-template.html': 'development · 开发版 · [[ARCHIFY_VERSION]]',
-    'docs/index.html': `<span>development · v${version} · 开发版 · 9/9 checks</span><p>Raven manual ZIP / ZIP 手动安装: extract archify.zip into ~/.raven/workspace/skills, which yields ~/.raven/workspace/skills/archify; 将 archify.zip 解压到 ~/.raven/workspace/skills，解压后会得到 ~/.raven/workspace/skills/archify; not an agent-switcher target.</p>`,
-    'docs/start.html': `<span>development · v${version} · 开发版</span><p>Raven manual ZIP / ZIP 手动安装: extract archify.zip into ~/.raven/workspace/skills, which yields ~/.raven/workspace/skills/archify; 将 archify.zip 解压到 ~/.raven/workspace/skills，解压后会得到 ~/.raven/workspace/skills/archify; not an agent-switcher target.</p>`,
-    'ROADMAP.md': `The current development line is \`v${version}\`; it contains the work under Changelog Unreleased and is not a stable release.`,
+    'README.md': readmeFor(version, isDevelopment),
+    ...overrides,
   };
-  for (const [relativePath, content] of Object.entries({ ...files, ...overrides })) {
-    writeFile(root, relativePath, content);
-  }
+  for (const [relativePath, content] of Object.entries(files)) writeFile(root, relativePath, content);
 }
 
-function writeValidStableFixture(root, overrides = {}) {
-  const version = '2.13.0';
-  const english = [
-    '![Stable Version](https://img.shields.io/badge/version-2.13.0-blue)',
-    '',
-    `Current stable version: \`v${version}\``,
-    '',
-    'Raven uses manual ZIP installation: extract archify.zip into `~/.raven/workspace/skills`, which yields `~/.raven/workspace/skills/archify`; Raven is not an agent-switcher target.',
-  ].join('\n');
-  const chinese = [
-    '![稳定版本](https://img.shields.io/badge/version-2.13.0-blue)',
-    '',
-    `当前稳定版本：\`v${version}\``,
-    '',
-    'Raven 使用 ZIP 手动安装：将 archify.zip 解压到 `~/.raven/workspace/skills`，解压后会得到 `~/.raven/workspace/skills/archify`；Raven 不属于 Agent 切换器目标。',
-  ].join('\n');
-  const files = {
-    'archify/package.json': JSON.stringify({ version }),
-    'archify/package-lock.json': JSON.stringify({ version, packages: { '': { version } } }),
-    'archify/SKILL.md': '---\nmetadata:\n  version: "2.13"\n---\n',
-    'archify/assets/template.html': '<meta name="generator" content="archify 2.13.0">',
-    'CHANGELOG.md': [
-      '# Changelog',
-      '',
-      '## [Unreleased]',
-      '',
-      '## [2.13.0] — 2026-07-29',
-      '- Published work.',
-      '',
-    ].join('\n'),
-    'README.md': english,
-    'README_EN.md': english,
-    'README_ZH.md': chinese,
-    'scripts/start-template.html': 'stable · 稳定版 · [[ARCHIFY_VERSION]]',
-    'scripts/guide-template.html': 'stable · 稳定版 · [[ARCHIFY_VERSION]]',
-    'scripts/gallery-template.html': 'stable · 稳定版 · [[ARCHIFY_VERSION]]',
-    'docs/index.html': `<span>stable · v${version} · 稳定版 · 9/9 checks</span><p>Raven manual ZIP / ZIP 手动安装: extract archify.zip into ~/.raven/workspace/skills, which yields ~/.raven/workspace/skills/archify; 将 archify.zip 解压到 ~/.raven/workspace/skills，解压后会得到 ~/.raven/workspace/skills/archify; not an agent-switcher target.</p>`,
-    'docs/start.html': `<span>stable · v${version} · 稳定版</span><p>Raven manual ZIP / ZIP 手动安装: extract archify.zip into ~/.raven/workspace/skills, which yields ~/.raven/workspace/skills/archify; 将 archify.zip 解压到 ~/.raven/workspace/skills，解压后会得到 ~/.raven/workspace/skills/archify; not an agent-switcher target.</p>`,
-    'ROADMAP.md': `The current stable version is \`v${version}\`.`,
-  };
-  for (const [relativePath, content] of Object.entries({ ...files, ...overrides })) {
-    writeFile(root, relativePath, content);
-  }
-}
-
-test('an empty Unreleased section accepts a coherent stable release identity', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
+function withFixture(config, callback) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'trustmap-release-identity-'));
   try {
-    writeValidStableFixture(fixture);
+    writeFixture(root, config);
+    return callback(root);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
 
-    const result = runCheck(fixture);
+test('the live repository passes the fork release-identity gate', () => {
+  const result = runCheck(repoRoot);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /release identity ok: trustmap \d+\.\d+\.\d+/);
+});
+
+test('a stable identity with an empty Unreleased section is coherent', () => {
+  withFixture({ version: '2.14.0' }, (root) => {
+    const result = runCheck(root);
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /release identity ok: 2\.13\.0/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
+    assert.match(result.stdout, /release identity ok: trustmap 2\.14\.0/);
+  });
 });
 
-test('real Unreleased changes cannot reuse a stable published package identity', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeFile(fixture, 'archify/package.json', JSON.stringify({ version: '2.12.0' }));
-    writeFile(fixture, 'CHANGELOG.md', [
-      '# Changelog',
-      '',
-      '## [Unreleased]',
-      '',
-      '### Added',
-      '- Real unreleased work.',
-      '',
-      '## [2.12.0] — 2026-07-23',
-      '',
-    ].join('\n'));
+test('the inherited archify generator name is still accepted for the same version', () => {
+  withFixture({ version: '2.14.0', generatorName: 'archify' }, (root) => {
+    assert.equal(runCheck(root).status, 0);
+  });
+  withFixture({ version: '2.14.0', generatorName: 'archify', overrides: {
+    'archify/assets/template.html': '<meta name="generator" content="archify 2.13.0">',
+  } }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /generator must be "trustmap 2\.14\.0"/);
+  });
+});
 
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
+test('real Unreleased changes require a newer dev.N prerelease identity everywhere', () => {
+  withFixture({ version: '2.14.0', unreleased: ['- Real unreleased work.'] }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
     assert.match(result.stderr, /Unreleased changes require a prerelease package version/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
+  });
+  withFixture({ version: '2.14.1-dev.0', unreleased: ['- Real unreleased work.'] }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /release identity ok: trustmap 2\.14\.1-dev\.0/);
+  });
+  withFixture({ version: '2.14.0-dev.0', unreleased: ['- Real unreleased work.'] }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /must be newer than published 2\.14\.0/);
+  });
+  withFixture({ version: '3.0.0-rc.1', unreleased: ['- Real unreleased work.'] }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /must use a dev\.N prerelease/);
+  });
 });
 
-test('package, lockfile, Skill metadata, escaped Shields badge, and public docs share one development identity', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeFile(fixture, 'archify/package.json', JSON.stringify({ version: '2.13.0-dev.0' }));
-    writeFile(fixture, 'archify/package-lock.json', JSON.stringify({
-      version: '2.12.0',
-      packages: { '': { version: '2.12.0' } },
-    }));
-    writeFile(fixture, 'archify/SKILL.md', '---\nmetadata:\n  version: "2.12"\n---\n');
-    writeFile(fixture, 'CHANGELOG.md', [
-      '# Changelog',
-      '',
-      '## [Unreleased]',
-      '',
-      '### Added',
-      '- Real unreleased work.',
-      '',
-      '## [2.12.0] — 2026-07-23',
-      '',
-    ].join('\n'));
-    const staleEnglish = [
-      '![Version](https://img.shields.io/badge/version-2.13.0-blue)',
-      '',
-      'Archify 2.12 includes unreleased capabilities.',
-    ].join('\n');
-    writeFile(fixture, 'README.md', staleEnglish);
-    writeFile(fixture, 'README_EN.md', staleEnglish);
-    writeFile(fixture, 'README_ZH.md', '![Version](https://img.shields.io/badge/version-2.13.0-blue)\n\nArchify 2.12 包含未发布能力。\n');
-    writeFile(fixture, 'docs/index.html', '<span>Agent Skill · v2.12.0</span>');
-    writeFile(fixture, 'docs/start.html', '<span>Archify v2.12.0</span>');
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /package-lock\.json must match 2\.13\.0-dev\.0/);
-    assert.match(result.stderr, /SKILL\.md metadata version 2\.12 must map to package 2\.13\.0-dev\.0/);
-    assert.match(result.stderr, /README\.md must advertise development identity v2\.13\.0-dev\.0/);
-    assert.match(result.stderr, /docs\/index\.html must advertise development identity v2\.13\.0-dev\.0/);
-    assert.match(result.stderr, /docs\/start\.html must advertise development identity v2\.13\.0-dev\.0/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
+test('package, lockfile, Skill metadata, badge, and marker must agree', () => {
+  withFixture({ version: '3.0.0-dev.0', unreleased: ['- Fork work.'], overrides: {
+    'archify/package-lock.json': JSON.stringify({ name: 'trustmap', version: '2.14.0', packages: { '': { name: 'trustmap', version: '2.14.0' } } }),
+  } }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /package-lock\.json must match 3\.0\.0-dev\.0/);
+  });
+  withFixture({ version: '3.0.0-dev.0', unreleased: ['- Fork work.'], overrides: {
+    'archify/SKILL.md': '---\nname: trustmap\nmetadata:\n  version: "2.14"\n---\n',
+  } }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /SKILL\.md metadata version 2\.14 must map to package 3\.0\.0-dev\.0 as 3\.0/);
+  });
+  withFixture({ version: '3.0.0-dev.0', unreleased: ['- Fork work.'], overrides: {
+    'README.md': readmeFor('2.14.0', false),
+  } }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /README\.md must advertise development identity v3\.0\.0-dev\.0/);
+  });
+  withFixture({ version: '3.0.0-dev.0', unreleased: ['- Fork work.'], overrides: {
+    'CHANGELOG.md': '# Changelog\n\n## [Unreleased]\n\n### Added\n- Fork work.\n\n## [2.14.0] — 2026-08-11\n',
+  } }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /CHANGELOG\.md Unreleased must declare Development identity: `v3\.0\.0-dev\.0`/);
+  });
 });
 
-test('landing proof receipt matches the current nine-check artifact contract', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeValidDevelopmentFixture(fixture, {
-      'docs/index.html': '<span>development · v2.13.0-dev.0 · 开发版 · 8/8 checks</span><p>Raven manual ZIP / ZIP 手动安装: extract archify.zip into ~/.raven/workspace/skills, which yields ~/.raven/workspace/skills/archify; 将 archify.zip 解压到 ~/.raven/workspace/skills，解压后会得到 ~/.raven/workspace/skills/archify; not an agent-switcher target.</p>',
-    });
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /docs\/index\.html proof receipt must say 9\/9/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
-});
-
-test('landing rejects every stale N/N contract count even when 9/9 is also present', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeValidDevelopmentFixture(fixture, {
-      'docs/index.html': [
-        '<span>development · v2.13.0-dev.0 · 开发版 · 9/9 checks</span>',
-        '<span>legacy receipt · 7/7 checks</span>',
-        '<p>Raven manual ZIP / ZIP 手动安装: extract archify.zip into ~/.raven/workspace/skills, which yields ~/.raven/workspace/skills/archify; 将 archify.zip 解压到 ~/.raven/workspace/skills，解压后会得到 ~/.raven/workspace/skills/archify; not an agent-switcher target.</p>',
-      ].join('\n'),
-    });
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /every N\/N proof receipt must be exactly 9\/9; found 7\/7/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
-});
-
-test('Raven stays a truthful manual ZIP install and never becomes a generated agent-switcher command', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeValidDevelopmentFixture(fixture, {
-      'docs/start.html': [
-        '<span>development · v2.13.0-dev.0 · 开发版</span>',
-        '<button data-agent="raven">Raven</button>',
-        '<pre>npx skills add tt-a1i/archify --agent raven</pre>',
-      ].join('\n'),
-    });
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /Raven must remain a manual ZIP installation outside the agent switcher/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
-});
-
-test('Raven instructions reject extracting the archive into the final Skill directory', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    const nestedEnglish = [
-      '![Development Version](https://img.shields.io/badge/version-2.13.0--dev.0-blue)',
-      '',
-      'Current development version: `v2.13.0-dev.0`',
-      '',
-      'Raven is manual ZIP only: extract archify.zip into `~/.raven/workspace/skills/archify`; Raven is not an agent-switcher target.',
-    ].join('\n');
-    writeValidDevelopmentFixture(fixture, {
-      'README.md': nestedEnglish,
-      'README_EN.md': nestedEnglish,
-    });
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /extract archify\.zip into ~\/\.raven\/workspace\/skills, yielding ~\/\.raven\/workspace\/skills\/archify/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
-});
-
-test('renderer template generator carries the complete package prerelease identity', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeValidDevelopmentFixture(fixture, {
-      'archify/assets/template.html': '<meta name="generator" content="archify 2.12.0">',
-    });
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /archify\/assets\/template\.html generator must be archify 2\.13\.0-dev\.0/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
-});
-
-test('roadmap current identity follows the package release state', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeValidDevelopmentFixture(fixture, {
-      'ROADMAP.md': 'The current development line is `v2.12.0`; it is not a stable release.',
-    });
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /ROADMAP\.md must declare the current development line as v2\.13\.0-dev\.0/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
-});
-
-test('generated public-page templates keep a development marker and version placeholder', () => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-release-identity-'));
-  try {
-    writeValidDevelopmentFixture(fixture, {
-      'scripts/gallery-template.html': 'Proof Lab / 2.12.0',
-    });
-
-    const result = runCheck(fixture);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /scripts\/gallery-template\.html must use \[\[ARCHIFY_VERSION\]\] with development and 开发版 labels/);
-  } finally {
-    fs.rmSync(fixture, { recursive: true, force: true });
-  }
+test('the fork identity rejects an unrenamed package or Skill', () => {
+  withFixture({ version: '2.14.0', packageName: 'archify' }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /package\.json name must be "trustmap"/);
+  });
+  withFixture({ version: '2.14.0', skillName: 'archify' }, (root) => {
+    const result = runCheck(root);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /SKILL\.md frontmatter name must be trustmap/);
+  });
 });

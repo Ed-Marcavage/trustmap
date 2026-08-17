@@ -358,7 +358,7 @@ test('lifecycle: same-band port spread remains orthogonal', () => {
   ]);
 });
 
-test('skill and READMEs describe automatic port spread as bounded default behavior', () => {
+test('skill describes automatic port spread as bounded default behavior', () => {
   const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
   assert.match(skill, /Automatic Port Spread is a default renderer behavior/);
   assert.match(skill, /single relationship|single relationships/);
@@ -368,9 +368,5 @@ test('skill and READMEs describe automatic port spread as bounded default behavi
   const authoringContract = fs.readFileSync(path.join(skillRoot, 'references/authoring-contract.md'), 'utf8');
   assert.match(authoringContract, /unobstructed facing ports.*may share one horizontal or vertical axis/);
 
-  const repoRoot = path.resolve(skillRoot, '..');
-  for (const file of ['README.md', 'README_EN.md']) {
-    assert.match(fs.readFileSync(path.join(repoRoot, file), 'utf8'), /shared automatic endpoints spread deterministically/);
-  }
-  assert.match(fs.readFileSync(path.join(repoRoot, 'README_ZH.md'), 'utf8'), /共享的自动端点会确定性展开/);
+  // trustmap fork: the product README no longer mirrors upstream's feature copy.
 });

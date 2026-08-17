@@ -168,7 +168,8 @@ console.log('version sync');
 
 const pkg = JSON.parse(fs.readFileSync(path.join(skillRoot, 'package.json'), 'utf8'));
 check('template generator meta matches package.json version',
-  template.includes(`<meta name="generator" content="archify ${pkg.version}">`),
+  template.includes(`<meta name="generator" content="trustmap ${pkg.version}">`)
+    || template.includes(`<meta name="generator" content="archify ${pkg.version}">`),
   `package.json says ${pkg.version}`);
 
 const lock = JSON.parse(fs.readFileSync(path.join(skillRoot, 'package-lock.json'), 'utf8'));
@@ -183,7 +184,7 @@ check('SKILL.md metadata version matches package.json major.minor',
   !!packageMajorMinor && skillVersion === packageMajorMinor,
   `SKILL.md says ${skillVersion}, package.json says ${pkg.version}`);
 
-for (const readmeName of ['README.md', 'README_EN.md', 'README_ZH.md']) {
+for (const readmeName of ['README.md']) {
   const readme = fs.readFileSync(path.join(repoRoot, readmeName), 'utf8');
   const badgeVersions = shieldsBadgeMessages(readme, 'version');
   check(`${readmeName} badge matches package.json version`,

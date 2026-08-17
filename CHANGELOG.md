@@ -1,5 +1,7 @@
 # Changelog
 
+This is the changelog of **trustmap**, a security-focused fork of [Archify](https://github.com/tt-a1i/archify). Entries up to and including 2.14.0 are inherited verbatim from upstream; fork changes are recorded above them.
+
 All notable changes are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]

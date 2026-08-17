@@ -1,287 +1,129 @@
-<p align="center">
-  <strong>English</strong> · <a href="./README_ZH.md">简体中文</a>
-</p>
+# trustmap
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/31352?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-31352" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/31352" alt="Archify on Trendshift" width="250" height="55"/></a>
-</p>
+**Trust-boundary maps and invariants for Solidity protocols — a security-focused fork of [Archify](https://github.com/tt-a1i/archify).**
 
-![Archify product preview](docs/assets/archify-readme-hero.png)
+trustmap turns a smart-contract repository (or a written protocol description) into a validated, interactive **threat-model map**: contracts, actors, privileged roles, assets, oracles, and off-chain participants; the trust boundaries between them; the guard on every boundary crossing; and the invariants that must hold — each pinned to `path:line` evidence. It ships as an agent skill for Claude Code, Cursor, Codex CLI, and OpenCode, and produces one self-contained HTML file per diagram.
 
-# Archify
-
-**Turn a codebase or system description into a polished, interactive system map — directly in chat.**
-
-Archify is an agent skill for Raven, Cursor, Claude Code, Codex CLI, and OpenCode. Give it a system description or repository; get an interactive, shareable technical map.
-
-- **Open it and present** — five technical diagram types, four visual presets, dark/light themes, and optional finite motion
-- **Review architecture changes before merge** — compare two validated snapshots as Before / Delta / After, with exact added, removed, changed, moved, and rerouted facts
-- **Every interaction stays grounded** — search nodes, optionally open revision-verified source, trace upstream/downstream authored reach and exact routes, compare roles, and play guided stories without inventing topology
-- **One file, ready to trust and share** — typed JSON IR and deterministic checks produce self-contained HTML plus PNG, SVG, WebM, and 1200×630 share cards
-
+![Version](https://img.shields.io/badge/version-2.14.0-0891b2?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)
 ![Agent Skill](https://img.shields.io/badge/Agent-Skill-7C3AED?style=flat-square)
-![Stable Version](https://img.shields.io/badge/version-2.14.0-0891b2?style=flat-square)
 
-**Current stable version:** `v2.14.0`. See [Changelog](CHANGELOG.md#2140--2026-08-11).
+**Current stable version:** `v2.14.0` — upstream parity. The security specialization lands in phases (see [Status](#status)); until Phase 1 merges, this repository renders exactly what Archify v2.14.0 renders.
 
-**[Project page](https://tt-a1i.github.io/archify/)** · **[Scenario guide](https://tt-a1i.github.io/archify/guide.html)** · **[Proof Lab](https://tt-a1i.github.io/archify/gallery.html)**
+## Why this fork exists
 
-```bash
-npx skills add tt-a1i/archify -g
-```
+[Archify](https://github.com/tt-a1i/archify) (by [tt-a1i](https://github.com/tt-a1i), MIT) is an agent skill that turns a codebase or system description into a polished, interactive architecture, workflow, sequence, data-flow, or lifecycle diagram. Its design stance is unusual and exactly right for security work: every focus, route, reach query, story, and source link derives from **authored, verified facts** — the renderer never infers impact or risk, validation fails closed with a machine-readable repair receipt, and repository evidence is pinned to one exact commit.
 
-Using Cursor? Open the [agent-aware quick start](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) for exact global and project commands.
+Archify's *vocabulary*, however, is web infrastructure: `frontend`, `backend`, `database`, `cloud`, `messagebus`, `region`, `security-group`. A smart-contract audit needs a different set of nouns and a different set of rules. trustmap forks Archify to specialize it for **Solidity smart-contract security** (with a language-agnostic IR so other ecosystems can follow):
 
-Then ask your agent: `Use archify to map this repository's runtime architecture.`
-
-## ❤️ Sponsors
-
-<a href="https://apinebula.ai/ref/wywnaATT"><img src="docs/assets/sponsors/apinebula-archify.jpg" alt="APINEBULA — One API for leading AI models" width="100%"></a>
-
-Thanks to [**APINEBULA**](https://apinebula.ai/ref/wywnaATT) for sponsoring Archify. APINEBULA offers unified access to Claude, GPT, Gemini, and more. Register through [the Archify link](https://apinebula.ai/ref/wywnaATT) and use **`Archify`** for a **10% discount**.
-
-<a href="https://github.com/EverMind-AI/Raven"><img src="docs/assets/sponsors/evermind-archify-raven.png" alt="Archify × Raven — Map the system. Keep the context." width="100%"></a>
-
-Sponsored by [**EverMind**](https://github.com/EverMind-AI), building memory infrastructure for agents. Its memory-first, self-evolving agent harness [**Raven**](https://github.com/EverMind-AI/Raven) supports Archify as a Skill, bringing verified, interactive system maps into Raven workflows.
-
-## See Archify in action
-
-These are generated Archify artifacts, not product mockups. Click a frame to open its live, shareable state.
-
-<p align="center">
-  <a href="https://tt-a1i.github.io/archify/gallery.html"><img src="docs/assets/archify-live-proof.gif" alt="Three verified Archify artifacts moving through Signal Flow, Blueprint, and Classic presets" width="960"/></a>
-  <br/>
-  <sub><strong>Three real generated artifacts.</strong> Signal Flow · Blueprint · Classic · <a href="https://tt-a1i.github.io/archify/gallery.html">open the interactive Proof Lab ↗</a></sub>
-</p>
-
-| Guided story | Route probe | Semantic lens |
-|---|---|---|
-| [![Agent workflow playing one authored chapter](docs/assets/archify-demo-story.png)](https://tt-a1i.github.io/archify/gallery/artifacts/agent-tool-call.workflow.html?theme=dark&present=1&play=1#view=happy-path) | [![Cache-miss sequence showing the Web App to Postgres route](docs/assets/archify-demo-route.png)](https://tt-a1i.github.io/archify/gallery/artifacts/cache-miss.sequence.html?theme=dark&present=1#route=web~db) | [![Production architecture comparing backend and database roles](docs/assets/archify-demo-lens.png)](https://tt-a1i.github.io/archify/gallery/artifacts/production-deployment.architecture.html?theme=dark&present=1#lens=backend~database) |
-| Play one finite named chapter. | Inspect the shortest authored directed path. | Compare real traffic between semantic roles. |
-
-The [Proof Lab](https://tt-a1i.github.io/archify/gallery.html) contains all 11 checked-in scenarios, their JSON sources, named views, and validation receipts.
-
-### A real repository, mapped from source
-
-[![MCO runtime architecture generated from the public mco-org/mco repository](docs/assets/mco-runtime-share-card.png)](https://tt-a1i.github.io/archify/cases/mco-runtime.architecture.html?theme=dark&present=1#view=dispatch-path)
-
-Archify traced [`mco-org/mco`](https://github.com/mco-org/mco) at `9f1a1cf` and produced this checked map. **[Open it ↗](https://tt-a1i.github.io/archify/cases/mco-runtime.architecture.html?theme=dark&present=1#view=dispatch-path)** · [trace reach ↗](https://tt-a1i.github.io/archify/cases/mco-runtime.architecture.html?theme=dark#focus=router&reach=downstream) · [typed source](docs/cases/mco-runtime.architecture.json)
-
-## Preview
-
-Same diagram, two themes, one click to switch:
-
-| Dark | Light |
+| Archify (upstream) | trustmap (this fork) |
 |---|---|
-| ![Dark theme](docs/assets/archify-dark.png) | ![Light theme](docs/assets/archify-light.png) |
+| Component kinds: frontend, backend, database, cloud, security, messagebus, external | Adds `contract`, `actor`, `role`, `asset`, `oracle`, `offchain` |
+| Boundaries: `region`, `security-group` | Adds `trust-boundary`, `privilege-domain`, `chain`, `upgrade-domain` |
+| Connections carry a label and a visual variant | Adds `classification` (`call`, `delegatecall`, `value`, `read`, `event`, `message`, `untrusted-callback`) and `guard` (the access check on the crossing) |
+| Fail-closed profile `deployment-ownership` (owners, regions, private state, crossing mechanism) | Adds `contract-security`: unguarded trust-boundary crossings, unscoped roles, assets without invariants, oracles without freshness checks, upgradeable contracts without an admin, unresolved invariant references — all reported as diagnostics, never silently passed |
+| No structured notion of an invariant | First-class `invariants[]` (kind, strength, statement, `holds_for`, guards, `path:line` evidence, check method) referenced from components, connections, boundaries, and states |
+| Repository evidence: GitHub URL + commit only | Adds local-git checkouts (Foundry/Hardhat) and verified-source evidence (chain id + address) |
+| Guide recipes for web systems | Recipes for threat maps, privileged roles, value flow, attack-path sequences, protocol lifecycles, upgrade deltas |
 
-The Export menu copies PNG to the clipboard and downloads static or motion formats:
+Everything that makes Archify trustworthy stays as it is: hand-placed layout, deterministic routing and clearance rules, the structured-diagnostics validator, atomic `deliver`, the viewer runtime (search, focus, reach, route probe, lens, guided stories, exports), Architecture Delta, and the zero-dependency install.
 
-![Export menu](docs/assets/archify-menu.png)
+### What trustmap is not
 
-Use **Copy Share Card** when you want a canonical 1200×630 image for a README, release, or social post.
+- **Not a vulnerability scanner.** It renders and validates facts; it does not find bugs. Facts come from your reading of the code, from analyzers, or from an agent skill that determines entry points and invariants — trustmap pins them to source and fails closed when one is missing.
+- **Not an inference engine.** Authored reach is authored reach, never "blast radius"; an unguarded crossing is a diagnostic, never a finding.
+- **Not a Mermaid beautifier or an auto-layout tool.** Layout judgment is part of the artifact (see upstream's [ROADMAP](ROADMAP.md) for the reasoning).
 
-After tracing a route, **Export → Route Share Card** downloads that authored path as a 1200×630 PNG with the full diagram retained for context.
+## What it produces
 
-![Route Share Card showing the exact Users to API Server path with the full architecture retained as context](docs/assets/archify-route-share-card.png)
+The flagship artifact is an `architecture`-mode **threat-model map** that answers five questions on one screen:
 
-After tracing authored `Upstream` or `Downstream` reach, **Export → Reach Share Card** captures that exact reading without claiming runtime impact.
+1. **Who can act?** — actors and privileged roles, each inside a privilege domain.
+2. **What is trusted?** — in-scope vs. external, on-chain vs. off-chain, chain A vs. chain B, proxy admin vs. implementation.
+3. **Where does value sit and move?** — assets and value-carrying connections.
+4. **How is each crossing guarded?** — every trust-boundary crossing names its guard, or is explicitly `none`.
+5. **What must always hold?** — invariants attached to the nodes, edges, boundaries, or states they constrain, with `path:line` evidence.
 
-![MCO downstream Reach Share Card showing authored relationships from Command Router](docs/assets/mco-runtime-reach-share-card.png)
+The other modes carry supporting views: `sequence` for one transaction over time (flash-loan-in-a-tx, callback re-entry, cross-chain message and acknowledgement), `lifecycle` for protocol state machines (auction, loan, proposal, vault epoch), `dataflow` for value flow, `workflow` for governance/upgrade/incident runbooks, and Architecture Delta for upgrade and re-audit diffs.
 
-Open [`examples/web-app.html`](examples/web-app.html) locally to try the complete viewer.
+## Status
 
-## Quick start
+| Phase | Scope | State |
+|---|---|---|
+| 0 | Fork identity: rename, README, fork-appropriate release gates | done (this commit) |
+| 1 | Security vocabulary: node kinds, trust boundaries, `classification`/`guard` on connections, palettes and sigils, legend catalogs, tests, goldens, one hand-authored threat-model example | in review — branch `phase-1/security-vocabulary` |
+| 2 | Fail-closed `contract-security` engineering profile | planned |
+| 3 | First-class `invariants[]` + Semantic Passport section + adapter from a public pre-audit scan format | planned |
+| 4 | Evidence union (local-git, verified-source), per-ecosystem extraction notes, guide recipes, SKILL.md rewrite | planned |
+| 5 | Viewer polish: roles / unguarded-crossing lenses, invariant coverage filter | optional |
 
-### 1. Install
+The working handoff for the next phase lives in [`HANDOFF.md`](HANDOFF.md) on the active phase branch.
+
+## Install
+
+The skill package is the inner [`archify/`](archify/) directory (kept under its upstream name for now so upstream changes merge cleanly; a rename is tracked in the handoff). No `npm install` is required to *use* it — the validators are committed and the CLI is dependency-free.
+
+**Claude Code / Cursor / Codex CLI / OpenCode (manual copy):**
 
 ```bash
-npx skills add tt-a1i/archify -g
+git clone https://github.com/Ed-Marcavage/trustmap.git
+# Claude Code (global): ~/.claude/skills/trustmap
+# Cursor / Codex (global): ~/.agents/skills/trustmap
+# OpenCode: ~/.config/opencode/skills/trustmap
+cp -R trustmap/archify ~/.claude/skills/trustmap
+node ~/.claude/skills/trustmap/bin/archify.mjs doctor
 ```
 
-For an explicit, non-interactive Cursor install:
-
-```bash
-npx -y skills add tt-a1i/archify --skill archify --agent cursor --global --copy --yes
-```
-
-To try without installing:
-
-```bash
-npx skills use tt-a1i/archify@archify --agent codex
-```
-
-[DSH community opt-in](integrations/deepseek-harness/README.md): `dsh plugin --profile web add @tt-a1i/archify-dsh@0.1.0`
-
-The [agent switcher](https://tt-a1i.github.io/archify/start.html?agent=cursor&type=architecture) covers `cursor`, `codex`, `claude-code`, and `opencode`. For Raven's manual ZIP install, extract [`archify.zip`](archify.zip) into `~/.raven/workspace/skills`; it yields `~/.raven/workspace/skills/archify`. Raven is not a switcher target.
-
-### 2. Ask for one bounded view
+Then ask your agent:
 
 ```text
-Analyze this repository, then use archify to create a high-level runtime architecture diagram.
-Show 8–12 core components, one primary path, external dependencies, and trust boundaries.
-Put supporting detail in cards instead of adding more edges.
+Use trustmap to map this protocol's trust boundaries: contracts, actors, privileged roles,
+assets, oracles, and off-chain keepers. Name the guard on every boundary crossing.
+Put invariants in cards for now.
 ```
 
-For a focused flow:
+**Manual ZIP install:** [`archify.zip`](archify.zip) is the same package as a zero-dependency archive; extract it into your agent's skills directory.
 
-```text
-Use archify to draw this login flow: Browser -> Web App -> API -> JWT validation ->
-Redis session lookup -> PostgreSQL fallback. Keep the cache-miss path secondary.
-```
-
-### 3. Refine in chat
-
-Continue with focused requests such as `add Redis`, `move auth to the left`, or `highlight the rollback path`. Archify keeps the typed source available for targeted iteration.
-
-## Choose the right diagram
-
-| Type | Best for | Include in your prompt |
-|---|---|---|
-| **Architecture** | Components, services, storage, boundaries | Scope, core components, primary path |
-| **Workflow** | CI/CD, approvals, tool calls, runbooks | Participants, order, branches, exceptions |
-| **Sequence** | API calls, cache fallback, auth, async traces | Callers, callees, returns, timing |
-| **Data Flow** | Pipelines, lineage, PII, consumers | Sources, transforms, stores, boundaries |
-| **Lifecycle** | States, retries, waits, terminal outcomes | States, events, retry and cancellation paths |
-
-For a production deployment review, Architecture can optionally enable the
-`deployment-ownership` engineering profile. It fails closed when owners,
-single-region placement, private database scope, or named boundary crossings
-are missing. It is never enabled silently and validates authored facts—not live
-infrastructure. See the [checked deployment proof](https://tt-a1i.github.io/archify/gallery.html#proof-deployment-ownership).
-
-For design or PR review, Architecture Delta compares validated Before / Delta / After snapshots with a machine receipt. Select an exact authored change or play one finite Review—viewer-only, with no impact, risk, or merge-safety inference.
-
-`node archify/bin/archify.mjs compare architecture base.json head.json architecture-delta.html --json`
-
-[![Architecture Delta showing added, removed, changed, and moved authored facts](docs/assets/architecture-delta-proof.jpg)](examples/checkout-platform-delta.html)
-
-Not sure which one fits? Use the [interactive scenario guide](https://tt-a1i.github.io/archify/guide.html), or ask the zero-dependency CLI:
-
-```bash
-node archify/bin/archify.mjs guide "Show an API request with Redis cache miss"
-node archify/bin/archify.mjs guide "Map Kafka topics, consumer groups, replay, and DLQ" --json
-```
-
-Workflow keeps the happy path clear across lanes:
-
-![Workflow example](docs/assets/archify-workflow.png)
-
-Sequence explains one interaction over time:
-
-![Sequence example](docs/assets/archify-sequence.png)
-
-Data Flow makes movement and sensitivity boundaries explicit:
-
-![Data Flow example](docs/assets/archify-dataflow.png)
-
-Lifecycle separates progress, waits, retries, and terminal outcomes:
-
-![Lifecycle example](docs/assets/archify-lifecycle.png)
-
-Architecture examples: [`web-app`](examples/web-app.html) · [`Archify pipeline`](examples/archify-repo.html) · [`grid placement`](examples/archify-repo-grid.html) · [`desktop agent`](examples/maka-architecture.html)
-
-## Why Archify
-
-- **Layout judgment over generic auto-layout** — the agent chooses hierarchy, spacing, routes, and emphasis; shared automatic endpoints spread deterministically instead of piling arrows on one midpoint.
-- **Typed JSON IR** — every renderer-backed mode has a schema and reproducible source.
-- **Atomic validation before delivery** — schema, layout, HTML/SVG, route, and label-to-route clearance checks must all pass before a showcase artifact replaces the last known good output.
-- **Failures come with a repair receipt** — `validate --json` and `deliver --json` return stable rule codes, the exact subject, measured evidence, and only supported repair controls instead of a Node stack or an unstructured retry guess.
-- **Last-good live preview** — an optional desktop loop watches one JSON file, refreshes only after the latest candidate passes every gate, and keeps the previous verified diagram visible when a save is incomplete or invalid.
-- **Truthful interaction** — focus, upstream/downstream reach, exact routes, role comparison, and stories reuse authored nodes and relationships instead of inventing topology or claiming runtime impact.
-- **Source evidence, only when requested** — Evidence-backed Architecture nodes mark themselves `SRC n` and open Git-verified files and line ranges pinned to one public commit; ordinary artifacts stay source-free.
-- **Portable by default** — the result is one HTML file; exports remain full-diagram and free of temporary viewer state.
-
-Archify is not a general-purpose drawing editor or a Mermaid theme. It turns technical intent into a communication artifact.
-
-## How it works
-
-| Step | What happens |
-|---|---|
-| **Generate** | The agent creates typed JSON IR from your description. |
-| **Validate** | Bundled validators and layout rules check the source; failures identify the exact local repair in machine-readable JSON. |
-| **Preview (optional)** | A loopback-only desktop session watches one source and reloads only verified revisions; failures keep the last-good artifact. |
-| **Deliver** | A same-directory candidate is rendered and checked; only a passing artifact atomically replaces the target, then optional `--open` launches that exact file. |
-| **Iterate** | The agent updates the source while unrelated structure stays stable. |
-
-Useful repository commands:
+## Quick start (CLI)
 
 ```bash
 cd archify
 node bin/archify.mjs doctor
-node bin/archify.mjs demo /tmp/archify-demo
-node bin/archify.mjs guide "Show CI/CD checks, approval, deploy, and rollback"
-node bin/archify.mjs validate workflow examples/agent-tool-call.workflow.json --quality showcase --json
-node bin/archify.mjs preview workflow examples/agent-tool-call.workflow.json /tmp/workflow.html --quality showcase
-node bin/archify.mjs deliver workflow examples/agent-tool-call.workflow.json /tmp/workflow.html --quality showcase --open --json
+node bin/archify.mjs guide "Map a lending protocol's roles, oracle dependency, and liquidation path"
+node bin/archify.mjs validate architecture examples/web-app.architecture.json --quality showcase --json
+node bin/archify.mjs deliver  architecture examples/web-app.architecture.json /tmp/map.html --quality showcase --open --json
 ```
 
-`preview` is an explicit desktop authoring mode, not a default background service: it binds only to `127.0.0.1` on a random port, watches the one named JSON file, preserves the last verified output through failures, and stops with Ctrl-C. Add `--no-open` for tests or when you will open the printed local URL yourself. It adds no runtime to the generated HTML.
+`validate` prints one JSON receipt with `diagnostics[]` (stable rule code, exact subject, measured evidence, supported fixes) on failure; `deliver` atomically replaces the target only after every check passes. The full authoring contract is [`archify/SKILL.md`](archify/SKILL.md).
 
-Use `deliver --open` for a one-shot interactive local handoff. It is off by default, runs only after the verified artifact is committed, and never turns a successful delivery into a failure when the OS opener is unavailable; JSON stays on stdout and the absolute manual-open path goes to stderr.
+## Choose the right diagram
 
-On failure, `validate --json` and `deliver --json` still emit exactly one JSON object. Read `diagnostics[]` and change only the named subject using its `supportedFixes`; do not rewrite the whole diagram or exceed the Skill's two focused correction rounds. Deterministic diagnostics remain separate from visual review.
-
-Optional motion and presentation styling are explicit:
-
-```json
-{
-  "meta": {
-    "animation": "trace",
-    "visual_preset": "signal-flow"
-  }
-}
-```
-
-Omit `animation` for a truly static diagram. `classic` remains default; `editorial` adds a warm publication look.
-
-## Explore and share the output
-
-| Action | Control |
-|---|---|
-| Open the factual Diagram Guide | <kbd>?</kbd> |
-| Find and focus a semantic node | <kbd>/</kbd> |
-| Trace upstream/downstream authored reach | Focus a node → `Upstream` / `Downstream` |
-| Probe a directed route and inspect its journey | <kbd>R</kbd> or `PATH` |
-| Compare one or two semantic roles | <kbd>L</kbd> or `LENS` |
-| Open the live overview radar | <kbd>M</kbd> or `MAP` |
-| Play a guided story / change chapter | <kbd>P</kbd> / <kbd>[</kbd> <kbd>]</kbd> |
-| Enter Presentation Stage | <kbd>F</kbd> |
-| Choose visual style (`S` cycles) / toggle theme / open Export | <kbd>S</kbd> / <kbd>T</kbd> / <kbd>E</kbd> |
-| Zoom or reset | <kbd>+</kbd> / <kbd>-</kbd> / <kbd>0</kbd> |
-
-Stable links can restore `#focus=<id>`, `#focus=<id>&reach=upstream|downstream`, `#relation=<id>`, `#route=<source>~<target>`, `#lens=<kind>~<kind>`, and `#view=<view-id>`. Reader-driven motion is finite, respects `prefers-reduced-motion`, and never enters canonical exports.
-
-The complete generation and viewer contract lives in [`archify/SKILL.md`](archify/SKILL.md).
-
-## Installation options
-
-| Surface | Install location or method | Capability |
+| Type | trustmap use | Include in your prompt |
 |---|---|---|
-| **Raven** | Manual ZIP into `~/.raven/workspace/skills` → `~/.raven/workspace/skills/archify` | Full renderer + validation workflow |
-| **Claude Code** | `~/.claude/skills/` or `.claude/skills/` | Full renderer + validation workflow |
-| **Codex CLI** | `~/.agents/skills/` or `.agents/skills/` | Full renderer + validation workflow |
-| **opencode** | `~/.config/opencode/skills/`, `.opencode/skills/`, or `.agents/skills/` | Full renderer + validation workflow |
-| **Claude.ai** | Upload `archify.zip` under Settings → Capabilities → Skills | Depends on Node.js access in the sandbox |
-| **Project Knowledge** | Upload `archify.zip` to the project | Prompt-driven architecture fallback |
-**DeepSeek Harness:** Community integration, not an official DeepSeek product; developer-preview `@deepseek-ai/dsh@0.1.0-rc.6`, Node `^22.19.0 || >=24.0.0`. Install: `dsh plugin --profile web add @tt-a1i/archify-dsh@0.1.0`; invoke: `Use the archify skill to map this repository's runtime architecture.`; remove: `dsh plugin --profile web remove @tt-a1i/archify-dsh`. No telemetry. Shell files need exact workspace paths, not Web Produced Files. [Details](integrations/deepseek-harness/README.md).
+| **Architecture** | Threat-model map: contracts, actors, roles, assets, oracles, trust boundaries, guarded crossings | Scope, in-scope contracts, privileged roles, external dependencies, the primary value path |
+| **Sequence** | One transaction over time: entry point → external calls → callbacks → state writes | Callers, callees, returns, where the untrusted call happens |
+| **Lifecycle** | Protocol state machine with who may trigger each transition | States, events, timeouts, terminal outcomes |
+| **Data Flow** | Value flow: where assets enter, accrue, and exit | Sources, sinks, custody changes, fee routes |
+| **Workflow** | Governance / upgrade / incident runbooks | Participants, gates (timelock, multisig), branches |
 
-## Reference and scope
+## Relationship to upstream
 
-- [Schema reference](archify/schemas/README.md)
-- [Skill and renderer contract](archify/SKILL.md)
-- [Examples](archify/examples/)
-- [Changelog](CHANGELOG.md)
-- [Roadmap](ROADMAP.md)
-- [Generated Proof Lab](https://tt-a1i.github.io/archify/gallery.html)
+- Forked from [tt-a1i/archify](https://github.com/tt-a1i/archify) at **v2.14.0** (`cffdd42`). Upstream history, changelog, roadmap, and design docs are preserved.
+- License: MIT, unchanged. Upstream copyright notices are retained in [`LICENSE`](LICENSE); fork contributions are offered under the same license.
+- Sync policy: schema changes are additive (`schema_version` stays `1`); the geometry engine, validator framework, delivery pipeline, and viewer core are left untouched so upstream fixes can be merged (`git remote add upstream https://github.com/tt-a1i/archify`).
+- The GitHub Pages site under [`docs/`](docs/) is inherited from upstream and not yet rebranded; treat it as reference material.
 
-Automatic Mermaid parsing, general-purpose auto-layout, hosted sharing, and WYSIWYG editing are intentionally outside the current scope.
+## Development
 
-## License
+```bash
+cd archify
+npm ci
+npm test            # validators check, release identity, goldens, ~600 node:test cases
+npm run render:examples && node scripts/render-examples.mjs ../examples   # regenerate goldens after template changes
+```
 
-[MIT](LICENSE) — free to use, modify, and distribute.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) (inherited) for the reproducible-bug expectations.
 
-## Contributing
+## Credits
 
-Issues, pull requests, and real-world diagrams are welcome. Start with the [contribution guide](CONTRIBUTING.md), use the reproducible bug form for failures, or submit a validated diagram through the [community showcase form](https://github.com/tt-a1i/archify/issues/new?template=showcase.yml).
+Built on [Archify](https://github.com/tt-a1i/archify) by tt-a1i, itself based on Cocoon-AI's `architecture-diagram-generator`. Thank you for the engine and the discipline.

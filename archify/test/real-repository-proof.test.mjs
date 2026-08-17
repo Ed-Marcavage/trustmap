@@ -34,7 +34,7 @@ function localMcoRoot() {
   }) || null;
 }
 
-test('MCO proof is source-backed, reproducible, and linked from every README', () => {
+test('MCO proof is source-backed and reproducible', () => {
   const source = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
   assert.equal(source.meta.title, 'MCO Runtime Architecture');
   assert.equal(source.meta.quality_profile, 'showcase');
@@ -116,10 +116,5 @@ test('MCO proof is source-backed, reproducible, and linked from every README', (
   assert.equal(png.readUInt32BE(20), 630);
   assert.ok(png.byteLength > 20_000, 'MCO Share Card is unexpectedly small');
 
-  for (const filename of ['README.md', 'README_EN.md', 'README_ZH.md']) {
-    const readme = fs.readFileSync(path.join(repoRoot, filename), 'utf8');
-    assert.match(readme, /docs\/assets\/mco-runtime-share-card\.png/);
-    assert.match(readme, /cases\/mco-runtime\.architecture\.html\?theme=dark&present=1#view=dispatch-path/);
-    assert.match(readme, /docs\/cases\/mco-runtime\.architecture\.json/);
-  }
+  // trustmap fork: the README no longer carries upstream's MCO proof links.
 });

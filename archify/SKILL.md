@@ -1,14 +1,16 @@
 ---
-name: archify
-description: Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle/state diagrams as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Accept plain-language requirements or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to visualize system architecture, infrastructure, cloud/security/network topology, technical workflows, API call sequences, request lifecycles, data pipelines, ETL/ELT, data lineage, state machines, or to convert/beautify Mermaid.
+name: trustmap
+description: Create polished, validated threat-model, architecture, workflow, sequence, data-flow, and lifecycle diagrams for smart-contract protocols as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Security-focused fork of Archify — map contracts, actors, privileged roles, assets, oracles, and off-chain participants, the trust boundaries between them, the guard on every crossing, and invariants pinned to source evidence. Accept plain-language protocol descriptions or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to map a protocol's trust boundaries, privileged roles, value flows, attack-path call sequences, protocol state machines, upgrade paths, or general system architecture, infrastructure, workflows, API call sequences, data pipelines, or state machines.
 license: MIT
 metadata:
   version: "2.14"
-  author: tt-a1i
-  based_on: Cocoon-AI/architecture-diagram-generator (MIT, v1.0)
+  author: Ed-Marcavage
+  based_on: tt-a1i/archify (MIT, v2.14.0), itself based on Cocoon-AI/architecture-diagram-generator (MIT, v1.0)
 ---
 
-# Archify
+# trustmap
+
+trustmap is a security-focused fork of Archify for smart-contract protocols; the authoring contract below is inherited from Archify and applies unchanged.
 
 Create a self-contained, interactive HTML diagram from a small typed JSON specification. Static output is the default; enable motion only when the user asks for a demo or presentation.
 

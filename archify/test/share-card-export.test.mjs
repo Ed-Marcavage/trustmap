@@ -114,19 +114,14 @@ test('Share Card stays viewer-only and reuses export cleanup instead of source s
   assert.doesNotMatch(svgBlock(html), /data-last-export-|data-format="share-card"/);
 });
 
-test('the skill and every README make the optional Share Card discoverable', () => {
+test('the skill makes the optional Share Card discoverable', () => {
   const viewer = fs.readFileSync(path.join(skillRoot, 'references', 'viewer-runtime.md'), 'utf8');
   assert.match(viewer, /optional 1200(?:×|x)630 Share Card PNG/i);
   assert.match(viewer, /current theme and visual preset/i);
   assert.match(viewer, /never claim(?:s|ing)? validation/i);
   assert.match(viewer, /Copy Share Card/i);
 
-  for (const readme of ['README.md', 'README_EN.md', 'README_ZH.md']) {
-    const text = fs.readFileSync(path.join(repoRoot, readme), 'utf8');
-    assert.match(text, /Share Card/i, readme);
-    assert.match(text, /1200(?:×|x)630/, readme);
-    assert.match(text, /copy|复制/i, readme);
-  }
+  // trustmap fork: README discoverability is not asserted; the viewer reference carries the contract.
 });
 
 process.on('exit', () => fs.rmSync(tmp, { recursive: true, force: true }));
