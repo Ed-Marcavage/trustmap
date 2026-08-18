@@ -52,7 +52,7 @@ The other modes carry supporting views: `sequence` for one transaction over time
 |---|---|---|
 | 0 | Fork identity: rename, README, fork-appropriate release gates | done |
 | 1 | Security vocabulary: node kinds, trust boundaries, `classification`/`guard` on connections, palettes and sigils, legend catalogs, tests, goldens, one hand-authored threat-model example ([`archify/examples/threat-model.architecture.json`](archify/examples/threat-model.architecture.json)) | in review — branch `phase-1/security-vocabulary` |
-| 2 | Fail-closed `contract-security` engineering profile | planned |
+| 2 | Fail-closed `contract-security` engineering profile: trust-boundary presence, contract/role scoping, guarded crossings, scoped privileged edges, guarded oracle reads, upgrade admins for `upgradeable` components | in review — branch `phase-2/contract-security-profile` |
 | 3 | First-class `invariants[]` + Semantic Passport section + adapter from a public pre-audit scan format | planned |
 | 4 | Evidence union (local-git, verified-source), per-ecosystem extraction notes, guide recipes, SKILL.md rewrite | planned |
 | 5 | Viewer polish: roles / unguarded-crossing lenses, invariant coverage filter | optional |

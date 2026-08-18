@@ -178,9 +178,14 @@ oracle staleness/deviation check, timelock delay, or the explicit literal
 `none`). The renderer copies both onto the relationship as
 `data-edge-classification` / `data-edge-guard`; the viewer's Semantic Flow
 Tokens prefer an authored classification over kind heuristics. Nothing is
-inferred: an absent `guard` means "not stated", and a later fail-closed
-`contract-security` engineering profile will turn "not stated on a trust
+inferred: an absent `guard` means "not stated", and the fail-closed
+`contract-security` engineering profile turns "not stated on a trust
 crossing" into a diagnostic.
+
+Architecture components accept one further additive authored fact:
+`upgradeable: true` states that the component's code can be replaced after
+deployment (proxy, migratable module). It is never inferred from tags,
+labels, or names, and only the `contract-security` profile reasons about it.
 
 The first engineering profile is `deployment-ownership`. Enable it only when
 the user wants a fail-closed deployment review and the source facts are known.
@@ -191,9 +196,26 @@ to exactly one `region`; the document must contain both `region` and
 region; and every connection whose region or security-group membership changes
 must name the real crossing mechanism in `label`.
 
-The profile validates only authored IR. It does not discover infrastructure,
-infer owners, or prove that a diagram matches a live environment. If a fact is
-unknown, leave the profile unset or obtain the fact instead of inventing it.
+The second engineering profile is `contract-security`, for threat-model maps.
+Enable it only when the user wants a fail-closed threat-model review and the
+source facts are known. It requires at least one `trust-boundary`; every
+`contract` in exactly one `trust-boundary` and every `role` in a
+`privilege-domain` (`security/scope-ambiguous`); a non-empty `guard` on every
+connection that crosses a `trust-boundary`, where the explicit literal `none`
+counts as stated (`security/crossing-guard-missing`); a `label` and `guard` on
+every edge from a `role` into a `contract`
+(`security/privileged-edge-unscoped`); a `guard` on every `read`-classified
+edge into an `oracle` (`security/oracle-check-missing`); and every component
+with `upgradeable: true` to sit in an `upgrade-domain` and receive an inbound
+edge from a `role` (`security/upgrade-admin-missing`). The rules are
+independent: one missing guard on a privileged crossing is reported by each
+rule it violates. Asset-invariant coverage is deferred until `invariants[]`
+exist.
+
+Both profiles validate only authored IR. They do not discover infrastructure
+or contracts, infer owners, admins, or upgradeability, or prove that a diagram
+matches a live environment or deployed bytecode. If a fact is unknown, leave
+the profile unset or obtain the fact instead of inventing it.
 
 `npm test` runs the generator in check mode and fails when the committed
 validators drift from their schemas.
