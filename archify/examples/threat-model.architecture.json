@@ -5,6 +5,7 @@
     "title": "Yield Vault — Threat-Model Map",
     "output": "examples/threat-model.html",
     "quality_profile": "showcase",
+    "engineering_profile": "contract-security",
     "views": [
       {
         "id": "value-path",
@@ -30,7 +31,7 @@
     {"id": "depositor", "type": "actor", "label": "Depositor", "sublabel": "any EOA or contract", "pos": [40, 300], "size": [120, 60]},
     {"id": "guardian", "type": "role", "label": "Guardian", "sublabel": "3-of-5 multisig", "pos": [430, 120], "size": [120, 64], "tag": "pause / unpause"},
     {"id": "timelock", "type": "role", "label": "Timelock", "sublabel": "governance · 48h delay", "pos": [590, 120], "size": [130, 64], "tag": "upgrade / set strategy"},
-    {"id": "vault", "type": "contract", "label": "Vault", "sublabel": "ERC-4626 · UUPS proxy", "pos": [490, 300], "size": [130, 60], "tag": "in scope"},
+    {"id": "vault", "type": "contract", "label": "Vault", "sublabel": "ERC-4626 · UUPS proxy", "pos": [490, 300], "size": [130, 60], "tag": "in scope", "upgradeable": true},
     {"id": "strategy", "type": "contract", "label": "Strategy", "sublabel": "yield adapter", "pos": [700, 300], "size": [130, 60], "tag": "in scope"},
     {"id": "shares", "type": "asset", "label": "Vault shares", "sublabel": "ERC-20 receipt token", "pos": [490, 420], "size": [130, 60]},
     {"id": "keeper", "type": "offchain", "label": "Keeper bot", "sublabel": "harvest / rebalance", "pos": [960, 95], "size": [130, 60], "tag": "off-chain signer"},
@@ -40,7 +41,8 @@
   ],
   "boundaries": [
     {"kind": "privilege-domain", "label": "Privileged roles", "wraps": ["guardian", "timelock"]},
-    {"kind": "trust-boundary", "label": "In scope", "wraps": ["vault", "strategy", "shares"]},
+    {"kind": "trust-boundary", "label": "In scope", "wraps": ["vault", "strategy", "shares"], "pad": 48},
+    {"kind": "upgrade-domain", "label": "UUPS", "wraps": ["vault"], "pad": 24},
     {"kind": "trust-boundary", "label": "External — not trusted", "wraps": ["keeper", "oracle", "lending", "dex"]}
   ],
   "connections": [

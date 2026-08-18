@@ -239,7 +239,7 @@ test('the bundled threat-model example passes showcase validation and is a check
   const document = JSON.parse(fs.readFileSync(example, 'utf8'));
   const kinds = new Set(document.components.map((component) => component.type));
   for (const kind of SECURITY_COMPONENT_KINDS) assert.ok(kinds.has(kind), `example uses ${kind}`);
-  assert.deepEqual(new Set(document.boundaries.map((boundary) => boundary.kind)), new Set(['privilege-domain', 'trust-boundary']));
+  assert.deepEqual(new Set(document.boundaries.map((boundary) => boundary.kind)), new Set(['privilege-domain', 'trust-boundary', 'upgrade-domain']));
   for (const connection of document.connections) {
     assert.ok(CONNECTION_CLASSIFICATIONS.includes(connection.classification), `${connection.id}: classification`);
     assert.ok(typeof connection.guard === 'string' && connection.guard.length > 0, `${connection.id}: guard`);

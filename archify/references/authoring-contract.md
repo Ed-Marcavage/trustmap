@@ -72,11 +72,20 @@ never as extra label text; keep the label to the action (`pause`,
 
 Omit `meta.engineering_profile` for an ordinary system architecture. Region,
 cluster, and security boundary wording do not by themselves enable an
-engineering profile. Enable `deployment-ownership` only when the user
+engineering profile, and neither does the mere presence of the security
+vocabulary on a protocol map. Enable `deployment-ownership` only when the user
 explicitly asks for a production deployment topology, ownership handoff, or
-fail-closed deployment review and the source facts are known. Once enabled,
-do not remove the engineering profile merely to pass validation; repair the
-authored facts or report the diagnostics truthfully.
+fail-closed deployment review and the source facts are known. Enable
+`contract-security` only when the user explicitly asks for a threat-model
+review, an audit-scope map, or a fail-closed security review and the guards,
+scopes, and upgrade admins are known facts; it requires a trust boundary,
+unambiguous contract/role scoping, a guard on every trust-boundary crossing
+(the literal `none` is explicit and allowed), a label and guard on every
+role-to-contract edge, a guard on every oracle read, and an upgrade-domain
+plus role admin edge for every component with `upgradeable: true`. Never set
+`upgradeable` from a tag, label, or name; it is an authored fact. Once
+enabled, do not remove the engineering profile merely to pass validation;
+repair the authored facts or report the diagnostics truthfully.
 
 ## Title hierarchy
 
